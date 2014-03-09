@@ -23,7 +23,7 @@
         <div class='panel-body'>
           <p>{{chall.description}}</p>
           {% if chall.is_answered() %}
-            <span class='alert alert-success'>Solved</span>
+            <span class='alert alert-success solved'>Solved</span>
           {% else %}
             <form action='{{url_for('submit', cid=chall.cid)}}' method='POST'>
               {{csrffield(path='submit')}}

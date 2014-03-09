@@ -142,7 +142,7 @@ def submit(cid):
   challenge = models.Challenge.query.get(cid)
   answer = flask.request.form.get('answer')
   if challenge.verify_answer(answer):
-    flask.g.team.points += challenge.points
+    flask.g.team.score += challenge.points
     models.Answer.create(challenge, flask.g.team, answer)
     flask.flash('Congratulations!  %d points awarded.' % challenge.points,
         'success')

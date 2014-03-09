@@ -1,3 +1,4 @@
+import datetime
 import flask
 from flask.ext import sqlalchemy
 import pbkdf2
@@ -149,12 +150,12 @@ class Answer(db.Model):
   answer_hash = db.Column(db.String(48))  # Store hash of team+answer
 
   @classmethod
-  def create(cls, challenge, team, answer):
+  def create(cls, challenge, team, answer_text):
     answer = cls()
     answer.challenge = challenge
     answer.team = team
     answer.timestamp = datetime.datetime.utcnow()
-    answer.answer_hash = pbkdf2.crypt(answer)
+    answer.answer_hash = pbkdf2.crypt(answer_text)
     db.session.add(answer)
     db.session.commit()
     return answer

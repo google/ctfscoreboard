@@ -16,3 +16,7 @@ body {
   float: right;
   margin-top: -19px;
 }
+.solved {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
