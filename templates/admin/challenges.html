@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{category.name}}{% endblock %}
+{% block body %}
+<table class='table table-striped'>
+  <thead>
+    <tr><th>Name</th><th>Points</th><th>Actions</th></tr>
+  </thead>
+  <tbody>
+    {% for challenge in challenges %}
+      <tr><td>{{challenge.name}}</td>
+        <td>{{challenge.points}}</td>
+        <td><a
+            href='{{url_for('admin_challenge', op='edit', cid=challenge.cid)}}'
+            class='btn btn-primary'>Edit</a><a
+            href='{{url_for('admin_challenge', op='delete', cid=challenge.cid)}}'
+            class='btn bin-danger'>Delete</a></td>
+      </tr>
+    {% endfor %}
+    <tr><td></td>
+      <td></td>
+      <td><a href='{{url_for('admin_challenge', op='new')}}'
+          class='btn btn-primary'>New</td></tr>
+  </tbody>
+</table>
+{% endblock %}

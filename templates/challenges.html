@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{% if challenges %}{{category.name}}{%
+    else %}Challenges{% endif %}{% endblock %}
+{% block sidebar %}
+  <div class='list-group'>
+  {% for cat in categories %}
+  <a href='{{url_for('challenges_by_cat', cat=cat.cid)}}'
+    class='list-group-item'>{{cat.name}}</a>
+  {% endfor %}
+  </div>
+{{ super() }}
+{% endblock %}
+{% block body %}
+{% if category %}
+  <div class='well'>{{category.description}}</div>
+  {% if challenges %}
+    {% for chall in challenges %}
+      <div class='panel panel-primary'>
+        <div class='panel-heading'>
+          <h3 class='panel-title'>{{chall.name}}</h3>
+          <span class='right'>{{chall.points}}</span>
+        </div>
+        <div class='panel-body'>
+          <p>{{chall.description}}</p>
+          {% if chall.is_answered() %}
+            <span class='alert alert-success'>Solved</span>
+          {% else %}
+            <form action='{{url_for('submit', cid=chall.cid)}}' method='POST'>
+              {{csrffield(path='submit')}}
+              <input type='hidden' name='cid' value='{{chall.cid}}'>
+              <div class='form-group'>
+                <label for='answer-{{chall.cid}}'>Answer</label>
+                <input name='answer' class='form-control'
+                  id='answer-{{chall.cid}}'>
+              </div>
+              <input type='submit' value='Submit' class='btn btn-primary'>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <span class='alert alert-info'>There are no open challenges in this
+      category.</span>
+  {% endif %}
+{% else %}
+  Choose a category to see challenges.
+{% endif %}
+{% endblock %}

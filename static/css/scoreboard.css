@@ -1,0 +1,18 @@
+body {
+  padding-top: 40px;
+}
+.left-sidebar {
+  background-color: #cbcbcb;
+}
+.btn-delete {
+  display: inline;
+  float: right;
+  margin-top: -39px;
+}
+.list-group {
+  margin-top: 20px;
+}
+.right {
+  float: right;
+  margin-top: -19px;
+}

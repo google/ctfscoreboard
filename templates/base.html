@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{config.get('TITLE', 'Scoreboard')}}</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/scoreboard.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class='container'>
+      <header class='navbar navbar-default navbar-fixed-top' id='top'>
+        <div class='container'>
+          <div class='navbar-header'>
+            <a class='navbar-brand'>{{config.get('TITLE', 'Scoreboard')}}</a>
+          </div>
+          <nav class='navbar-collapse collapse'>
+            <ul class='nav navbar-nav'>
+              {% if session.user %}
+              <li><a href='/challenges'>Challenges</a></li>
+              <li><a href='/scoreboard'>Scoreboard</a></li>
+              <li><a href='/profile'>Profile</a></li>
+              <li><a href='/logout'>Logout</a></li>
+              {% else %}
+              <li><a href='/login'>Login</a></li>
+              <li><a href='/register'>Register</a></li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class='container'>
+        <div class='row'>
+          <div class='col-md-3 left-sidebar'>
+            {% block sidebar %}
+            {% if g.user and g.user.admin %}
+              <div class='list-group'>
+                <a href='{{url_for('admin_categories')}}'
+                  class='list-group-item'>Categories</a>
+              </div>
+            {% endif %}
+            {% endblock %}
+          </div>
+          <div class='col-md-9'>
+            <h2>{% block title %}{% endblock %}</h2>
+            {% with messages = get_flashed_messages(with_categories=True) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="alert alert-{{category}}">{{message}}</div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+            {% block body %}
+            {% endblock %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+  </body>
+</html>

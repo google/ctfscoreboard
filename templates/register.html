@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+{% block body %}
+<div class='col-md-6 col-md-offset-3'>
+  <form method='POST' action='{{url_for('register')}}'>
+    {{csrffield()}}
+    <div class='form-group'>
+      <label for='email'>Email</label>
+      <input id='email' class='form-control' name='email' placeholder='foo@bar.com'>
+    </div>
+    <div class='form-group'>
+      <label for='nick'>Handle/Nick</label>
+      <input id='nick' class='form-control' name='nick' placeholder='Zero Cool'>
+    </div>
+    <div class='form-group'>
+      <label for='password'>Password</label>
+      <input id='password' class='form-control' name='password'
+        placeholder='password' type='password'>
+    </div>
+    <div class='form-group'>
+      <label for='password2'>Repeat Password</label>
+      <input id='password2' class='form-control' name='password2'
+        placeholder='repeat password' type='password'>
+    </div>
+    {% if config.get('TEAMS', False) %}
+      <div class='form-group'>
+        <label for='team'>Team</label>
+        <select id='team' class='form-control' name='team'>
+          <option disabled selected>--Select Team--</option>
+          <option value='new'>New</option>
+          {% for t in teams %}
+            <option value='{{t.tid}}'>{{t.name}}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class='form-group' id='div-team-code'>
+        <label for='team-code'>Team Code</label>
+        <input id='team-code' name='team-code' class='form-control'
+          placeholder='10ab03cf'>
+      </div>
+      <div class='form-group' id='div-team-new'>
+        <label for='team-name'>Team Name</label>
+        <input id='team-name' name='team-name' class='form-control'
+          placeholder='Hackers'>
+      </div>
+    {% endif %}
+    <input type='submit' value='Register' class='btn btn-primary'>
+  </form>
+</div>
+{% endblock %}

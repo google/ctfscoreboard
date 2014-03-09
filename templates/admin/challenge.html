@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{% if op == 'new'
+  %}New Challenge{% else %}Edit Challenge{% endif %}{% endblock %}
+{% block body %}
+{% if op == 'new' %}
+<form method='post' action='{{url_for('admin_challenge', op=op)}}'>
+{% else %}
+<form method='post' action='{{url_for('admin_challenge', op=op,
+  cid=challenge.cid)}}'>
+{% endif %}
+  {{csrffield()}}
+  <div class='form-group'>
+    <label for='name'>Name</label>
+    <input id='name' name='name' placeholder='Name'
+    {% if challenge %}value='{{challenge.name}}'{% endif %}
+      class='form-control'>
+  </div>
+  <div class='row'>
+    <div class='col-md-8'>
+      <div class='form-group'>
+        <label for='category'>Category</label>
+        <select id='category' name='category' class='form-control'>
+          <option disabled{% if op == 'new' %}
+            selected{% endif %}>-- Select Category --</option>
+          {% for category in categories %}
+          <option value='{{category.cid}}'{% if challenge and
+            category.cid == challenge.cid %} selected{% endif
+            %}>{{category.name}}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class='col-md-4'>
+      <div class='form-group'>
+        <label for='points'>Points</label>
+        <input id='points' name='points' class='form-control'
+          {% if challenge %}value='{{challenge.points}}'{% endif %}
+          placeholder='0'>
+      </div>
+    </div>
+  </div>
+  <div class='form-group'>
+    <label for='description'>Description</label>
+    <textarea id='description' name='description' class='form-control'
+      >{% if challenge %}{{challenge.description}}{% endif %}</textarea>
+  </div>
+  <div class='form-group'>
+    <label for='answer'>Answer</label>
+    <input id='answer' name='answer' class='form-control'
+      placeholder='Enter answer; leave blank to leave unchanged.'>
+  </div>
+  <div class='form-group'>
+    <label for='unlocked'>Unlocked</label>
+    <input id='unlocked' name='unlocked' value='1' type='checkbox'
+      {% if challenge and challenge.unlocked %}checked{% endif %}>
+  </div>
+  <input type='submit' value='{% if challenge %}Submit Changes{% 
+    else %}Create{% endif %}' class='btn btn-primary'>
+</form>
+{% endblock %}
