@@ -20,11 +20,11 @@
       <div class='form-group'>
         <label for='category'>Category</label>
         <select id='category' name='category' class='form-control'>
-          <option disabled{% if op == 'new' %}
+          <option disabled{% if not cat %}
             selected{% endif %}>-- Select Category --</option>
           {% for category in categories %}
-          <option value='{{category.cid}}'{% if challenge and
-            category.cid == challenge.cid %} selected{% endif
+          <option value='{{category.cid}}'{% if
+            category.cid == cat %} selected{% endif
             %}>{{category.name}}</option>
           {% endfor %}
         </select>

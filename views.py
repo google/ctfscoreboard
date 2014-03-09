@@ -234,8 +234,10 @@ def admin_challenge(op, cid=None):
     if not challenge:
       flask.flash('No such challenge.')
       return flask.redirect(flask.url_for('admin_categories'))
+    cat = challenge.cat_cid
   else:
     challenge = None
+    cat = int(flask.request.values.get('cat', 0))
   if flask.request.method == 'POST':
     try:
       name = flask.request.form.get('name')
@@ -277,6 +279,7 @@ def admin_challenge(op, cid=None):
     except ValidationError as ex:
       flask.flash(str(ex), 'danger')
   return flask.render_template('admin/challenge.html',
+      cat=cat,
       op=op,
       categories=categories,
       challenge=challenge)
