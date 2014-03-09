@@ -155,7 +155,7 @@ class Answer(db.Model):
     answer.challenge = challenge
     answer.team = team
     answer.timestamp = datetime.datetime.utcnow()
-    answer.answer_hash = pbkdf2.crypt(answer_text)
+    answer.answer_hash = pbkdf2.crypt(team.name + answer_text)
     db.session.add(answer)
     db.session.commit()
     return answer
