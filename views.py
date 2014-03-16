@@ -169,8 +169,15 @@ def submit(cid):
     models.Answer.create(challenge, flask.g.team, answer)
     flask.flash('Congratulations!  %d points awarded.' % challenge.points,
         'success')
+    correct = 'CORRECT'
   else:
     flask.flash('Really?  Haha no...', 'warning')
+    correct = 'WRONG'
+  logstr = 'Player %s/%s<%d>/Team %s<%d> submitted "%s" for Challenge %s<%d>: %s'
+  logstr %= (flask.g.user.nick, flask.g.user.email, flask.g.user.uid,
+      flask.g.team.name, flask.g.team.tid, answer, challenge.name,
+      challenge.cid, correct)
+  app.challenge_log.info(logstr)
   return flask.redirect(flask.url_for(
     'challenges_by_cat', cat=challenge.cat_cid))
 
