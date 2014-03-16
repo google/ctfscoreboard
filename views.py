@@ -43,7 +43,7 @@ def admin_required(f):
     except AttributeError:
       abort(403)
     return f(*args, **kwargs)
-  return wrapper
+  return login_required(wrapper)
 
 
 @app.route('/')
@@ -214,7 +214,6 @@ def makemeadmin():
 
 
 @app.route('/admin/categories', methods=['GET', 'POST'])
-@login_required
 @admin_required
 @csrfutil.csrf_protect
 def admin_categories():
@@ -261,7 +260,6 @@ def admin_categories():
 
 
 @app.route('/admin/challenges/<int:cid>')
-@login_required
 @admin_required
 def admin_challenges(cid):
   category = models.Category.query.get(cid)
@@ -276,7 +274,6 @@ def admin_challenges(cid):
 
 @app.route('/admin/challenge/<op>', methods=['GET', 'POST'])
 @app.route('/admin/challenge/<op>/<int:cid>', methods=['GET', 'POST'])
-@login_required
 @admin_required
 @csrfutil.csrf_protect
 def admin_challenge(op, cid=None):
@@ -337,7 +334,6 @@ def admin_challenge(op, cid=None):
       challenge=challenge)
 
 @app.route('/admin/backup/challenges')
-@login_required
 @admin_required
 def admin_challenge_backup():
   categories = {}
@@ -362,7 +358,6 @@ def admin_challenge_backup():
 
 
 @app.route('/admin/backup/challenges/restore', methods=['GET', 'POST'])
-@login_required
 @admin_required
 @csrfutil.csrf_protect
 def admin_challenge_restore():
