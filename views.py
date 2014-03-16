@@ -11,19 +11,25 @@ class ValidationError(Exception):
   pass
 
 
+@app.before_request
+def load_globals():
+  uid = flask.session.get('user')
+  if uid:
+    user = models.User.query.get(uid)
+    if user:
+      flask.g.user = user
+      flask.g.team = user.team
+      return
+  flask.g.user = None
+  flask.g.team = None
+
+
 def login_required(f):
   @functools.wraps(f)
   def wrapper(*args, **kwargs):
-    def _not_logged_in():
+    if not flask.g.user:
       flask.flash('You must be logged in.', 'danger')
       return flask.redirect(flask.url_for('login'))
-    if not flask.session.get('user'):
-      return _not_logged_in()
-    user = models.User.query.get(flask.session.get('user'))
-    if not user:
-      return _not_logged_in()
-    flask.g.user = user
-    flask.g.team = user.team
     return f(*args, **kwargs)
   return wrapper
 
@@ -167,6 +173,25 @@ def submit(cid):
     flask.flash('Really?  Haha no...', 'warning')
   return flask.redirect(flask.url_for(
     'challenges_by_cat', cat=challenge.cat_cid))
+
+
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+@csrfutil.csrf_protect
+def profile():
+  if flask.request.method == 'POST':
+    # TODO: more change types
+    dirty = False
+    pw = flask.request.form.get('password')
+    pw2 = flask.request.form.get('password2')
+    if pw and pw == pw2:
+      flask.g.user.set_password(pw)
+      dirty = True
+      flask.flash('Password updated.', 'success')
+    if dirty:
+      models.commit()
+    return flask.redirect(flask.url_for(flask.request.endpoint))
+  return flask.render_template('profile.html')
 
 
 # Admin UI
