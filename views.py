@@ -1,5 +1,6 @@
 import flask
 import functools
+import json
 
 from app import app
 import models
@@ -101,11 +102,27 @@ def register():
       teams=models.Team.query.all())
 
 
+def _enumerate_teams():
+  return enumerate(models.Team.query.order_by(
+    models.Team.score.desc()).all(), 1)
+
+
 @app.route('/scoreboard')
 def scoreboard():
   return flask.render_template('scoreboard.html',
-      teams=enumerate(models.Team.query.order_by(
-        models.Team.score.desc()).all(), 1))
+      teams=_enumerate_teams())
+
+
+@app.route('/scoreboard.json')
+def scoreboard_json():
+  scores = []
+  for pos, team in _enumerate_teams():
+    scores.append({
+      'place': pos,
+      'team': team.name,
+      'score': team.score
+      })
+  return flask.jsonify(scores=scores)
 
 
 @app.route('/challenges')
@@ -156,6 +173,9 @@ def submit(cid):
 @app.route('/admin/makemeadmin')
 @login_required
 def makemeadmin():
+  # Only works if no other admins exist
+  if models.User.query.filter(models.User.admin == True).count():
+    flask.abort(403)
   flask.g.user.admin = True
   models.commit()
   return flask.redirect(flask.url_for('index'))
@@ -284,5 +304,77 @@ def admin_challenge(op, cid=None):
       categories=categories,
       challenge=challenge)
 
+@app.route('/admin/backup/challenges')
+@login_required
+@admin_required
+def admin_challenge_backup():
+  categories = {}
+  challenges = []
+  for cat in models.Category.query.all():
+    categories[cat.cid] = {
+        'name': cat.name,
+        'description': cat.description
+        }
+    for q in cat.challenges:
+      challenges.append({
+        'category': cat.cid,
+        'name': q.name,
+        'description': q.description,
+        'points': q.points,
+        'answer_hash': q.answer_hash
+        })
+  response = flask.jsonify(categories=categories,
+      challenges=challenges)
+  response.headers['Content-Disposition'] = 'attachment; filename=challenges.json'
+  return response
 
-# TODO point editing, etc.
+
+@app.route('/admin/backup/challenges/restore', methods=['GET', 'POST'])
+@login_required
+@admin_required
+@csrfutil.csrf_protect
+def admin_challenge_restore():
+  if flask.request.method == 'POST':
+    _perform_admin_challenge_restore()
+    return flask.redirect(flask.url_for(flask.request.endpoint))
+  return flask.render_template('admin/restore_challenges.html')
+
+
+def _perform_admin_challenge_restore():
+  jsfile = flask.request.files.get('restorefile')
+  if not jsfile:
+    flask.flash('No JSON file was sent.', 'warning')
+    return
+  try:
+    data = json.load(jsfile)
+  except ValueError:
+    flask.flash('Invalid JSON!', 'danger')
+    return
+
+  deleted = False
+  if flask.request.form.get('replace') == 'True':
+    models.Category.query.delete()
+    models.Challenge.query.delete()
+    deleted = True
+
+  cats = {}
+  for catid, cat in data['categories'].iteritems():
+    newcat = models.Category()
+    for f in ('name', 'description'):
+      setattr(newcat, f, cat[f])
+    models.db.session.add(newcat)
+    cats[int(catid)] = newcat
+  
+  for challenge in data['challenges']:
+    newchall = models.Challenge()
+    for f in ('name', 'description', 'points', 'answer_hash'):
+      setattr(newchall, f, challenge[f])
+    newchall.category = cats[challenge['category']]
+    models.db.session.add(newchall)
+  
+  models.commit()
+  if deleted:
+    flask.flash('Deleted old categories & challenges.', 'success')
+  flask.flash('%d Categories and %d Challenges imported.' %
+      (len(data['categories']), len(data['challenges'])),
+      'success')

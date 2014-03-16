@@ -46,7 +46,7 @@ class User(db.Model):
     self.pwhash = pbkdf2.crypt(password)
 
   def __repr__(self):
-    return '<User: %s <%s>>' % (nick, email)
+    return '<User: %s <%s>>' % (self.nick, self.email)
 
   def __str__(self):
     return self.nick
