@@ -1,8 +1,14 @@
 import flask
 import logging
+from werkzeug.utils import ImportStringError
 
-app = flask.Flask(__name__)
-app.config.from_object('config')  # Load from config.py
+
+app = flask.Flask('scoreboard')
+# Handle both standalone and as part of pwnableweb
+try:
+  app.config.from_object('scoreboard.config')  # Load from config.py
+except ImportStringError:
+  app.config.from_object('config')  # Load from config.py
 
 # Main logger
 if not app.debug:
