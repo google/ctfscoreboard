@@ -9,8 +9,8 @@ if not app.debug:
   handler = logging.FileHandler(
       app.config.get('LOGFILE') or '/tmp/scoreboard.wsgi.log')
   handler.setLevel(logging.INFO)
-  handler.setFormatter(
-      '%(asctime)s %(levelname)8s [%(filename)s:%(lineno)d] %(message)s')
+  handler.setFormatter(logging.Formatter(
+      '%(asctime)s %(levelname)8s [%(filename)s:%(lineno)d] %(message)s'))
   app.logger.addHandler(handler)
 
 # Challenge logger
