@@ -310,8 +310,8 @@ def admin_challenge(op, cid=None):
             True if unlocked else False)
         if challenge:
           flask.flash('Challenge created.', 'success')
-          return flask.redirect(flask.url_for(
-            'admin_challenge', op='edit', cid=challenge.cid))
+          return flask.redirect(flask.url_for('admin_challenges',
+              cid=cat if cat else None))
         else:
           flask.flash('Error creating challenge.', 'danger')
       elif op == 'edit':
