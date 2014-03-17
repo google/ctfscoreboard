@@ -54,6 +54,27 @@
     <input id='unlocked' name='unlocked' value='1' type='checkbox'
       {% if challenge and challenge.unlocked %}checked{% endif %}>
   </div>
+  <table class='table' id='hint-table'>
+    <thead>
+      <tr><th class='col-md-6'>Hint</th><th class='col-md-2'>Points</th><th
+          class='col-md-1'></th></tr>
+    </thead>
+    <tbody>
+      {% for hint in challenge.hints %}
+        <input type='hidden' name='hint' value='{{hint.hid}}'>
+        <tr id='hint-{{hint.hid}}'>
+          <td><input name='hint-{{hint.hid}}-hint' class='form-control'
+            value='{{hint.hint}}'></td>
+          <td><input name='hint-{{hint.hid}}-cost' class='form-control'
+            value='{{hint.cost}}'></td>
+          <td><a class='delete-hint btn btn-sm btn-warning'>&#x2715;</a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr><td></td><td></td><td><a class='add-hint btn btn-sm btn-info'>&#x271B;</a></td></tr>
+    </tfoot>
+  </table>
   <input type='submit' value='{% if challenge %}Submit Changes{% 
     else %}Create{% endif %}' class='btn btn-primary'>
 </form>

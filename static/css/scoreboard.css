@@ -33,3 +33,6 @@ body {
 #scoreboard {
   font-size: 16px;
 }
+a.btn {
+  text-decoration: none;
+}

@@ -165,9 +165,14 @@ def submit(cid):
   challenge = models.Challenge.query.get(cid)
   answer = flask.request.form.get('answer')
   if challenge.verify_answer(answer):
-    flask.g.team.score += challenge.points
+    # Deductions for hints
+    hints = models.UnlockedHint.query.filter(
+        models.UnlockedHint.team == flask.g.team).all()
+    deduction = sum(h.hint.cost for h in hints if h.hint.challenge_cid==cid)
+    points = challenge.points - deduction
+    flask.g.team.score += points
     models.Answer.create(challenge, flask.g.team, answer)
-    flask.flash('Congratulations!  %d points awarded.' % challenge.points,
+    flask.flash('Congratulations!  %d points awarded.' % points,
         'success')
     correct = 'CORRECT'
   else:
@@ -199,6 +204,24 @@ def profile():
       models.commit()
     return flask.redirect(flask.url_for(flask.request.endpoint))
   return flask.render_template('profile.html')
+
+
+@app.route('/unlock_hint', methods=['POST'])
+@login_required
+@csrfutil.csrf_protect
+def unlock_hint():
+  hid = flask.request.form['hid']
+  hint = models.Hint.query.get(int(hid))
+  if not hint:
+    flask.abort(404)
+  hint.unlock(flask.g.team)
+  flask.flash('Hint unlocked.', 'success')
+  logstr = 'Player %s/%s<%d>/Team %s<%d> unlocked hint %d for Challenge %s<%d>'
+  logstr %= (flask.g.user.nick, flask.g.user.email, flask.g.user.uid,
+      flask.g.team.name, flask.g.team.tid, hint.hid, hint.challenge.name,
+      hint.challenge.cid)
+  app.challenge_log.info(logstr)
+  return flask.redirect(flask.request.form['redir'])
 
 
 # Admin UI
@@ -309,6 +332,8 @@ def admin_challenge(op, cid=None):
             name, description, points, answer, cat_cid,
             True if unlocked else False)
         if challenge:
+          _challenge_update_hints(challenge)
+          models.commit()
           flask.flash('Challenge created.', 'success')
           return flask.redirect(flask.url_for('admin_challenges',
               cid=cat if cat else None))
@@ -322,6 +347,7 @@ def admin_challenge(op, cid=None):
         challenge.unlocked = True if flask.request.form.get('unlocked') else False
         if answer:
           challenge.change_answer(answer)
+        _challenge_update_hints(challenge)
         models.commit()
       elif op == 'delete':
         challenge.delete()
@@ -337,6 +363,29 @@ def admin_challenge(op, cid=None):
       op=op,
       categories=categories,
       challenge=challenge)
+
+
+def _challenge_update_hints(challenge):
+  # Delete removed
+  hints = [int(x) for x in flask.request.form.getlist('hint')]
+  for h in challenge.hints:
+    if h.hid not in hints:
+      models.db.session.delete(h)
+    else:
+      h.hint = flask.request.form.get('hint-'+str(h.hid)+'-hint')
+      h.cost = int(flask.request.form.get('hint-'+str(h.hid)+'-cost'))
+  for text,cost in zip(
+      flask.request.form.getlist('hint-new-hint'),
+      flask.request.form.getlist('hint-new-cost')):
+    if not text or not cost:
+      continue
+    cost = int(cost)
+    hint = models.Hint()
+    hint.hint = text
+    hint.cost = cost
+    hint.challenge = challenge
+    models.db.session.add(hint)
+
 
 @app.route('/admin/backup/challenges')
 @admin_required

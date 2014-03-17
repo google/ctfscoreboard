@@ -5,4 +5,3 @@ This is a basic CTF Scoreboard.
 - team management
   - +/- points 
 - password reset
-- unlockable hints

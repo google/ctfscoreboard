@@ -22,9 +22,36 @@
         </div>
         <div class='panel-body'>
           <p>{{chall.description|urlize}}</p>
-          {% if chall.is_answered() %}
+          {% if chall.is_answered(answers=g.team.answers) %}
             <span class='alert alert-success solved'>Solved</span>
           {% else %}
+            {% if chall.hints %}
+              <div class='hints'>
+                <ul>
+                  {% for hint in chall.hints %}
+                    {% if hint.is_unlocked(unlocked_hints=g.team.hints) %}
+                      <li>{{hint.hint}}</li>
+                    {% endif %}
+                  {% endfor %}
+                </ul>
+                <ul class='list-inline'>
+                  {% for hint in chall.hints %}
+                    {% if not hint.is_unlocked(unlocked_hints=g.team.hints) %}
+                      <li><form method='post'
+                        action='{{url_for('unlock_hint')}}'>
+                        {{csrffield(path='unlock_hint')}}
+                        <input type='hidden' name='hid' value='{{hint.hid}}'>
+                        <input type='hidden' name='cost' value='{{hint.cost}}'>
+                        <input type='hidden' name='redir'
+                          value='{{request.path}}'>
+                        <input type='submit' value='Hint {{loop.index}}'
+                          class='btn btn-info hint-unlock'>
+                      </form></li>
+                    {% endif %}
+                  {% endfor %}
+                </ul>
+              </div>
+            {% endif %}
             <form action='{{url_for('submit', cid=chall.cid)}}' method='POST'>
               {{csrffield(path='submit')}}
               <input type='hidden' name='cid' value='{{chall.cid}}'>
@@ -39,6 +66,26 @@
         </div>
       </div>
     {% endfor %}
+    <!-- Confirm modal div -->
+    <div id='hint-modal' class='modal fade'>
+      <div class='modal-dialog'>
+        <div class='modal-content'>
+          <div class='modal-header'>
+            <button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>
+            <h4 class='modal-title'>Unlock Hint?</h4>
+          </div>
+          <div class='modal-body'>
+            <p>Unlocking this hint will reduce the point value by <span
+              id='hint-cost'></span>.</p>
+          </div>
+          <div class='modal-footer'>
+            <button type='button' class='btn btn-default'
+              data-dismiss='modal'>Cancel</button>
+            <button type='button' class='btn btn-primary'>Unlock Hint</button>
+          </div>
+        </div>
+      </div>
+    </div>
   {% else %}
     <span class='alert alert-info'>There are no open challenges in this
       category.</span>
