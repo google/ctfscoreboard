@@ -30,3 +30,6 @@ body {
   padding-top: 0;
   padding-bottom: 0;
 }
+#scoreboard {
+  font-size: 16px;
+}
