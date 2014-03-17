@@ -410,3 +410,53 @@ def _perform_admin_challenge_restore():
   flask.flash('%d Categories and %d Challenges imported.' %
       (len(data['categories']), len(data['challenges'])),
       'success')
+
+
+@app.route('/admin/teams')
+@admin_required
+def admin_teams():
+  if not app.config.get('TEAMS'):
+    flask.abort(404)
+  # TODO: Teams support
+
+
+@app.route('/admin/team/<int:tid>', methods=['GET', 'POST'])
+@admin_required
+@csrfutil.csrf_protect
+def admin_team(tid):
+  if not app.config.get('TEAMS'):
+    flask.abort(404)
+  # TODO: Teams support
+
+
+@app.route('/admin/users')
+@admin_required
+def admin_users():
+  users = models.User.query.order_by(
+      models.User.nick).all()
+  return flask.render_template('admin/users.html', users=users)
+
+
+@app.route('/admin/user/<int:uid>', methods=['GET', 'POST'])
+@csrfutil.csrf_protect
+@admin_required
+def admin_user(uid):
+  user = models.User.query.get(uid)
+  if not user:
+    flask.flash('No such user.', 'warning')
+    return flask.render_template('error.html')
+  if flask.request.method == 'POST':
+    # TODO: support other edits
+    user.admin = True if flask.request.form.get('admin') else False
+    if (not app.config.get('TEAMS') and
+        flask.request.form.get('score') is not None):
+      score = int(flask.request.form.get('score'))
+      orig_score = int(flask.request.form.get('orig_score'))
+      if orig_score != user.team.score:
+        flask.flash('Race condition updating score.', 'warning')
+      else:
+        user.team.score = score
+    models.commit()
+    flask.flash('User updated.')
+    return flask.redirect(flask.url_for(flask.request.endpoint, uid=uid))
+  return flask.render_template('admin/user.html', user=user)
