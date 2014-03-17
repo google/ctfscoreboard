@@ -12,7 +12,7 @@
 {% endblock %}
 {% block body %}
 {% if category %}
-  <div class='well'>{{category.description}}</div>
+  <div class='well'>{{category.description|urlize}}</div>
   {% if challenges %}
     {% for chall in challenges %}
       <div class='panel panel-primary'>
@@ -21,7 +21,7 @@
           <span class='right'>{{chall.points}}</span>
         </div>
         <div class='panel-body'>
-          <p>{{chall.description}}</p>
+          <p>{{chall.description|urlize}}</p>
           {% if chall.is_answered() %}
             <span class='alert alert-success solved'>Solved</span>
           {% else %}
