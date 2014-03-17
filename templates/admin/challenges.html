@@ -1,5 +1,6 @@
 {% extends "base.html" %}
-{% block title %}{{category.name}}{% endblock %}
+{% block title %}{%if category %}{{category.name}}{%
+  else %}Challenges{% endif %}{% endblock %}
 {% block body %}
 <table class='table table-striped challenge-table'>
   <thead>
@@ -18,7 +19,8 @@
     {% endfor %}
     <tr><td></td>
       <td></td>
-      <td><a href='{{url_for('admin_challenge', op='new')}}?cat={{category.cid}}'
+      <td><a href='{{url_for('admin_challenge', op='new')}}{% if category
+          %}?cat={{category.cid}}{% endif %}'
           class='btn btn-primary'>New</td></tr>
   </tbody>
 </table>

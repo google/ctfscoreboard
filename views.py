@@ -259,15 +259,20 @@ def admin_categories():
       categories=models.Category.query.all())
 
 
+@app.route('/admin/challenges')
 @app.route('/admin/challenges/<int:cid>')
 @admin_required
-def admin_challenges(cid):
-  category = models.Category.query.get(cid)
-  if not category:
-    flask.flash('No such category.')
-    return flask.redirect(flask.url_for('admin_categories'))
-  challenges = models.Challenge.query.filter(models.Challenge.category ==
-      category).all()
+def admin_challenges(cid=None):
+  if cid:
+    category = models.Category.query.get(cid)
+    if not category:
+      flask.flash('No such category.')
+      return flask.redirect(flask.url_for('admin_categories'))
+    challenges = models.Challenge.query.filter(models.Challenge.category ==
+        category).all()
+  else:
+    category = None
+    challenges = models.Challenge.query.all()
   return flask.render_template('admin/challenges.html',
       category=category, challenges=challenges)
 
