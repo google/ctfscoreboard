@@ -3,6 +3,7 @@ import flask
 from flask.ext import sqlalchemy
 import pbkdf2
 from sqlalchemy import exc
+from sqlalchemy.orm import exc as orm_exc
 
 import app
 
@@ -110,10 +111,16 @@ class Challenge(db.Model):
   unlocked = db.Column(db.Boolean, default=False)
   cat_cid = db.Column(db.Integer, db.ForeignKey('category.cid'))
   answers = db.relationship('Answer', backref='challenge', lazy='dynamic')
+  hints = db.relationship('Hint', backref='challenge', lazy='dynamic')
 
-  def is_answered(self, team=None):
+  def is_answered(self, team=None, answers=None):
     if team is None:
       team = flask.g.team
+    if answers:
+      for a in answers:
+        if a.team_tid == team.tid and a.challenge_cid == self.cid:
+          return True
+      return False
     return bool(Answer.query.filter(Answer.challenge == self,
         Answer.team == team).count())
 
@@ -133,12 +140,49 @@ class Challenge(db.Model):
     challenge.cat_cid = cid
     challenge.unlocked = unlocked
     db.session.add(challenge)
-    db.session.commit()
     return challenge
 
   def delete(self):
     db.session.delete(self)
     db.session.commit()
+
+
+class Hint(db.Model):
+  hid = db.Column(db.Integer, primary_key=True)
+  challenge_cid = db.Column(db.Integer, db.ForeignKey('challenge.cid'))
+  hint = db.Column(db.Text)
+  cost = db.Column(db.Integer)
+
+  def unlock(self, team):
+    unlocked = UnlockedHint()
+    unlocked.hint = self
+    unlocked.team = team
+    unlocked.timestamp = datetime.datetime.utcnow()
+    db.session.add(unlocked)
+    db.session.commit()
+
+  def is_unlocked(self, team=None, unlocked_hints=None):
+    if team is None:
+      team = flask.g.team
+    if unlocked_hints:
+      for h in unlocked_hints:
+        if h.hint_hid == self.hid and h.team_tid == team.tid:
+          return True
+      return False
+    try:
+      UnlockedHint.query.filter(UnlockedHint.hint_hid == self.hid,
+          UnlockedHint.team_tid == team.tid).one()
+      return True
+    except orm_exc.NoResultFound:
+      return False
+
+
+class UnlockedHint(db.Model):
+  hint_hid = db.Column(db.Integer, db.ForeignKey('hint.hid'), primary_key=True)
+  hint = db.relationship('Hint', backref='unlocked_by', lazy='joined')
+  team_tid = db.Column(db.Integer, db.ForeignKey('team.tid'), primary_key=True)
+  team = db.relationship('Team', backref='hints')
+  timestamp = db.Column(db.DateTime)
 
 
 class Answer(db.Model):

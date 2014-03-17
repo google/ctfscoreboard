@@ -30,3 +30,6 @@ body {
   padding-top: 0;
   padding-bottom: 0;
 }
+a.btn {
+  text-decoration: none;
+}
