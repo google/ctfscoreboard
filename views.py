@@ -1,6 +1,7 @@
 import flask
 import functools
 import json
+from sqlalchemy import exc
 
 from app import app
 import models
@@ -98,7 +99,10 @@ def register():
             raise ValidationError('Invalid team selection or team code.')
       else:
         team = None
-      user = models.User.create(email, nick, password, team=team)
+      try:
+        user = models.User.create(email, nick, password, team=team)
+      except exc.IntegrityError:
+        raise ValidationError('Duplicate email/nick.')
       flask.session['user'] = user.uid
       flask.flash('Registration successful.', 'success')
       return flask.redirect(flask.url_for('challenges'))
@@ -316,6 +320,15 @@ def admin_challenge(op, cid=None):
     challenge = None
     cat = int(flask.request.values.get('cat', 0))
   if flask.request.method == 'POST':
+    # lock/unlock are AJAX calls
+    if op == 'lock':
+      challenge.unlocked = False
+      models.commit()
+      return 'locked'
+    elif op == 'unlock':
+      challenge.unlocked = True
+      models.commit()
+      return 'unlocked'
     try:
       name = flask.request.form.get('name')
       description = flask.request.form.get('description')

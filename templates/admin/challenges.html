@@ -4,17 +4,22 @@
 {% block body %}
 <table class='table table-striped challenge-table'>
   <thead>
-    <tr><th>Name</th><th>Points</th><th>Actions</th></tr>
+    <tr><th class='col-md-4'>Name</th><th class='col-md-2'>Points</th><th
+        class='col-md-3'>Actions</th></tr>
   </thead>
   <tbody>
     {% for challenge in challenges %}
       <tr><td>{{challenge.name}}</td>
         <td>{{challenge.points}}</td>
-        <td><a
+        <td>
+          <a class='btn lockbtn {%if not challenge.locked%}un{%endif%}locked'
+            data-cid='{{challenge.cid}}'
+            data-csrftoken='{{csrftoken(path='admin_challenge')}}'></a>
+          <a
             href='{{url_for('admin_challenge', op='edit', cid=challenge.cid)}}'
             class='btn btn-primary'>Edit</a><a
             href='{{url_for('admin_challenge', op='delete', cid=challenge.cid)}}'
-            class='btn bin-danger'>Delete</a></td>
+            class='btn btn-danger'>Delete</a></td>
       </tr>
     {% endfor %}
     <tr><td></td>

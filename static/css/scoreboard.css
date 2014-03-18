@@ -36,3 +36,9 @@ body {
 a.btn {
   text-decoration: none;
 }
+.lockbtn {
+  width: 95px;
+}
+.challenge-table .btn {
+  margin-right: 10px;
+}

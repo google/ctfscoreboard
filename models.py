@@ -54,7 +54,10 @@ class User(db.Model):
 
   @classmethod
   def login_user(cls, email, password):
-    user = cls.query.filter_by(email=email).first()
+    try:
+      user = cls.query.filter_by(email=email).one()
+    except:
+      return None
     if pbkdf2.crypt(password, user.pwhash) == user.pwhash:
       return user
     return None

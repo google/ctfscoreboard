@@ -24,3 +24,31 @@ $('.add-hint').click(function(ev) {
   var tbody = $('#hint-table').find('tbody');
   tbody.append($(new_hint));
 });
+
+/* Lock & Unlock buttons */
+var updateButton = function(btn) {
+  $(btn).removeClass('disabled');
+  if ($(btn).hasClass('unlocked')) {
+    $(btn).removeClass('btn-warning').addClass('btn-info').text('Unlocked');
+  } else {
+    $(btn).removeClass('btn-info').addClass('btn-warning').text('Locked');
+  }
+};
+$(document).ready(function() {
+  $('.lockbtn').each(function(unused, btn) {
+    updateButton(btn);
+  });
+  $('.lockbtn').click(function(evt) {
+    var btn = $(evt.target);
+    btn.addClass('disabled');
+    var op = btn.hasClass('unlocked') ? 'lock' : 'unlock';
+    var url = '/admin/challenge/' + op + '/' + btn.data('cid');
+    $.post(
+      url,
+      'csrftoken=' + btn.data('csrftoken'),
+      function(response) {
+        btn.removeClass('unlocked locked').addClass(response);
+        updateButton(btn)
+      });
+  });
+});
