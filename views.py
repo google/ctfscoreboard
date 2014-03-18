@@ -154,7 +154,7 @@ def challenges_by_cat(cat):
       categories=categories,
       category=category,
       challenges=models.Challenge.query.filter(
-        models.Challenge.cid == cat,
+        models.Challenge.cat_cid == cat,
         models.Challenge.unlocked == True).all())
 
 
