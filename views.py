@@ -399,12 +399,19 @@ def admin_challenge_backup():
         'description': cat.description
         }
     for q in cat.challenges:
+      hints = []
+      for h in q.hints:
+        hints.append({
+          'hint': h.hint,
+          'cost': h.cost,
+          })
       challenges.append({
         'category': cat.cid,
         'name': q.name,
         'description': q.description,
         'points': q.points,
-        'answer_hash': q.answer_hash
+        'answer_hash': q.answer_hash,
+        'hints': hints,
         })
   response = flask.jsonify(categories=categories,
       challenges=challenges)
@@ -435,8 +442,9 @@ def _perform_admin_challenge_restore():
 
   deleted = False
   if flask.request.form.get('replace') == 'True':
-    models.Category.query.delete()
+    models.Hint.query.delete()
     models.Challenge.query.delete()
+    models.Category.query.delete()
     deleted = True
 
   cats = {}
@@ -453,6 +461,12 @@ def _perform_admin_challenge_restore():
       setattr(newchall, f, challenge[f])
     newchall.category = cats[challenge['category']]
     models.db.session.add(newchall)
+    for h in challenge['hints']:
+      hint = models.Hint()
+      hint.challenge = newchall
+      hint.hint = h['hint']
+      hint.cost = int(h['cost'])
+      models.db.session.add(hint)
   
   models.commit()
   if deleted:
