@@ -21,11 +21,11 @@ def _get_csrf_token(user=None, path=None, expires=None):
   return expires_bytes + sig
 
 def get_csrf_token(*args, **kwargs):
-  return base64.b64encode(_get_csrf_token(*args, **kwargs))
+  return base64.b64encode(str(_get_csrf_token(*args, **kwargs)), '_-')
 
 
 def verify_csrf_token(token, user=None, path=None):
-  token = base64.b64decode(token)
+  token = base64.b64decode(str(token), '_-')
   expires = struct.unpack('<I', token[:4])[0]
   return token == _get_csrf_token(user, path, expires)
 
