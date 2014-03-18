@@ -349,6 +349,7 @@ def admin_challenge(op, cid=None):
           challenge.change_answer(answer)
         _challenge_update_hints(challenge)
         models.commit()
+        flask.flash('Challenge updated.', 'success')
       elif op == 'delete':
         challenge.delete()
         flask.flash('Challenge deleted.', 'success')
