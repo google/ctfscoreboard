@@ -152,11 +152,11 @@ def challenges():
       categories=models.Category.query.all())
 
 
-@app.route('/challenges/<int:cat>')
+@app.route('/challenges/<slug>')
 @login_required
-def challenges_by_cat(cat):
+def challenges_by_cat(slug):
   categories = models.Category.query.all()
-  cfilter = [c for c in categories if c.cid==cat]
+  cfilter = [c for c in categories if c.slug==slug]
   if not cfilter:
     flask.flash('No such category.', 'warning')
     return flask.redirect(flask.url_for('challenges'))
@@ -168,7 +168,7 @@ def challenges_by_cat(cat):
       categories=categories,
       category=category,
       challenges=models.Challenge.query.filter(
-        models.Challenge.cat_cid == cat,
+        models.Challenge.cat_cid == category.cid,
         models.Challenge.unlocked == True).all())
 
 
@@ -178,6 +178,9 @@ def challenges_by_cat(cat):
 def submit(cid):
   challenge = models.Challenge.query.get(cid)
   answer = flask.request.form.get('answer')
+  if not challenge.unlocked:
+    flask.flash('Challenge is locked!', 'danger')
+    return flask.render_template('error.html')
   if challenge.verify_answer(answer):
     # Deductions for hints
     hints = models.UnlockedHint.query.filter(
@@ -198,7 +201,7 @@ def submit(cid):
       challenge.cid, correct)
   app.challenge_log.info(logstr)
   return flask.redirect(flask.url_for(
-    'challenges_by_cat', cat=challenge.cat_cid))
+    'challenges_by_cat', slug=challenge.category.slug))
 
 
 @app.route('/profile', methods=['GET', 'POST'])

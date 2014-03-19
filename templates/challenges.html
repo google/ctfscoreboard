@@ -4,7 +4,7 @@
 {% block sidebar %}
   <div class='list-group'>
   {% for cat in categories %}
-  <a href='{{url_for('challenges_by_cat', cat=cat.cid)}}'
+  <a href='{{url_for('challenges_by_cat', slug=cat.slug)}}'
     class='list-group-item'>{{cat.name}}</a>
   {% endfor %}
   </div>

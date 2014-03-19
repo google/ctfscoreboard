@@ -2,6 +2,7 @@ import datetime
 import flask
 from flask.ext import sqlalchemy
 import pbkdf2
+import re
 from sqlalchemy import exc
 from sqlalchemy.orm import exc as orm_exc
 
@@ -92,9 +93,23 @@ class User(db.Model):
 class Category(db.Model):
   cid = db.Column(db.Integer, primary_key=True)
   name = db.Column(db.String(100), unique=True)
+  slug = db.Column(db.String(100), unique=True)
   description = db.Column(db.Text)
   unlocked = db.Column(db.Boolean, default=True)
-  challenges = db.relationship('Challenge', backref='category', lazy='dynamic')
+  challenges = db.relationship('Challenge',
+      backref=db.backref('category', lazy='joined'), lazy='dynamic')
+
+  def slugify(self):
+    base_slug = '-'.join(w.lower() for w in re.split('\W+', self.name))
+    if self.slug == base_slug:
+      return
+    ctr = 0
+    while True:
+      slug = base_slug + (('-%d' % ctr) if ctr else '')
+      if not Category.query.filter(Category.slug == slug).count():
+        break
+      ctr += 1
+    self.slug = slug
 
   @classmethod
   def create(cls, name, description, unlocked=True):
@@ -103,6 +118,7 @@ class Category(db.Model):
       cat.name = name
       cat.description = description
       cat.unlocked = unlocked
+      cat.slugify()
       db.session.add(cat)
       db.session.commit()
       return cat
