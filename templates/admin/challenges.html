@@ -12,7 +12,7 @@
       <tr><td>{{challenge.name}}</td>
         <td>{{challenge.points}}</td>
         <td>
-          <a class='btn lockbtn {%if not challenge.locked%}un{%endif%}locked'
+          <a class='btn lockbtn {% if challenge.unlocked %}un{% endif %}locked'
             data-cid='{{challenge.cid}}'
             data-csrftoken='{{csrftoken(path='admin_challenge')}}'></a>
           <a

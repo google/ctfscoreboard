@@ -99,6 +99,9 @@ class Category(db.Model):
   challenges = db.relationship('Challenge',
       backref=db.backref('category', lazy='joined'), lazy='dynamic')
 
+  def __repr__(self):
+    return '<Category: %d/%s>' % (self.cid, self.name)
+
   def slugify(self):
     base_slug = '-'.join(w.lower() for w in re.split('\W+', self.name))
     if self.slug == base_slug:
@@ -141,6 +144,9 @@ class Challenge(db.Model):
   cat_cid = db.Column(db.Integer, db.ForeignKey('category.cid'))
   answers = db.relationship('Answer', backref='challenge', lazy='dynamic')
   hints = db.relationship('Hint', backref='challenge', lazy='dynamic')
+
+  def __repr__(self):
+    return '<Challenge: %d/%s>' % (self.cid, self.name)
 
   def is_answered(self, team=None, answers=None):
     if team is None:
