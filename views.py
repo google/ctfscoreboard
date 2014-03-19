@@ -1,6 +1,7 @@
 import flask
 import functools
 import json
+import re
 from sqlalchemy import exc
 
 from app import app
@@ -97,7 +98,9 @@ def register():
           raise ValidationError('%s is a required field.' % field)
       if password != flask.request.form.get('password2'):
         raise ValidationError('Passwords do not match.')
-      # TODO: validate email
+      if not re.match(r'[-0-9a-zA-Z.+_]+@[-0-9a-zA-Z.+_]+\.[a-zA-Z]{2,4}$',
+          email):
+        raise ValidationError('Invalid email address.')
       if app.config.get("TEAMS"):
         team = flask.request.form.get('team')
         if team == 'new':
