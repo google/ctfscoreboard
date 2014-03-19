@@ -474,7 +474,7 @@ def _perform_admin_challenge_restore():
       setattr(newchall, f, challenge[f])
     newchall.category = cats[challenge['category']]
     models.db.session.add(newchall)
-    for h in challenge['hints']:
+    for h in challenge.get('hints', []):
       hint = models.Hint()
       hint.challenge = newchall
       hint.hint = h['hint']
