@@ -14,13 +14,13 @@
         <input id='email' name='email' readonly class='form-control'
           value='{{user.email}}'>
       </div>
-      {% if app.config.get('TEAMS') %}
+      {% if app.config.get('TEAMS') and user.team %}
       <div class='form-group'>
         <label for='team'>Team</label>
         <input id='team' name='team' readonly class='form-control'
           value='{{user.team.name}}'>
       </div>
-      {% else %}
+      {% elif user.team %}
       <div class='form-group'>
         <label for='score'>Score</label>
         <input type='hidden' name='orig_score' value='{{user.team.score}}'>

@@ -14,7 +14,7 @@ class Team(db.Model):
   tid = db.Column(db.Integer, primary_key=True)
   name = db.Column(db.String(120), unique=True)
   score = db.Column(db.Integer, default=0)  # Denormalized
-  players = db.relationship('User', backref='team', lazy='dynamic')
+  players = db.relationship('User', backref=db.backref('team', lazy='joined'), lazy='dynamic')
   answers = db.relationship('Answer', backref='team', lazy='dynamic')
 
   def __repr__(self):
@@ -51,6 +51,16 @@ class User(db.Model):
 
   def __str__(self):
     return self.nick
+
+  def promote(self):
+    """Promote a user to admin."""
+    empty_team = self.team and set(self.team.players.all()) == set([self])
+    self.admin = True
+    team = self.team
+    self.team = None
+    if empty_team:
+      db.session.delete(team)
+    db.session.commit()
 
   @classmethod
   def login_user(cls, email, password):

@@ -13,9 +13,10 @@
           href='{{url_for('admin_user', uid=user.uid)}}'>{{user.nick}}</a>
         {% if user.admin %}(Admin){% endif %}</td>
       <td><a href='mailto:{{user.email}}'>{{user.email}}</a></td>
-      {% if app.config.get('TEAMS') %}<td><a
+      {% if app.config.get('TEAMS') %}<td>{% if user.team %}<a
           href='{{url_for('admin_team',
-          tid=user.team_tid)}}'>{{user.team.name}}</a></td>{% endif %}
+          tid=user.team_tid)}}'>{{user.team.name}}</a>{% elif user.admin
+        %}(Admin){% endif %}</td>{% endif %}
       </tr>
     {% endfor %}
   </tbody>

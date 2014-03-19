@@ -47,6 +47,16 @@ def admin_required(f):
   return login_required(wrapper)
 
 
+def team_required(f):
+  """Require that they are a member of a team."""
+  @functools.wraps(f)
+  def wrapper(*args, **kwargs):
+    if not flask.g.team:
+      flask.abort(400)
+    return f(*args, **kwargs)
+  return login_required(wrapper)
+
+
 @app.route('/')
 def index():
   return flask.render_template('index.html')
@@ -163,7 +173,7 @@ def challenges_by_cat(cat):
 
 
 @app.route('/submit/<int:cid>', methods=['POST'])
-@login_required
+@team_required
 @csrfutil.csrf_protect
 def submit(cid):
   challenge = models.Challenge.query.get(cid)
@@ -211,7 +221,7 @@ def profile():
 
 
 @app.route('/unlock_hint', methods=['POST'])
-@login_required
+@team_required
 @csrfutil.csrf_protect
 def unlock_hint():
   hid = flask.request.form['hid']
@@ -235,7 +245,7 @@ def makemeadmin():
   # Only works if no other admins exist
   if models.User.query.filter(models.User.admin == True).count():
     flask.abort(403)
-  flask.g.user.admin = True
+  flask.g.user.promote()
   models.commit()
   return flask.redirect(flask.url_for('index'))
 
@@ -524,7 +534,11 @@ def admin_user(uid):
     return flask.render_template('error.html')
   if flask.request.method == 'POST':
     # TODO: support other edits
-    user.admin = True if flask.request.form.get('admin') else False
+    if flask.request.form.get('admin'):
+      user.promote()
+    else:
+      # TODO: demoted users should get a team
+      user.admin = False
     if (not app.config.get('TEAMS') and
         flask.request.form.get('score') is not None):
       score = int(flask.request.form.get('score'))

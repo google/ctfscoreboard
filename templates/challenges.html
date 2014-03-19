@@ -22,9 +22,9 @@
         </div>
         <div class='panel-body'>
           <p>{{chall.description|urlize}}</p>
-          {% if chall.is_answered(answers=g.team.answers) %}
+          {% if g.team and chall.is_answered(answers=g.team.answers) %}
             <span class='alert alert-success solved'>Solved</span>
-          {% else %}
+          {% elif g.team %}
             {% if chall.hints %}
               <div class='hints'>
                 <ul>
