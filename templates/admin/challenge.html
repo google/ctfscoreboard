@@ -83,4 +83,9 @@
       else %}Create{% endif %}' class='btn btn-primary'>
   {% endif %}
 </form>
+{% with answers = challenge.answers %}
+  {% with table_for = 'challenge' %}
+    {% include "includes/solve_table.html" %}
+  {% endwith %}
+{% endwith %}
 {% endblock %}

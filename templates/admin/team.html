@@ -17,6 +17,11 @@
       </div>
       <input type='submit' value='Save' class='btn btn-primary'>
     </form>
+    {% with answers = team.answers %}
+      {% with table_for = 'team' %}
+        {% include "includes/solve_table.html" %}
+      {% endwith %}
+    {% endwith %}
   </div>
 </div>
 {% endblock %}

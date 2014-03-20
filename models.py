@@ -28,6 +28,10 @@ class Team(db.Model):
   def code(self):
     hmac.new(app.config['SECRET_KEY'], self.name).hexdigest()[:12]
 
+  @property
+  def solves(self):
+    return self.answers.count()
+
   @classmethod
   def create(cls, name):
     team = cls()
@@ -164,6 +168,10 @@ class Challenge(db.Model):
 
   def change_answer(self, answer):
     self.answer_hash = pbkdf2.crypt(answer)
+
+  @property
+  def solves(self):
+    return self.answers.count()
 
   @classmethod
   def create(cls, name, description, points, answer, cid, unlocked=False):
