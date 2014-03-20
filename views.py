@@ -513,7 +513,8 @@ def _perform_admin_challenge_restore():
 def admin_teams():
   if not app.config.get('TEAMS'):
     flask.abort(404)
-  # TODO: Teams support
+  return flask.render_template('admin/teams.html',
+      teams=models.User.query.order_by(models.User.name).all())
 
 
 @app.route('/admin/team/<int:tid>', methods=['GET', 'POST'])
@@ -522,7 +523,11 @@ def admin_teams():
 def admin_team(tid):
   if not app.config.get('TEAMS'):
     flask.abort(404)
-  # TODO: Teams support
+  team = models.Team.query.get(tid)
+  if not team:
+    flask.abort(404)
+  # TODO: support updates
+  return flask.render_template('admin/team.html', team=team)
 
 
 @app.route('/admin/users')

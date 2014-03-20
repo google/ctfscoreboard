@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Teams{% endblock %}
+{% block body %}
+<table class='table table-striped'>
+  <thead>
+    <tr>
+      <th>Team</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for team in teams %}
+      <tr>
+        <a href='{{url_for('admin_team', tid=team.tid)}}'>{{team.name}}</a>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

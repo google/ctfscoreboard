@@ -4,16 +4,16 @@
 <table class='table table-striped'>
   <thead>
     <tr><th>Nick</th><th>E-Mail</th>
-      {% if app.config.get('TEAMS') %}<th>Team</th>{% endif %}
+      {% if config.get('TEAMS') %}<th>Team</th>{% endif %}
     </tr>
   </thead>
   <tbody>
-    {% foreach user in users %}
+    {% for user in users %}
       <tr><td><a
           href='{{url_for('admin_user', uid=user.uid)}}'>{{user.nick}}</a>
         {% if user.admin %}(Admin){% endif %}</td>
       <td><a href='mailto:{{user.email}}'>{{user.email}}</a></td>
-      {% if app.config.get('TEAMS') %}<td>{% if user.team %}<a
+      {% if config.get('TEAMS') %}<td>{% if user.team %}<a
           href='{{url_for('admin_team',
           tid=user.team_tid)}}'>{{user.team.name}}</a>{% elif user.admin
         %}(Admin){% endif %}</td>{% endif %}
