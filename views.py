@@ -200,11 +200,12 @@ def submit(cid):
   else:
     flask.flash('Really?  Haha no...', 'warning')
     correct = 'WRONG'
-  logstr = 'Player %s/%s<%d>/Team %s<%d> submitted "%s" for Challenge %s<%d>: %s'
-  logstr %= (flask.g.user.nick, flask.g.user.email, flask.g.user.uid,
+  app.challenge_log.info(
+      '[%s] Player %s <%s>(%d)/Team %s(%d) submitted "%s" for Challenge '
+      '%s<%d>: %s', flask.request.access_route[0],
+      flask.g.user.nick, flask.g.user.email, flask.g.user.uid,
       flask.g.team.name, flask.g.team.tid, answer, challenge.name,
       challenge.cid, correct)
-  app.challenge_log.info(logstr)
   return flask.redirect(flask.url_for(
     'challenges_by_cat', slug=challenge.category.slug))
 
