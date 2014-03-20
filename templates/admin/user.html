@@ -3,7 +3,7 @@
 {% block body %}
 <div class='row'>
   <div class='col-md-5 col-md-offset-2'>
-    <form method='POST' action='{{url_for(request.endpoint, uid=uid)}}'>
+    <form method='POST' action='{{url_for(request.endpoint, uid=user.uid)}}'>
       <div class='form-group'>
         <label for='nick'>Nick</label>
         <input id='nick' name='nick' readonly class='form-control'
