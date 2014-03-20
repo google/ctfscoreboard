@@ -13,7 +13,7 @@ except ImportStringError:
 # Main logger
 if not app.debug:
   handler = logging.FileHandler(
-      app.config.get('LOGFILE') or '/tmp/scoreboard.wsgi.log')
+      app.config.get('LOGFILE', '/tmp/scoreboard.wsgi.log'))
   handler.setLevel(logging.INFO)
   handler.setFormatter(logging.Formatter(
       '%(asctime)s %(levelname)8s [%(filename)s:%(lineno)d] %(message)s'))
@@ -21,9 +21,9 @@ if not app.debug:
 
 # Challenge logger
 handler = logging.FileHandler(
-    app.config.get('CHALLENGELOG') or '/tmp/scoreboard.challenge.log')
+    app.config.get('CHALLENGELOG', '/tmp/scoreboard.challenge.log'))
 handler.setLevel(logging.INFO)
-handler.setFormatter('%(asctime)s %(message)s')
+handler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
 logger = logging.getLogger('scoreboard')
 logger.addHandler(handler)
 app.challenge_log = logger
