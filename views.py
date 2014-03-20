@@ -117,6 +117,8 @@ def register():
       except exc.IntegrityError:
         raise ValidationError('Duplicate email/nick.')
       flask.session['user'] = user.uid
+      app.logger.info('User %s <%s> registered from IP %s.',
+          nick, email, flask.request.access_route[0])
       flask.flash('Registration successful.', 'success')
       return flask.redirect(flask.url_for('challenges'))
     except ValidationError as ex:
