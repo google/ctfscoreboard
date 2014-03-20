@@ -4,13 +4,15 @@
 {% block body %}
 <table class='table table-striped challenge-table'>
   <thead>
-    <tr><th class='col-md-4'>Name</th><th class='col-md-2'>Points</th><th
+    <tr><th class='col-md-4'>Name</th><th class='col-md-1'>Points</th><th
+        class='col-md-1'>Solves</th><th
         class='col-md-3'>Actions</th></tr>
   </thead>
   <tbody>
     {% for challenge in challenges %}
       <tr><td>{{challenge.name}}</td>
         <td>{{challenge.points}}</td>
+        <td>{{challenge.solves}}</td>
         <td>
           <a class='btn lockbtn {% if challenge.unlocked %}un{% endif %}locked'
             data-cid='{{challenge.cid}}'
@@ -22,8 +24,7 @@
             class='btn btn-danger'>Delete</a></td>
       </tr>
     {% endfor %}
-    <tr><td></td>
-      <td></td>
+    <tr><td></td><td></td><td></td>
       <td><a href='{{url_for('admin_challenge', op='new')}}{% if category
           %}?cat={{category.cid}}{% endif %}'
           class='btn btn-primary'>New</td></tr>

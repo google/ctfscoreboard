@@ -43,6 +43,12 @@
                   class='list-group-item'>Backup Challenges</a>
                 <a href='{{url_for('admin_challenge_restore')}}'
                   class='list-group-item'>Restore Challenges</a>
+                <a href='{{url_for('admin_users')}}'
+                  class='list-group-item'>Users</a>
+                {% if config.get('TEAMS') %}
+                  <a href='{{url_for('admin_teams')}}'
+                    class='list-group-item'>Teams</a>
+                {% endif %}
               </div>
             {% endif %}
             {% endblock %}
