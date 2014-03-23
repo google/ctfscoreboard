@@ -29,25 +29,42 @@ class GameTime(object):
     return until - datetime.datetime.utcnow()
 
   @classmethod
-  def open(cls, after_end=False):
-    """Is the game open?  If after_end, keeps open."""
+  def state(cls):
     now = datetime.datetime.utcnow()
     if cls.start and cls.start > now:
-      return False
-    if after_end:
-      return True
+      return 'BEFORE'
     if cls.end and cls.end < now:
-      return False
-    return True
+      return 'AFTER'
+    return 'DURING'
+
+  @classmethod
+  def open(cls, after_end=False):
+    """Is the game open?  If after_end, keeps open."""
+    state = cls.state()
+    if state == 'DURING' or (after_end and state == 'AFTER'):
+      return True
+    return False
 
   @classmethod
   def require_open(cls, f, after_end=False):
+    """Decorator for requiring the game is open."""
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
       if cls.open(after_end):
         return f(*args, **kwargs)
-      flask.abort(403)
+      return flask.make_response(
+          flask.render_template('error.html',
+            message=cls.message(), title='Forbidden'), 403)
     return wrapper
+
+  @classmethod
+  def message(cls):
+    state = cls.state()
+    if state == 'BEFORE':
+      return 'Game begins in %s.' % str(cls.countdown())
+    if state == 'AFTER':
+      return 'Game is over.'
+    return '%s left in the game.' % str(cls.countdown(end=True))
 
   @staticmethod
   def _parsedate(datestr):
