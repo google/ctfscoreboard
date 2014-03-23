@@ -5,8 +5,9 @@ import re
 from sqlalchemy import exc
 
 from app import app
-import models
 import csrfutil
+import models
+import utils
 
 
 class ValidationError(Exception):
@@ -104,7 +105,11 @@ def register():
       if app.config.get("TEAMS"):
         team = flask.request.form.get('team')
         if team == 'new':
-          team = models.Team.create(flask.request.form.get('team-name'))
+          try:
+            team = models.Team.create(flask.request.form.get('team-name'))
+          except exc.IntegrityError:
+            models.db.session.rollback()
+            raise ValidationError('Team already exists!')
         else:
           team = models.Team.query.get(int(team))
           if not team or (flask.request.form.get('team-code', '').lower()
@@ -115,6 +120,7 @@ def register():
       try:
         user = models.User.create(email, nick, password, team=team)
       except exc.IntegrityError:
+        models.db.session.rollback()
         raise ValidationError('Duplicate email/nick.')
       flask.session['user'] = user.uid
       app.logger.info('User %s <%s> registered from IP %s.',
@@ -152,6 +158,7 @@ def scoreboard_json():
 
 @app.route('/challenges')
 @login_required
+@utils.require_gametime
 def challenges():
   return flask.render_template('challenges.html',
       categories=models.Category.query.all())
@@ -159,6 +166,7 @@ def challenges():
 
 @app.route('/challenges/<slug>')
 @login_required
+@utils.require_gametime
 def challenges_by_cat(slug):
   categories = models.Category.query.all()
   cfilter = [c for c in categories if c.slug==slug]
@@ -180,6 +188,7 @@ def challenges_by_cat(slug):
 @app.route('/submit/<int:cid>', methods=['POST'])
 @team_required
 @csrfutil.csrf_protect
+@utils.require_gametime
 def submit(cid):
   challenge = models.Challenge.query.get(cid)
   answer = flask.request.form.get('answer')
@@ -232,6 +241,7 @@ def profile():
 @app.route('/unlock_hint', methods=['POST'])
 @team_required
 @csrfutil.csrf_protect
+@utils.require_gametime
 def unlock_hint():
   hid = flask.request.form['hid']
   hint = models.Hint.query.get(int(hid))
