@@ -575,3 +575,19 @@ def admin_user(uid):
     flask.flash('User updated.')
     return flask.redirect(flask.url_for(flask.request.endpoint, uid=uid))
   return flask.render_template('admin/user.html', user=user)
+
+
+# Error page
+@app.errorhandler(403)
+@app.errorhandler(404)
+@app.errorhandler(500)
+def error_page(exc):
+  errors = {
+      403: 'Forbidden',
+      404: 'Not Found',
+      500: 'Internal Server Error',
+  }
+  return flask.make_response(
+      flask.render_template('error.html',
+          exc=exc,
+          title=errors[exc.code]), exc.code)

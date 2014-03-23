@@ -1,1 +1,11 @@
 {% extends "base.html" %}
+{% block title %}{{title}}{% endblock %}
+{% block body %}
+{% if exc.code == 404 %}
+<div class='alert alert-danger'>{{request.path}} was not found.</div>
+{% elif exc.code == 403 %}
+<div class='alert alert-danger'>Access to {{request.path}} denied.</div>
+{% elif exc.code == 500 %}
+<div class='alert alert-danger'>An internal error occurred.</div>
+{% endif %}
+{% endblock %}
