@@ -6,57 +6,9 @@ from sqlalchemy import exc
 
 from app import app
 import csrfutil
+import errors
 import models
 import utils
-
-
-class ValidationError(Exception):
-  pass
-
-
-@app.before_request
-def load_globals():
-  uid = flask.session.get('user')
-  if uid:
-    user = models.User.query.get(uid)
-    if user:
-      flask.g.user = user
-      flask.g.team = user.team
-      return
-  flask.g.user = None
-  flask.g.team = None
-
-
-def login_required(f):
-  @functools.wraps(f)
-  def wrapper(*args, **kwargs):
-    if not flask.g.user:
-      flask.flash('You must be logged in.', 'danger')
-      return flask.redirect(flask.url_for('login'))
-    return f(*args, **kwargs)
-  return wrapper
-
-
-def admin_required(f):
-  @functools.wraps(f)
-  def wrapper(*args, **kwargs):
-    try:
-      if not flask.g.user.admin:
-        abort(403)
-    except AttributeError:
-      abort(403)
-    return f(*args, **kwargs)
-  return login_required(wrapper)
-
-
-def team_required(f):
-  """Require that they are a member of a team."""
-  @functools.wraps(f)
-  def wrapper(*args, **kwargs):
-    if not flask.g.team:
-      flask.abort(400)
-    return f(*args, **kwargs)
-  return login_required(wrapper)
 
 
 @app.route('/')
@@ -96,12 +48,12 @@ def register():
       for fname, field in (('email', 'Email'), ('nick', 'Handle'),
           ('password', 'Password'), ('password2', 'Repeat Password')):
         if not flask.request.form.get(fname):
-          raise ValidationError('%s is a required field.' % field)
+          raise errors.ValidationError('%s is a required field.' % field)
       if password != flask.request.form.get('password2'):
-        raise ValidationError('Passwords do not match.')
+        raise errors.ValidationError('Passwords do not match.')
       if not re.match(r'[-0-9a-zA-Z.+_]+@[-0-9a-zA-Z.+_]+\.[a-zA-Z]{2,4}$',
           email):
-        raise ValidationError('Invalid email address.')
+        raise errors.ValidationError('Invalid email address.')
       if app.config.get("TEAMS"):
         team = flask.request.form.get('team')
         if team == 'new':
@@ -109,28 +61,34 @@ def register():
             team = models.Team.create(flask.request.form.get('team-name'))
           except exc.IntegrityError:
             models.db.session.rollback()
-            raise ValidationError('Team already exists!')
+            raise errors.ValidationError('Team already exists!')
         else:
           team = models.Team.query.get(int(team))
           if not team or (flask.request.form.get('team-code', '').lower()
               != team.code.lower()):
-            raise ValidationError('Invalid team selection or team code.')
+            raise errors.ValidationError('Invalid team selection or team code.')
       else:
         team = None
       try:
         user = models.User.create(email, nick, password, team=team)
       except exc.IntegrityError:
         models.db.session.rollback()
-        raise ValidationError('Duplicate email/nick.')
+        raise errors.ValidationError('Duplicate email/nick.')
       flask.session['user'] = user.uid
       app.logger.info('User %s <%s> registered from IP %s.',
           nick, email, flask.request.access_route[0])
       flask.flash('Registration successful.', 'success')
       return flask.redirect(flask.url_for('challenges'))
-    except ValidationError as ex:
+    except errors.ValidationError as ex:
       flask.flash(str(ex), 'danger')
   return flask.render_template('register.html',
       teams=models.Team.query.all())
+
+
+@app.route('/api/register', methods=['POST'])
+def register():
+  try:
+    
 
 
 def _enumerate_teams():
@@ -157,7 +115,7 @@ def scoreboard_json():
 
 
 @app.route('/challenges')
-@login_required
+@utils.login_required
 @utils.require_gametime
 def challenges():
   return flask.render_template('challenges.html',
@@ -165,7 +123,7 @@ def challenges():
 
 
 @app.route('/challenges/<slug>')
-@login_required
+@utils.login_required
 @utils.require_gametime
 def challenges_by_cat(slug):
   categories = models.Category.query.all()
@@ -220,7 +178,7 @@ def submit(cid):
 
 
 @app.route('/profile', methods=['GET', 'POST'])
-@login_required
+@utils.login_required
 @csrfutil.csrf_protect
 def profile():
   if flask.request.method == 'POST':
@@ -259,7 +217,7 @@ def unlock_hint():
 
 # Admin UI
 @app.route('/admin/makemeadmin')
-@login_required
+@utils.login_required
 def makemeadmin():
   # Only works if no other admins exist
   if models.User.query.filter(models.User.admin == True).count():
@@ -270,7 +228,7 @@ def makemeadmin():
 
 
 @app.route('/admin/categories', methods=['GET', 'POST'])
-@admin_required
+@utils.admin_required
 @csrfutil.csrf_protect
 def admin_categories():
   if flask.request.method == 'POST':
@@ -278,11 +236,11 @@ def admin_categories():
       try:
         return int(flask.request.form.get('cid'))
       except TypeError:
-        raise ValidationError('Invalid category id.')
+        raise errors.ValidationError('Invalid category id.')
     def getcat():
       cat = models.Category.query.get(getcid())
       if not cat:
-        raise ValidationError('No such category.')
+        raise errors.ValidationError('No such category.')
       return cat
     try:
       op = flask.request.form.get('op')
@@ -308,8 +266,8 @@ def admin_categories():
           cat.unlocked = True
           models.commit()
         else:
-          raise ValidationError('Invalid operation.')
-    except ValidationError as ex:
+          raise errors.ValidationError('Invalid operation.')
+    except errors.ValidationError as ex:
       flask.flash(str(ex), 'danger')
   return flask.render_template('admin/categories.html',
       categories=models.Category.query.all())
@@ -317,7 +275,7 @@ def admin_categories():
 
 @app.route('/admin/challenges')
 @app.route('/admin/challenges/<int:cid>')
-@admin_required
+@utils.admin_required
 def admin_challenges(cid=None):
   if cid:
     category = models.Category.query.get(cid)
@@ -335,7 +293,7 @@ def admin_challenges(cid=None):
 
 @app.route('/admin/challenge/<op>', methods=['GET', 'POST'])
 @app.route('/admin/challenge/<op>/<int:cid>', methods=['GET', 'POST'])
-@admin_required
+@utils.admin_required
 @csrfutil.csrf_protect
 def admin_challenge(op, cid=None):
   categories = models.Category.query.all()
@@ -368,7 +326,7 @@ def admin_challenge(op, cid=None):
       for fname, field in (('name', 'Name'), ('description', 'Description'),
           ('points', 'Points'), ('category', 'Category')):
         if not flask.request.form.get(fname):
-          raise ValidationError('%s is required.' % field)
+          raise errors.ValidationError('%s is required.' % field)
       if op == 'new':
         challenge = models.Challenge.create(
             name, description, points, answer, cat_cid,
@@ -398,8 +356,8 @@ def admin_challenge(op, cid=None):
         return flask.redirect(flask.url_for(
           'admin_challenges', cid=challenge.cat_cid))
       else:
-        raise ValidationError('Unknown operation %s' % op)
-    except ValidationError as ex:
+        raise errors.ValidationError('Unknown operation %s' % op)
+    except errors.ValidationError as ex:
       flask.flash(str(ex), 'danger')
   return flask.render_template('admin/challenge.html',
       cat=cat,
@@ -431,7 +389,7 @@ def _challenge_update_hints(challenge):
 
 
 @app.route('/admin/backup/challenges')
-@admin_required
+@utils.admin_required
 def admin_challenge_backup():
   categories = {}
   challenges = []
@@ -462,7 +420,7 @@ def admin_challenge_backup():
 
 
 @app.route('/admin/backup/challenges/restore', methods=['GET', 'POST'])
-@admin_required
+@utils.admin_required
 @csrfutil.csrf_protect
 def admin_challenge_restore():
   if flask.request.method == 'POST':
@@ -519,7 +477,7 @@ def _perform_admin_challenge_restore():
 
 
 @app.route('/admin/teams')
-@admin_required
+@utils.admin_required
 def admin_teams():
   if not app.config.get('TEAMS'):
     flask.abort(404)
@@ -528,7 +486,7 @@ def admin_teams():
 
 
 @app.route('/admin/team/<int:tid>', methods=['GET', 'POST'])
-@admin_required
+@utils.admin_required
 @csrfutil.csrf_protect
 def admin_team(tid):
   if not app.config.get('TEAMS'):
@@ -541,7 +499,7 @@ def admin_team(tid):
 
 
 @app.route('/admin/users')
-@admin_required
+@utils.admin_required
 def admin_users():
   users = models.User.query.order_by(
       models.User.nick).all()
@@ -550,7 +508,7 @@ def admin_users():
 
 @app.route('/admin/user/<int:uid>', methods=['GET', 'POST'])
 @csrfutil.csrf_protect
-@admin_required
+@utils.admin_required
 def admin_user(uid):
   user = models.User.query.get(uid)
   if not user:
@@ -575,19 +533,3 @@ def admin_user(uid):
     flask.flash('User updated.')
     return flask.redirect(flask.url_for(flask.request.endpoint, uid=uid))
   return flask.render_template('admin/user.html', user=user)
-
-
-# Error page
-@app.errorhandler(403)
-@app.errorhandler(404)
-@app.errorhandler(500)
-def error_page(exc):
-  errors = {
-      403: 'Forbidden',
-      404: 'Not Found',
-      500: 'Internal Server Error',
-  }
-  return flask.make_response(
-      flask.render_template('error.html',
-          exc=exc,
-          title=errors[exc.code]), exc.code)

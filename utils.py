@@ -1,4 +1,5 @@
 import datetime
+import errors
 import flask
 import functools
 from app import app
@@ -8,6 +9,53 @@ try:
   from dateutil import parser as dateutil
 except ImportError:
   dateutil = None
+
+
+# Setup flask.g
+@app.before_request
+def load_globals():
+  uid = flask.session.get('user')
+  if uid:
+    user = models.User.query.get(uid)
+    if user:
+      flask.g.user = user
+      flask.g.team = user.team
+      return
+  flask.g.user = None
+  flask.g.team = None
+
+
+# Helper decorators
+def login_required(f):
+  @functools.wraps(f)
+  def wrapper(*args, **kwargs):
+    if not flask.g.user:
+      raise errors.AccessDeniedError('You must be logged in.')
+    return f(*args, **kwargs)
+  return wrapper
+
+
+def admin_required(f):
+  @functools.wraps(f)
+  def wrapper(*args, **kwargs):
+    try:
+      if not flask.g.user.admin:
+        abort(403)
+    except AttributeError:
+      abort(403)
+    return f(*args, **kwargs)
+  return login_required(wrapper)
+
+
+def team_required(f):
+  """Require that they are a member of a team."""
+  @functools.wraps(f)
+  def wrapper(*args, **kwargs):
+    if not flask.g.team:
+      flask.abort(400)
+    return f(*args, **kwargs)
+  return login_required(wrapper)
+
 
 class GameTime(object):
 
