@@ -40,7 +40,7 @@ def api_error_handler(ex):
     status_code = ex.code
   except AttributeError:
     status_code = 500
-  if request.path.startswith('/api/'):
+  if flask.request.path.startswith('/api/'):
     resp = flask.jsonify(message=str(ex))
     resp.status_code = status_code
     return resp
@@ -48,5 +48,5 @@ def api_error_handler(ex):
       flask.render_template('error.html', exc=ex,
         title=error_titles.get(status_code, 'Error')), status_code)
 
-for c in default_exceptions.iterkeys():
+for c in exceptions.default_exceptions.iterkeys():
   app.register_error_handler(c, api_error_handler)

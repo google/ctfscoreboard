@@ -2,6 +2,7 @@ import sys
 
 from app import app
 import models
+import rest
 import views
 
 if __name__ == '__main__':

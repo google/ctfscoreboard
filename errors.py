@@ -6,3 +6,9 @@ class AccessDeniedError(exceptions.HTTPException):
 
 class ValidationError(exceptions.HTTPException):
   code = 400
+
+class InvalidAnswerError(AccessDeniedError):
+  pass
+
+class LoginError(AccessDeniedError):
+  pass

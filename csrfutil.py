@@ -1,4 +1,3 @@
-
 import base64
 import flask
 import functools
@@ -9,6 +8,7 @@ import struct
 import time
 
 from app import app
+import errors
 
 
 def _get_csrf_token(user=None, path=None, expires=None):
@@ -46,6 +46,17 @@ def get_csrf_field(*args, **kwargs):
   token = get_csrf_token(*args, **kwargs)
   field = jinja2.Markup('<input type="hidden" name="csrftoken" value="%s" />')
   return field % token
+
+
+@app.before_request
+def csrf_protection_request():
+  if flask.request.method in ('GET', 'HEAD'):
+    return
+  header = flask.request.headers.get('X-XSRF-TOKEN')
+  token = header or flask.request.values.get('csrftoken')
+  if not token or not verify_csrf_token(token):
+    app.logger.warning('CSRF Validation Failed')
+    flask.abort(403)
 
 
 @app.context_processor

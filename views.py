@@ -6,6 +6,7 @@ from sqlalchemy import exc
 
 from app import app
 import csrfutil
+import controllers
 import errors
 import models
 import utils
@@ -20,13 +21,9 @@ def index():
 @csrfutil.csrf_protect
 def login():
   if flask.request.method == 'POST':
-    email = flask.request.form.get('email')
-    password = flask.request.form.get('password')
-    if email and password:
-      user = models.User.login_user(email, password)
-      if user:
-        flask.session['user'] = user.uid
-        return flask.redirect(flask.url_for('challenges'))
+    user = controllers.user_login()
+    if user:
+      return flask.redirect(flask.url_for('challenges'))
     flask.flash('Invalid username/password.')
   return flask.render_template('login.html')
 
@@ -42,41 +39,15 @@ def logout():
 def register():
   if flask.request.method == 'POST':
     try:
-      email = flask.request.form.get('email')
-      nick = flask.request.form.get('nick')
-      password = flask.request.form.get('password')
-      for fname, field in (('email', 'Email'), ('nick', 'Handle'),
-          ('password', 'Password'), ('password2', 'Repeat Password')):
-        if not flask.request.form.get(fname):
-          raise errors.ValidationError('%s is a required field.' % field)
-      if password != flask.request.form.get('password2'):
-        raise errors.ValidationError('Passwords do not match.')
-      if not re.match(r'[-0-9a-zA-Z.+_]+@[-0-9a-zA-Z.+_]+\.[a-zA-Z]{2,4}$',
-          email):
-        raise errors.ValidationError('Invalid email address.')
-      if app.config.get("TEAMS"):
-        team = flask.request.form.get('team')
-        if team == 'new':
-          try:
-            team = models.Team.create(flask.request.form.get('team-name'))
-          except exc.IntegrityError:
-            models.db.session.rollback()
-            raise errors.ValidationError('Team already exists!')
-        else:
-          team = models.Team.query.get(int(team))
-          if not team or (flask.request.form.get('team-code', '').lower()
-              != team.code.lower()):
-            raise errors.ValidationError('Invalid team selection or team code.')
-      else:
-        team = None
-      try:
-        user = models.User.create(email, nick, password, team=team)
-      except exc.IntegrityError:
-        models.db.session.rollback()
-        raise errors.ValidationError('Duplicate email/nick.')
-      flask.session['user'] = user.uid
-      app.logger.info('User %s <%s> registered from IP %s.',
-          nick, email, flask.request.access_route[0])
+      email = utils.get_required_field('email')
+      nick = utils.get_required_field('nick')
+      password = utils.get_required_field('password')
+      password2 = utils.get_required_field('password2')
+      team_id = flask.request.form.get('team')
+      team_name = flask.request.form.get('team_name')
+      team_code = flask.request.form.get('team_code')
+      user = controllers.register_user(email, nick, password, password2,
+          team_id, team_name, team_code)
       flask.flash('Registration successful.', 'success')
       return flask.redirect(flask.url_for('challenges'))
     except errors.ValidationError as ex:
@@ -85,33 +56,10 @@ def register():
       teams=models.Team.query.all())
 
 
-@app.route('/api/register', methods=['POST'])
-def register():
-  try:
-    
-
-
-def _enumerate_teams():
-  return enumerate(models.Team.query.order_by(
-    models.Team.score.desc()).all(), 1)
-
-
 @app.route('/scoreboard')
 def scoreboard():
   return flask.render_template('scoreboard.html',
-      teams=_enumerate_teams())
-
-
-@app.route('/scoreboard.json')
-def scoreboard_json():
-  scores = []
-  for pos, team in _enumerate_teams():
-    scores.append({
-      'place': pos,
-      'team': team.name,
-      'score': team.score
-      })
-  return flask.jsonify(scores=scores)
+      teams=models.Team.enumerate())
 
 
 @app.route('/challenges')
@@ -138,41 +86,21 @@ def challenges_by_cat(slug):
   return flask.render_template('challenges.html',
       categories=categories,
       category=category,
-      challenges=models.Challenge.query.filter(
-        models.Challenge.cat_cid == category.cid,
-        models.Challenge.unlocked == True).all())
+      challenges=category.get_challenges().all())
 
 
 @app.route('/submit/<int:cid>', methods=['POST'])
-@team_required
+@utils.team_required
 @csrfutil.csrf_protect
 @utils.require_gametime
 def submit(cid):
-  challenge = models.Challenge.query.get(cid)
   answer = flask.request.form.get('answer')
-  if not challenge.unlocked:
-    flask.flash('Challenge is locked!', 'danger')
-    return flask.render_template('error.html')
-  if challenge.verify_answer(answer):
-    # Deductions for hints
-    hints = models.UnlockedHint.query.filter(
-        models.UnlockedHint.team == flask.g.team).all()
-    deduction = sum(h.hint.cost for h in hints if h.hint.challenge_cid==cid)
-    points = challenge.points - deduction
-    flask.g.team.score += points
-    models.Answer.create(challenge, flask.g.team, answer)
+  try:
+    points = controller.submit_answer(answer)
     flask.flash('Congratulations!  %d points awarded.' % points,
         'success')
-    correct = 'CORRECT'
-  else:
+  except errors.AccessDeniedError:
     flask.flash('Really?  Haha no...', 'warning')
-    correct = 'WRONG'
-  app.challenge_log.info(
-      '[%s] Player %s <%s>(%d)/Team %s(%d) submitted "%s" for Challenge '
-      '%s<%d>: %s', flask.request.access_route[0],
-      flask.g.user.nick, flask.g.user.email, flask.g.user.uid,
-      flask.g.team.name, flask.g.team.tid, answer, challenge.name,
-      challenge.cid, correct)
   return flask.redirect(flask.url_for(
     'challenges_by_cat', slug=challenge.category.slug))
 
@@ -197,7 +125,7 @@ def profile():
 
 
 @app.route('/unlock_hint', methods=['POST'])
-@team_required
+@utils.team_required
 @csrfutil.csrf_protect
 @utils.require_gametime
 def unlock_hint():
