@@ -40,6 +40,12 @@ def api_error_handler(ex):
     status_code = ex.code
   except AttributeError:
     status_code = 500
+  if status_code == 404:
+    try:
+      # Try to serve static
+      return app.send_static_file(flask.request.path[1:])
+    except exceptions.NotFound:
+      pass
   if flask.request.path.startswith('/api/'):
     resp = flask.jsonify(message=str(ex))
     resp.status_code = status_code
