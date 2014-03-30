@@ -11,12 +11,11 @@ from app import app
 import errors
 
 
-def _get_csrf_token(user=None, path=None, expires=None):
-  path = path or flask.request.endpoint
+def _get_csrf_token(user=None, expires=None):
   user = user or flask.session.get('user', flask.request.remote_addr)
   expires = expires or time.time() + 60*60*24
   expires_bytes = struct.pack('<I', expires)
-  msg = '%s:%s:%s' % (user, path, expires_bytes)
+  msg = '%s:%s' % (user, expires_bytes)
   sig = hmac.new(app.config['SECRET_KEY'], msg, hashlib.sha256).digest()
   return expires_bytes + sig
 
@@ -24,10 +23,10 @@ def get_csrf_token(*args, **kwargs):
   return base64.b64encode(str(_get_csrf_token(*args, **kwargs)), '_-')
 
 
-def verify_csrf_token(token, user=None, path=None):
+def verify_csrf_token(token, user=None):
   token = base64.b64decode(str(token), '_-')
   expires = struct.unpack('<I', token[:4])[0]
-  return token == _get_csrf_token(user, path, expires)
+  return token == _get_csrf_token(user, expires)
 
 
 def csrf_protect(f):
@@ -57,6 +56,12 @@ def csrf_protection_request():
   if not token or not verify_csrf_token(token):
     app.logger.warning('CSRF Validation Failed')
     flask.abort(403)
+
+
+@app.after_request
+def add_csrf_protection(resp):
+  resp.set_cookie('XSRF-TOKEN', get_csrf_token())
+  return resp
 
 
 @app.context_processor

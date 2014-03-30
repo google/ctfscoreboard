@@ -135,7 +135,7 @@ class Session(restful.Resource):
   def post(self):
     """Login a user."""
     data = flask.request.get_json()
-    user = controllers.user_login(data['username'], data['password'])
+    user = controllers.user_login(data['email'], data['password'])
     if not user:
       raise errors.LoginError('Invalid username/password')
     return user

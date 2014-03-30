@@ -17,7 +17,7 @@ def index():
   return flask.render_template('index.html')
 
 
-@app.route('/login', methods=['GET', 'POST'])
+#@app.route('/login', methods=['GET', 'POST'])
 @csrfutil.csrf_protect
 def login():
   if flask.request.method == 'POST':
@@ -28,14 +28,14 @@ def login():
   return flask.render_template('login.html')
 
 
-@app.route('/logout', methods=['GET', 'POST'])
+#@app.route('/logout', methods=['GET', 'POST'])
 def logout():
   flask.session['user'] = None
   flask.flash('You have successfully logged out.', 'success')
   return flask.redirect(flask.url_for('login'))
 
 
-@app.route('/register', methods=['GET', 'POST'])
+#@app.route('/register', methods=['GET', 'POST'])
 def register():
   if flask.request.method == 'POST':
     try:

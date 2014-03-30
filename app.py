@@ -1,5 +1,6 @@
 import flask
 import logging
+import re
 from werkzeug import exceptions
 from werkzeug.utils import ImportStringError
 
@@ -41,11 +42,15 @@ def api_error_handler(ex):
   except AttributeError:
     status_code = 500
   if status_code == 404:
+    path = flask.request.path[1:]
     try:
       # Try to serve static
-      return app.send_static_file(flask.request.path[1:])
+      return app.send_static_file(path)
     except exceptions.NotFound:
-      pass
+      # Send index.html for other paths
+      print path
+      if not re.search('\.(js|css|gif|png|jpg|jpeg)$', path):
+        return app.send_static_file('index.html')
   if flask.request.path.startswith('/api/'):
     resp = flask.jsonify(message=str(ex))
     resp.status_code = status_code
