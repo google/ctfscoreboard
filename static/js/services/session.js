@@ -20,7 +20,11 @@ sessionServiceModule.service('sessionService', [
           }), errorCallback || function() {});
       };
 
-      this.logout = this.sessionData.remove;
+      this.logout = function() {
+        this.sessionData.remove();
+        this.user = null;
+        this.team = null;
+      };
 
       this.refresh = function(successCallback, errorCallback) {
         // Attempt to load
