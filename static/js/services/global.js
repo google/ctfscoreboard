@@ -3,7 +3,9 @@ var globalServices = angular.module('globalServices', ['ngResource']);
 
 globalServices.service('configService', ['$resource',
     function($resource) {
-      return $resource('/api/config');
+      return $resource('/api/config', {}, {
+        'get': {cached: true}
+      });
     }]);
 
 globalServices.service('errorService',

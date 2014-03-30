@@ -32,8 +32,8 @@
           <div class='col-md-3 left-sidebar full-height'>
               <div class='list-group' ng-controller='CategoryMenuCtrl'>
                 <a href='/challenges/{{c.slug}}'
-                  class='list-group-item'
-                  ng-repeat='c in categories'>{{c.name}}</a>
+                  class='list-group-item ng-hide'
+                  ng-repeat='c in categories' ng-show='c'>{{c.name}}</a>
               </div>
               <!-- TODO: Admin only -->
               <div class='list-group ng-hide' ng-show='isAdmin()'>
@@ -80,5 +80,6 @@
     <script src="/js/controllers/challenges.js"></script>
     <script src="/js/controllers/global.js"></script>
     <script src="/js/controllers/registration.js"></script>
+    <script src="/js/controllers/scoreboard.js"></script>
   </body>
 </html>

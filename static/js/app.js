@@ -3,7 +3,8 @@ var scoreboardApp = angular.module('scoreboardApp', [
   'ngSanitize',
   'challengeCtrls',
   'globalCtrls',
-  'regCtrls'
+  'regCtrls',
+  'scoreboardCtrls'
 ]);
 
 scoreboardApp.config([
@@ -31,6 +32,10 @@ scoreboardApp.config([
         when('/challenges/:slug', {
           templateUrl: '/partials/challenges.html',
           controller: 'ChallengeCtrl'
+        }).
+        when('/scoreboard', {
+          templateUrl: '/partials/scoreboard.html',
+          controller: 'ScoreboardCtrl'
         }).
         otherwise({
           redirectTo: '/'
