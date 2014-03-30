@@ -1,7 +1,7 @@
 var scoreboardApp = angular.module('scoreboardApp', [
   'ngRoute',
-  'sessionServiceModule',
-  'regModule'
+  'globalCtrls',
+  'regCtrls'
 ]);
 
 scoreboardApp.config([

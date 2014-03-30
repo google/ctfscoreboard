@@ -18,13 +18,16 @@ sessionServiceModule.service('sessionService', ['$resource',
 
       this.logout = this.sessionData.remove;
 
-      // Attempt to load
-      this.sessionData.get(angular.bind(this, function(data) {
-        this.user = data.user;
-        this.team = data.team;
-      }));
+      this.refresh = function() {
+        // Attempt to load
+        this.sessionData.get(angular.bind(this, function(data) {
+          this.user = data.user;
+          this.team = data.team;
+        }));
+      };
+      this.refresh();
     }]);
 
 function getss(){
-  return angular.element(document).injector().get('Session');
+  return angular.element(document).injector().get('sessionService');
 }

@@ -106,8 +106,6 @@ class Team(restful.Resource):
 
 
 class TeamList(restful.Resource):
-  decorators = [utils.admin_required]
-
   resource_fields = {
       'teams': fields.Nested(Team.team_fields),
   }
@@ -308,3 +306,11 @@ class APIScoreboard(restful.Resource):
       for i,v in models.Team.enumerate()])
 
 api.add_resource(APIScoreboard, '/api/scoreboard')
+
+
+### Public config
+class Config(restful.Resource):
+  def get(self):
+    return dict(teams=app.config.get('TEAMS', False))
+
+api.add_resource(Config, '/api/config')

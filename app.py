@@ -48,10 +48,10 @@ def api_error_handler(ex):
       return app.send_static_file(path)
     except exceptions.NotFound:
       # Send index.html for other paths
-      print path
       if not re.search('\.(js|css|gif|png|jpg|jpeg)$', path):
         return app.send_static_file('index.html')
   if flask.request.path.startswith('/api/'):
+    print str(ex)
     resp = flask.jsonify(message=str(ex))
     resp.status_code = status_code
     return resp
