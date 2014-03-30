@@ -1,6 +1,6 @@
-var sessionService = angular.module('sessionService', ['ngResource']);
+var sessionServiceModule = angular.module('sessionServiceModule', ['ngResource']);
 
-sessionService.service('Session', ['$resource',
+sessionServiceModule.service('sessionService', ['$resource',
     function($resource) {
       this.sessionData = $resource('api/session');
       this.user = null;

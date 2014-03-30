@@ -1,14 +1,22 @@
 var scoreboardApp = angular.module('scoreboardApp', [
   'ngRoute',
-  'sessionService'
+  'sessionServiceModule',
+  'regModule'
 ]);
 
-scoreboardApp.config(['$routeProvider',
-    function($routeProvider) {
+scoreboardApp.config([
+    '$routeProvider',
+    '$locationProvider',
+    function($routeProvider, $locationProvider) {
+      $locationProvider.html5Mode(true);
       $routeProvider.
         when('/login', {
           templateUrl: 'partials/login.html',
-          controller: 'RegistrationCtrl'
+          controller: 'LoginCtrl'
+        }).
+        when('/logout', {
+          templateUrl: 'partials/login.html',
+          controller: 'LoginCtrl'
         }).
         when('/register', {
           templateUrl: 'partials/register.html',
