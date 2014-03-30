@@ -12,11 +12,6 @@ import models
 import utils
 
 
-@app.route('/')
-def index():
-  return flask.render_template('index.html')
-
-
 #@app.route('/login', methods=['GET', 'POST'])
 @csrfutil.csrf_protect
 def login():
@@ -56,13 +51,13 @@ def register():
       teams=models.Team.query.all())
 
 
-@app.route('/scoreboard')
+#@app.route('/scoreboard')
 def scoreboard():
   return flask.render_template('scoreboard.html',
       teams=models.Team.enumerate())
 
 
-@app.route('/challenges')
+#@app.route('/challenges')
 @utils.login_required
 @utils.require_gametime
 def challenges():
@@ -70,7 +65,7 @@ def challenges():
       categories=models.Category.query.all())
 
 
-@app.route('/challenges/<slug>')
+#@app.route('/challenges/<slug>')
 @utils.login_required
 @utils.require_gametime
 def challenges_by_cat(slug):
@@ -89,7 +84,7 @@ def challenges_by_cat(slug):
       challenges=category.get_challenges().all())
 
 
-@app.route('/submit/<int:cid>', methods=['POST'])
+#@app.route('/submit/<int:cid>', methods=['POST'])
 @utils.team_required
 @csrfutil.csrf_protect
 @utils.require_gametime
@@ -105,7 +100,7 @@ def submit(cid):
     'challenges_by_cat', slug=challenge.category.slug))
 
 
-@app.route('/profile', methods=['GET', 'POST'])
+#@app.route('/profile', methods=['GET', 'POST'])
 @utils.login_required
 @csrfutil.csrf_protect
 def profile():
@@ -124,7 +119,7 @@ def profile():
   return flask.render_template('profile.html')
 
 
-@app.route('/unlock_hint', methods=['POST'])
+#@app.route('/unlock_hint', methods=['POST'])
 @utils.team_required
 @csrfutil.csrf_protect
 @utils.require_gametime
@@ -144,7 +139,7 @@ def unlock_hint():
 
 
 # Admin UI
-@app.route('/admin/makemeadmin')
+#@app.route('/admin/makemeadmin')
 @utils.login_required
 def makemeadmin():
   # Only works if no other admins exist
@@ -155,7 +150,7 @@ def makemeadmin():
   return flask.redirect(flask.url_for('index'))
 
 
-@app.route('/admin/categories', methods=['GET', 'POST'])
+#@app.route('/admin/categories', methods=['GET', 'POST'])
 @utils.admin_required
 @csrfutil.csrf_protect
 def admin_categories():
@@ -201,8 +196,8 @@ def admin_categories():
       categories=models.Category.query.all())
 
 
-@app.route('/admin/challenges')
-@app.route('/admin/challenges/<int:cid>')
+#@app.route('/admin/challenges')
+#@app.route('/admin/challenges/<int:cid>')
 @utils.admin_required
 def admin_challenges(cid=None):
   if cid:
@@ -219,8 +214,8 @@ def admin_challenges(cid=None):
       category=category, challenges=challenges)
 
 
-@app.route('/admin/challenge/<op>', methods=['GET', 'POST'])
-@app.route('/admin/challenge/<op>/<int:cid>', methods=['GET', 'POST'])
+#@app.route('/admin/challenge/<op>', methods=['GET', 'POST'])
+#@app.route('/admin/challenge/<op>/<int:cid>', methods=['GET', 'POST'])
 @utils.admin_required
 @csrfutil.csrf_protect
 def admin_challenge(op, cid=None):
@@ -404,7 +399,7 @@ def _perform_admin_challenge_restore():
       'success')
 
 
-@app.route('/admin/teams')
+#@app.route('/admin/teams')
 @utils.admin_required
 def admin_teams():
   if not app.config.get('TEAMS'):
@@ -413,7 +408,7 @@ def admin_teams():
       teams=models.User.query.order_by(models.User.name).all())
 
 
-@app.route('/admin/team/<int:tid>', methods=['GET', 'POST'])
+#@app.route('/admin/team/<int:tid>', methods=['GET', 'POST'])
 @utils.admin_required
 @csrfutil.csrf_protect
 def admin_team(tid):
@@ -426,7 +421,7 @@ def admin_team(tid):
   return flask.render_template('admin/team.html', team=team)
 
 
-@app.route('/admin/users')
+#@app.route('/admin/users')
 @utils.admin_required
 def admin_users():
   users = models.User.query.order_by(
@@ -434,7 +429,7 @@ def admin_users():
   return flask.render_template('admin/users.html', users=users)
 
 
-@app.route('/admin/user/<int:uid>', methods=['GET', 'POST'])
+#@app.route('/admin/user/<int:uid>', methods=['GET', 'POST'])
 @csrfutil.csrf_protect
 @utils.admin_required
 def admin_user(uid):

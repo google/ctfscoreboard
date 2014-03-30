@@ -161,6 +161,8 @@ class Challenge(db.Model):
   def is_answered(self, team=None, answers=None):
     if team is None:
       team = flask.g.team
+    if not team:
+      return False
     if answers:
       for a in answers:
         if a.team_tid == team.tid and a.challenge_cid == self.cid:
@@ -178,6 +180,12 @@ class Challenge(db.Model):
   @property
   def solves(self):
     return self.answers.count()
+
+  @property
+  def answered(self):
+    if not flask.g.team:
+      return False
+    return self.is_answered(answers=flask.g.team.answers)
 
   @classmethod
   def create(cls, name, description, points, answer, cid, unlocked=False):
@@ -213,6 +221,8 @@ class Hint(db.Model):
   def is_unlocked(self, team=None, unlocked_hints=None):
     if team is None:
       team = flask.g.team
+    if not team:
+      return flask.g.user and flask.g.user.admin
     if unlocked_hints:
       for h in unlocked_hints:
         if h.hint_hid == self.hid and h.team_tid == team.tid:

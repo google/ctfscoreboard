@@ -49,6 +49,7 @@ def api_error_handler(ex):
     except exceptions.NotFound:
       # Send index.html for other paths
       if not re.search('\.(js|css|gif|png|jpg|jpeg)$', path):
+        print '%s -> index.html' % path
         return app.send_static_file('index.html')
   if flask.request.path.startswith('/api/'):
     print str(ex)

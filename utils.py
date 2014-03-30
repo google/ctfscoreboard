@@ -54,6 +54,7 @@ def team_required(f):
   @functools.wraps(f)
   def wrapper(*args, **kwargs):
     if not flask.g.team:
+      app.logger.warning('Team request received for player without team.')
       flask.abort(400)
     return f(*args, **kwargs)
   return login_required(wrapper)

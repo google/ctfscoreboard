@@ -13,6 +13,12 @@ globalCtrls.controller('LoggedInCtrl', [
       $scope.isAdmin = function(){
         return (!!sessionService.user && sessionService.user.admin);
       };
+      $scope.getCurrentUser = function() {
+        return sessionService.user;
+      };
+      $scope.getCurrentTeam = function() {
+        return sessionService.team;
+      };
     }]);
 
 globalCtrls.controller('ErrorCtrl', [

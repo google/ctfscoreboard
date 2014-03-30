@@ -16,7 +16,7 @@ class HintField(fields.Raw):
   """Custom to show hint only if unlocked or admin."""
 
   def format(self, value):
-    if getattr(value, '__iter__'):
+    if getattr(value, '__iter__', None):
       return [self.format(v) for v in value]
     res = {
         'hid': value.hid,
@@ -161,6 +161,8 @@ class Challenge(restful.Resource):
       'unlocked': fields.Boolean,
       'hints': HintField,
       'cat_cid': fields.Integer,
+      'answered': fields.Boolean,
+      'solves': fields.Integer,
   }
 
   @restful.marshal_with(resource_fields)
@@ -275,6 +277,8 @@ class Hint(restful.Resource):
 class Answer(restful.Resource):
   decorators = [utils.login_required, utils.team_required]
 
+  # TODO: get answers for admin?
+
   def post(self):
     data = flask.request.get_json()
     points = controllers.submit_answer(data['cid'], data['answer'])
@@ -285,7 +289,7 @@ api.add_resource(CategoryList, '/api/categories')
 api.add_resource(ChallengeList, '/api/challenges')
 api.add_resource(Challenge, '/api/challenges/<int:challenge_id>')
 api.add_resource(Hint, '/api/unlock_hint')
-api.add_resource(Answer, '/api/answer')
+api.add_resource(Answer, '/api/answers')
 
 
 ### Scoreboard
