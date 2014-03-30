@@ -7,14 +7,16 @@ sessionServiceModule.service('sessionService', [
     '$resource', '$location', 'errorService',
     function($resource, $location, errorService) {
       this.sessionData = $resource('/api/session');
-      this.user = null;
-      this.team = null;
+      this.session = {
+        user: null,
+        team: null
+      };
 
       this.login = function(email, password, successCallback, errorCallback) {
         this.sessionData.save({email: email, password: password},
           angular.bind(this, function(data) {
-            this.user = data.user;
-            this.team = data.team;
+            this.session.user = data.user;
+            this.session.team = data.team;
             if (successCallback)
               successCallback();
           }), errorCallback || function() {});
@@ -22,15 +24,15 @@ sessionServiceModule.service('sessionService', [
 
       this.logout = function() {
         this.sessionData.remove();
-        this.user = null;
-        this.team = null;
+        this.session.user = null;
+        this.session.team = null;
       };
 
       this.refresh = function(successCallback, errorCallback) {
         // Attempt to load
         this.sessionData.get(angular.bind(this, function(data) {
-          this.user = data.user;
-          this.team = data.team;
+          this.session.user = data.user;
+          this.session.team = data.team;
           if (successCallback)
             successCallback();
         }), errorCallback || function() {});
@@ -39,7 +41,7 @@ sessionServiceModule.service('sessionService', [
       this.requireLogin = function(callback, no_redirect) {
         /* If the user is logged in, execute the callback.  Otherwise, redirect
          * to the login. */
-        if (this.user !== null) {
+        if (this.session.user !== null) {
           return callback();
         }
         return this.refresh(callback,

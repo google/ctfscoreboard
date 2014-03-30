@@ -17,12 +17,12 @@
           </div>
           <nav class='navbar-collapse collapse'>
             <ul class='nav navbar-nav'>
-              <li><a href='/challenges' class='ng-hide' ng-show='loggedIn()'>Challenges</a></li>
-              <li><a href='/scoreboard' class='ng-hide' ng-show='loggedIn()'>Scoreboard</a></li>
-              <li><a href='/profile' class='ng-hide' ng-show='loggedIn()'>Profile</a></li>
-              <li><a href='/logout' class='ng-hide' ng-show='loggedIn()'>Logout</a></li>
-              <li><a href='/login' ng-hide='loggedIn()'>Login</a></li>
-              <li><a href='/register' ng-hide='loggedIn()'>Register</a></li>
+              <li><a href='/challenges' class='ng-hide' ng-show='session.user'>Challenges</a></li>
+              <li><a href='/scoreboard' class='ng-hide' ng-show='session.user'>Scoreboard</a></li>
+              <li><a href='/profile' class='ng-hide' ng-show='session.user'>Profile</a></li>
+              <li><a href='/logout' class='ng-hide' ng-show='session.user'>Logout</a></li>
+              <li><a href='/login' ng-hide='session.user'>Login</a></li>
+              <li><a href='/register' ng-hide='session.user'>Register</a></li>
             </ul>
           </div>
         </div>

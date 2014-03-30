@@ -7,17 +7,13 @@ globalCtrls.controller('LoggedInCtrl', [
     '$scope',
     'sessionService',
     function($scope, sessionService) {
+      $scope.session = sessionService.session;
       $scope.loggedIn = function(){
-        return !!sessionService.user;
+        return !!sessionService.session.user;
       };
       $scope.isAdmin = function(){
-        return (!!sessionService.user && sessionService.user.admin);
-      };
-      $scope.getCurrentUser = function() {
-        return sessionService.user;
-      };
-      $scope.getCurrentTeam = function() {
-        return sessionService.team;
+        return (!!sessionService.session.user &&
+          sessionService.session.user.admin);
       };
     }]);
 

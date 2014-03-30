@@ -129,14 +129,14 @@ class Session(restful.Resource):
     """Get the current session."""
     return dict(user=flask.g.user, team=flask.g.team)
 
-  @restful.marshal_with(User.resource_fields)
+  @restful.marshal_with(resource_fields)
   def post(self):
     """Login a user."""
     data = flask.request.get_json()
     user = controllers.user_login(data['email'], data['password'])
     if not user:
       raise errors.LoginError('Invalid username/password')
-    return user
+    return dict(user=user, team=user.team)
 
   def delete(self):
     flask.session['user'] = None
