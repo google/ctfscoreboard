@@ -1,27 +1,30 @@
 <div class='ng-hide' ng-show='!!category'>
   <h2>{{category.name}}</h2>
   <div class='well' ng-bind-html='category.description|linky'></div>
-    <div class='panel panel-primary' ng-repeat='chall in challenges'>
-      <div class='panel-heading'>
-        <h3 class='panel-title'>{{chall.name}}</h3>
-        <span class='right'>{{chall.points}}</span>
-      </div>
-      <div class='panel-body'>
-        <p ng-bind-html='chall.description|linky'></p>
+  <div class='panel panel-primary'
+    ng-repeat='chall in challenges|filter:filterUnlocked'>
+    <div class='panel-heading'>
+      <h3 class='panel-title'>{{chall.name}}</h3>
+      <span class='right'>{{chall.points}}</span>
+    </div>
+    <div class='panel-body'>
+      <p ng-bind-html='chall.description|linky'></p>
+      <div ng-hide='isAdmin()'>
         <!-- if solved -->
         <span class='alert alert-success solved ng-hide'
           ng-show='chall.answered'>Solved</span>
         <!-- if hints -->
-        <div class='hints' ng-show='!!hints'>
+        <div class='hints' ng-show='!!chall.hints && !chall.answered'>
           <ul>
             <li ng-repeat='hint in chall.hints' ng-show='!!hint.hint'>{{hint.hint}}</li>
           </ul>
           <ul class='list-inline'>
-            <li><a class='btn btn-info hint-unlock ng-hide'
+            <li><a class='btn btn-info ng-hide'
               ng-show='!hint.hint'
-              ng-repeat='hint in chall.hints'>Hint {{$index + 1}}</a></li>
+              ng-repeat='hint in chall.hints'
+              ng-click='unlockHintDialog(hint)'>Hint {{$index + 1}}</a></li>
           </ul>
-        </div>
+        </div> <!-- end hints -->
         <!-- if not solved -->
         <div ng-hide='chall.answered'>
           <form ng-submit='submitChallenge(chall)'>
@@ -33,12 +36,14 @@
             </div>
             <input type='submit' value='Submit' class='btn btn-primary'>
           </form>
-        </div>
-      </div>
-    </div>
-  <span class='alert alert-info ng-hide' ng-show='!challenges.length'>There are no open challenges in this
-    category.</span>
-</div>
+        </div> <!-- end submission -->
+      </div> <!-- admin hide -->
+    </div> <!-- panel body -->
+  </div> <!-- repeat panel -->
+</div><!-- category -->
+
+<span class='alert alert-info ng-hide' ng-show='!challenges.length'>There are no open challenges in this
+  category.</span>
 
 <p ng-hide='!!category'>Choose a category to see challenges.</p>
 
@@ -52,13 +57,13 @@
         <h4 class='modal-title'>Unlock Hint?</h4>
       </div>
       <div class='modal-body'>
-        <p>Unlocking this hint will reduce the point value by <span
-          id='hint-cost'></span>.</p>
+        <p>Unlocking this hint will reduce the point value by {{hint.cost}}.</p>
       </div>
       <div class='modal-footer'>
         <button type='button' class='btn btn-default'
           data-dismiss='modal'>Cancel</button>
-        <button type='button' class='btn btn-primary'>Unlock Hint</button>
+        <button type='button' class='btn btn-primary'
+          ng-click='unlockHint(hint)'>Unlock Hint</button>
       </div>
     </div>
   </div>

@@ -1,4 +1,5 @@
 var challengeCtrls = angular.module('challengeCtrls', [
+    'ngResource',
     'ngRoute',
     'challengeServices',
     'globalServices',
@@ -19,15 +20,21 @@ challengeCtrls.controller('CategoryMenuCtrl', [
 
 challengeCtrls.controller('ChallengeCtrl', [
     '$scope',
+    '$resource',
     '$routeParams',
     'answerService',
     'categoryService',
     'errorService',
     'sessionService',
-    function($scope, $routeParams, answerService,
+    function($scope, $resource, $routeParams, answerService,
       categoryService, errorService, sessionService) {
-      var slug = $routeParams.slug;
       errorService.clearErrors();
+
+      $scope.filterUnlocked = function(chall) {
+        return chall.unlocked == true;
+      };
+
+      var slug = $routeParams.slug;
       if (slug) {
         $scope.submitChallenge = function(chall) {
           errorService.clearErrors();
@@ -41,6 +48,27 @@ challengeCtrls.controller('ChallengeCtrl', [
             function(resp) {
               errorService.error(resp);
             });
+        };
+
+        $scope.unlockHintDialog = function(hint) {
+          errorService.clearErrors();
+          $scope.hint = hint;
+          $('#hint-modal').modal('show');
+        };
+
+        $scope.unlockHint = function(hint) {
+          $resource('/api/unlock_hint').save({hid: hint.hid},
+              function(data) {
+                hint.hint = data.hint;
+                errorService.error(
+                  'Unlocked hint for ' + hint.cost + ' points.',
+                  'success');
+                $('#hint-modal').modal('hide');
+              },
+              function(data) {
+                errorService.error(data);
+                $('#hint-modal').modal('hide');
+              });
         };
 
         // Load challenges
