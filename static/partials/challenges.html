@@ -42,7 +42,7 @@
   </div> <!-- repeat panel -->
 </div><!-- category -->
 
-<span class='alert alert-info ng-hide' ng-show='!challenges.length'>There are no open challenges in this
+<span class='alert alert-info ng-hide' ng-show='!!category && !challenges.length'>There are no open challenges in this
   category.</span>
 
 <p ng-hide='!!category'>Choose a category to see challenges.</p>
