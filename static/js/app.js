@@ -26,11 +26,7 @@ scoreboardApp.config([
           templateUrl: '/partials/register.html',
           controller: 'RegistrationCtrl'
         }).
-        when('/challenges', {
-          templateUrl: '/partials/challenges.html',
-          controller: 'ChallengeCtrl'
-        }).
-        when('/challenges/:slug', {
+        when('/challenges/:slug?', {
           templateUrl: '/partials/challenges.html',
           controller: 'ChallengeCtrl'
         }).
@@ -41,6 +37,14 @@ scoreboardApp.config([
         when('/admin/categories', {
           templateUrl: '/partials/admin/categories.html',
           controller: 'AdminCategoryCtrl'
+        }).
+        when('/admin/challenges/:cid?', {
+          templateUrl: '/partials/admin/challenges.html',
+          controller: 'AdminChallengesCtrl'
+        }).
+        when('/admin/challenge/:cid', {
+          templateUrl: '/partials/admin/challenge.html',
+          controller: 'AdminChallengeCtrl'
         }).
         otherwise({
           redirectTo: '/'

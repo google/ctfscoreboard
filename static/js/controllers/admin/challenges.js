@@ -57,3 +57,78 @@ adminChallengeCtrls.controller('AdminCategoryCtrl', [
           errorService.error);
       });
     }]);
+
+adminChallengeCtrls.controller('AdminChallengesCtrl', [
+    '$scope',
+    '$routeParams',
+    'challengeService',
+    'errorService',
+    'sessionService',
+    function($scope, $routeParams, challengeService, errorService, sessionService) {
+      $scope.catid = $routeParams.cid;
+
+      $scope.lockChallenge = function(challenge, locked) {
+        var copy = {};
+        angular.forEach(challenge, function(v, k) {
+          copy[k] = v;
+        });
+        copy.unlocked = !locked;
+        challengeService.save({cid: challenge.cid},
+          copy,
+          function(data) {
+            challenge.unlocked = data.unlocked;
+          },
+          errorService.error);
+      };
+
+      sessionService.requireLogin(function() {
+        challengeService.get(function(data) {
+          $scope.challenges = data.challenges;
+        },
+        errorService.error);
+      });
+    }]);
+
+adminChallengeCtrls.controller('AdminChallengeCtrl', [
+    '$scope',
+    '$routeParams',
+    'categoryService',
+    'challengeService',
+    'errorService',
+    'sessionService',
+    function($scope, $routeParams, categoryService, challengeService,
+      errorService, sessionService) {
+      $scope.cid = $routeParams.cid;
+
+      $scope.saveChallenge = function() {
+        errorService.clearErrors();
+        $scope.challenge.$save({cid: $scope.challenge.cid},
+          function(data) {
+            $scope.challenge = data;
+            errorService.error('Saved.', 'success');
+          },
+          errorService.error);
+      };
+
+      $scope.addHint = function() {
+        $scope.challenge.hints.push({});
+      };
+
+      $scope.deleteHint = function(hint) {
+        var idx = $scope.challenge.hints.indexOf(hint);
+        $scope.challenge.hints.splice(idx, 1);
+      };
+
+      sessionService.requireLogin(function() {
+        challengeService.get({cid: $routeParams.cid},
+          function(data) {
+            $scope.challenge = data;
+          },
+          errorService.error);
+        categoryService.get(function(data) {
+          $scope.categories = data.categories;
+        });
+      });
+
+    }]);
+

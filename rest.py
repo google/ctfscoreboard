@@ -173,7 +173,34 @@ class Challenge(restful.Resource):
   def put(self, challenge_id):
     challenge = models.Challenge.query.get_or_404(challenge_id)
     data = flask.request.get_json()
-    # TODO: updates
+    for field in ('name', 'description', 'points', 'cat_cid', 'unlocked'):
+      setattr(challenge, field, data.get(field, getattr(challenge, field)))
+    if 'answer' in data and data['answer']:
+      challenge.change_answer(data['answer'])
+
+    def get_hint(hid):
+      if not hid:
+        h = models.Hint()
+        h.challenge = challenge
+        models.db.session.add(h)
+        return h
+      for h in challenge.hints:
+        if h.hid == hid:
+          return h
+
+    hid = set()
+    for hint in data['hints']:
+      hid.add(hint.get('hid'))
+      h = get_hint(hint.get('hid'))
+      h.cost = hint['cost']
+      h.hint = hint['hint']
+
+    # Remove those that have been removed
+    for hint in challenge.hints:
+      if hint.hid and hint.hid not in hid:
+        models.db.session.delete(hint)
+
+    models.commit()
     return challenge
 
 
