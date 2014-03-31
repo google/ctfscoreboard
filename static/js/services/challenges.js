@@ -18,8 +18,12 @@ challengeServices.service('categoryService', ['$resource',
       });
 
       this.get = this.res.get;
+      this.create = this.res.create;
+      this.save = this.res.save;
+      this.delete = this.res.delete;
 
       this.getList = function(callback) {
+        // TODO: rewrite this to maintain binding in scopes
         if (this.catlist) {
           callback(this.catlist);
           return;

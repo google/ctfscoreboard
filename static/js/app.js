@@ -1,6 +1,7 @@
 var scoreboardApp = angular.module('scoreboardApp', [
   'ngRoute',
   'ngSanitize',
+  'adminChallengeCtrls',
   'challengeCtrls',
   'globalCtrls',
   'regCtrls',
@@ -36,6 +37,10 @@ scoreboardApp.config([
         when('/scoreboard', {
           templateUrl: '/partials/scoreboard.html',
           controller: 'ScoreboardCtrl'
+        }).
+        when('/admin/categories', {
+          templateUrl: '/partials/admin/categories.html',
+          controller: 'AdminCategoryCtrl'
         }).
         otherwise({
           redirectTo: '/'
