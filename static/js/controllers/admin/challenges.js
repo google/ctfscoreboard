@@ -132,3 +132,11 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
 
     }]);
 
+adminChallengeCtrls.controller('AdminRestoreCtrl', [
+    '$scope',
+    'configService',
+    'errorService',
+    function($scope, configService, errorService) {
+      $scope.config = configService.get();
+    }]);
+

@@ -3,6 +3,7 @@ from flask.ext import restful
 from flask.ext.restful import fields
 
 from app import app
+import csrfutil
 import controllers
 import errors
 import models
@@ -342,6 +343,7 @@ api.add_resource(APIScoreboard, '/api/scoreboard')
 ### Public config
 class Config(restful.Resource):
   def get(self):
-    return dict(teams=app.config.get('TEAMS', False))
+    return dict(teams=app.config.get('TEAMS', False),
+        csrf=csrfutil.get_csrf_token())
 
 api.add_resource(Config, '/api/config')

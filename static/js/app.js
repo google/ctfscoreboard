@@ -46,6 +46,10 @@ scoreboardApp.config([
           templateUrl: '/partials/admin/challenge.html',
           controller: 'AdminChallengeCtrl'
         }).
+        when('/admin/restore/challenges', {
+          templateUrl: '/partials/admin/restore.html',
+          controller: 'AdminRestoreCtrl'
+        }).
         otherwise({
           redirectTo: '/'
         });

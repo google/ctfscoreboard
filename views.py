@@ -315,12 +315,8 @@ def _challenge_update_hints(challenge):
 @utils.admin_required
 def admin_challenge_backup():
   categories = {}
-  challenges = []
   for cat in models.Category.query.all():
-    categories[cat.cid] = {
-        'name': cat.name,
-        'description': cat.description
-        }
+    challenges = []
     for q in cat.challenges:
       hints = []
       for h in q.hints:
@@ -336,23 +332,21 @@ def admin_challenge_backup():
         'answer_hash': q.answer_hash,
         'hints': hints,
         })
-  response = flask.jsonify(categories=categories,
-      challenges=challenges)
+    categories[cat.cid] = {
+        'name': cat.name,
+        'description': cat.description,
+        'challenges': challenges,
+        }
+  response = flask.jsonify(categories=categories)
   response.headers['Content-Disposition'] = 'attachment; filename=challenges.json'
   return response
 
 
-@app.route('/admin/backup/challenges/restore', methods=['GET', 'POST'])
+@app.route('/admin/backup/challenges/restore', methods=['POST'])
 @utils.admin_required
 @csrfutil.csrf_protect
 def admin_challenge_restore():
-  if flask.request.method == 'POST':
-    _perform_admin_challenge_restore()
-    return flask.redirect(flask.url_for(flask.request.endpoint))
-  return flask.render_template('admin/restore_challenges.html')
-
-
-def _perform_admin_challenge_restore():
+  # TODO: angularify
   jsfile = flask.request.files.get('restorefile')
   if not jsfile:
     flask.flash('No JSON file was sent.', 'warning')
@@ -378,25 +372,21 @@ def _perform_admin_challenge_restore():
     models.db.session.add(newcat)
     cats[int(catid)] = newcat
   
-  for challenge in data['challenges']:
-    newchall = models.Challenge()
-    for f in ('name', 'description', 'points', 'answer_hash'):
-      setattr(newchall, f, challenge[f])
-    newchall.category = cats[challenge['category']]
-    models.db.session.add(newchall)
-    for h in challenge.get('hints', []):
-      hint = models.Hint()
-      hint.challenge = newchall
-      hint.hint = h['hint']
-      hint.cost = int(h['cost'])
-      models.db.session.add(hint)
+    for challenge in cat['challenges']:
+      newchall = models.Challenge()
+      for f in ('name', 'description', 'points', 'answer_hash'):
+        setattr(newchall, f, challenge[f])
+      newchall.category = newcat
+      models.db.session.add(newchall)
+      for h in challenge.get('hints', []):
+        hint = models.Hint()
+        hint.challenge = newchall
+        hint.hint = h['hint']
+        hint.cost = int(h['cost'])
+        models.db.session.add(hint)
   
   models.commit()
-  if deleted:
-    flask.flash('Deleted old categories & challenges.', 'success')
-  flask.flash('%d Categories and %d Challenges imported.' %
-      (len(data['categories']), len(data['challenges'])),
-      'success')
+  return flask.redirect('/admin/categories')
 
 
 #@app.route('/admin/teams')
