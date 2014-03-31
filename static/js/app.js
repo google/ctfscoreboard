@@ -50,6 +50,14 @@ scoreboardApp.config([
           templateUrl: '/partials/admin/restore.html',
           controller: 'AdminRestoreCtrl'
         }).
+        when('/admin/teams/:tid?', {
+          templateUrl: '/partials/admin/teams.html',
+          controller: 'AdminTeamsCtrl'
+        }).
+        when('/admin/users/:uid?', {
+          templateUrl: '/partials/admin/users.html',
+          controller: 'AdminUsersCtrl'
+        }).
         otherwise({
           redirectTo: '/'
         });

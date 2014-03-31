@@ -38,7 +38,7 @@ class User(restful.Resource):
       'email': fields.String,
       'nick': fields.String,
       'admin': fields.Boolean,
-      'team': fields.Integer(attribute='team_tid')
+      'team': fields.Integer(attribute='team_tid'),
   }
 
   @restful.marshal_with(resource_fields)

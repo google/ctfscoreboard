@@ -1,0 +1,57 @@
+<table class='table table-striped' ng-hide='!!user'>
+  <thead>
+    <tr><th>Nick</th><th>E-Mail</th>
+      <th><span ng-show='config.teams'>Team</span>
+        <span ng-hide='config.teams'>Solves</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr ng-repeat='user in users'>
+      <td><a href='/admin/users/{{user.uid}}'>{{user.nick}}</a>
+        <span class='ng-hide' ng-show='user.admin'>(Admin)</span></td>
+      <td><a href='mailto:{{user.email}}'>{{user.email}}</a></td>
+      <td><a
+          href='/admin/teams/{{user.team}}'
+          ng-show='config.teams && user.team'>{{getTeam(user).name}}</a>
+        <span class='ng-hide' ng-hide='config.teams'>{{getTeam(user).solves}}</span></td>
+    </tr>
+  </tbody>
+</table>
+<div class='row ng-hide' ng-show='!!user'>
+  <div class='col-md-5 col-md-offset-2'>
+    <form ng-submit='updateUser()'>
+      <div class='form-group'>
+        <label for='nick'>Nick</label>
+        <input id='nick' name='nick' readonly class='form-control'
+          ng-model='user.nick'>
+      </div>
+      <div class='form-group'>
+        <label for='email'>Email</label>
+        <input id='email' name='email' readonly class='form-control'
+          ng-model='user.email'>
+      </div>
+      <div ng-show='config.teams && user.team'>
+        <div class='form-group'>
+          <label for='team'>Team</label>
+          <input id='team' name='team' readonly class='form-control'
+            ng-model='getTeam(user).name'>
+        </div>
+      </div>
+      <div class='ng-hide' ng-hide='config.teams'>
+        <div class='form-group'>
+          <label for='score'>Score</label>
+          <input id='score' name='score' ng-model='getTeam(user).score'
+            class='form-control'>
+        </div>
+      </div>
+      <div class='checkbox'>
+        <label>
+          <input type='checkbox' name='admin' value='True'
+            ng-model='user.admin'>Admin
+        </label>
+      </div>
+      <input type='submit' value='Save' class='btn btn-primary'>
+    </form>
+    <!-- TODO: solve table -->
+  </div>
+</div>
