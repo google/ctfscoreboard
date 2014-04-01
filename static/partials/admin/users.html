@@ -11,9 +11,9 @@
         <span class='ng-hide' ng-show='user.admin'>(Admin)</span></td>
       <td><a href='mailto:{{user.email}}'>{{user.email}}</a></td>
       <td><a
-          href='/admin/teams/{{user.team}}'
-          ng-show='config.teams && user.team'>{{getTeam(user).name}}</a>
-        <span class='ng-hide' ng-hide='config.teams'>{{getTeam(user).solves}}</span></td>
+          href='/admin/teams/{{user.team_tid}}'
+          ng-show='config.teams && user.team'>{{user.team.name}}</a>
+        <span class='ng-hide' ng-hide='config.teams'>{{user.team.solves}}</span></td>
     </tr>
   </tbody>
 </table>
@@ -34,14 +34,7 @@
         <div class='form-group'>
           <label for='team'>Team</label>
           <input id='team' name='team' readonly class='form-control'
-            ng-model='getTeam(user).name'>
-        </div>
-      </div>
-      <div class='ng-hide' ng-hide='config.teams'>
-        <div class='form-group'>
-          <label for='score'>Score</label>
-          <input id='score' name='score' ng-model='getTeam(user).score'
-            class='form-control'>
+            ng-model='user.team.name'>
         </div>
       </div>
       <div class='checkbox'>

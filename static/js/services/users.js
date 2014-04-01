@@ -1,6 +1,6 @@
-var usersServiceModule = angular.module('usersServiceModule', ['ngResource']);
+var userServices = angular.module('userServices', ['ngResource']);
 
-usersServiceModule.service('usersService', ['$resource',
+userServices.service('userService', ['$resource',
     function($resource) {
       return $resource('/api/users/:uid', {}, {
         'save': {method: 'PUT'},

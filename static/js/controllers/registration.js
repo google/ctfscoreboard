@@ -1,8 +1,8 @@
 var regCtrls = angular.module('regCtrls', [
     'globalServices',
-    'sessionServiceModule',
-    'teamsServiceModule',
-    'usersServiceModule'
+    'sessionServices',
+    'teamServices',
+    'userServices'
     ]);
 
 regCtrls.controller('LoginCtrl', [
@@ -34,17 +34,17 @@ regCtrls.controller('RegistrationCtrl', [
     'configService',
     'errorService',
     'sessionService',
-    'teamsService',
-    'usersService',
+    'teamService',
+    'userService',
     function($scope, $location, configService, errorService, sessionService,
-        teamsService, usersService) {
+        teamService, userService) {
       $scope.config = configService.get();
-      $scope.teams = teamsService.get(function() {
+      $scope.teams = teamService.get(function() {
         $scope.teams = $scope.teams.teams;
       });
       $scope.register = function() {
         errorService.clearErrors();
-        usersService.create({
+        userService.create({
           email: $scope.email,
           nick: $scope.nick,
           password: $scope.password,

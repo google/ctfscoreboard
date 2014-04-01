@@ -2,7 +2,7 @@ var adminTeamCtrls = angular.module('adminTeamCtrls', [
     'ngResource',
     'ngRoute',
     'globalServices',
-    'sessionServiceModule',
+    'sessionServices',
     'teamServices',
     'userServices'
     ]);
@@ -10,21 +10,31 @@ var adminTeamCtrls = angular.module('adminTeamCtrls', [
 adminTeamCtrls.controller('AdminTeamsCtrl', [
     '$scope',
     '$routeParams',
+    'errorService',
     'sessionService',
-    'teamsService',
-    function($scope, $routeParams, sessionService, teamsService) {
+    'teamService',
+    function($scope, $routeParams, errorService, sessionService, teamService) {
       $scope.teams = [];
       $scope.team = null;
 
       $scope.updateTeam = function() {
+        errorService.clearErrors();
+        $scope.team.$save({tid: $scope.team.tid},
+          function(data) {
+            $scope.team = data;
+            errorService.error('Saved.', 'success');
+          },
+          function(data) {
+            errorService.error(data);
+          });
       };
 
       sessionService.requireLogin(function() {
         var tid = $routeParams.tid;
         if (tid) {
-          $scope.team = teamsService.get({tid: tid});
+          $scope.team = teamService.get({tid: tid});
         } else {
-          teamsService.get(function(data) {
+          teamService.get(function(data) {
             $scope.teams = data.teams;
           });
         }
@@ -35,39 +45,56 @@ adminTeamCtrls.controller('AdminUsersCtrl', [
     '$scope',
     '$routeParams',
     'configService',
+    'errorService',
     'sessionService',
-    'teamsService',
-    'usersService',
-    function($scope, $routeParams, configService, sessionService, teamsService, usersService) {
+    'teamService',
+    'userService',
+    function($scope, $routeParams, configService, errorService, sessionService,
+      teamService, userService) {
       $scope.users = [];
       $scope.teams = [];
       $scope.user = null;
       $scope.config = configService.get();
 
       $scope.updateUser = function() {
+        errorService.clearErrors();
+        $scope.user.$save({uid: $scope.user.uid},
+          function(data) {
+            $scope.user = data;
+            errorService.error('Saved.', 'success');
+          },
+          function(data) {
+            errorService.error(data);
+          });
       };
 
-      $scope.getTeam = function(user) {
-        var team;
-        angular.forEach($scope.teams, function(v) {
-          if (v.tid == user.team) {
-            team = v;
+      var getTeam = function(tid) {
+        var team = null;
+        angular.forEach($scope.teams, function(t) {
+          if (t.tid == tid) {
+            team = t;
           }
         });
         return team;
       };
 
       sessionService.requireLogin(function() {
-        teamsService.get(function(data) {
+        teamService.get(function(data) {
           $scope.teams = data.teams;
           var uid = $routeParams.uid;
           if (uid) {
-            $scope.user = usersService.get({uid: uid});
+            $scope.user = userService.get({uid: uid},
+              function() {
+                $scope.user.team = getTeam($scope.user.team_tid);
+              });
           } else {
-            usersService.get(function(data) {
+            userService.get(function(data) {
               $scope.users = data.users;
+              angular.forEach($scope.users, function(u) {
+                u.team = getTeam(u.team_tid);
+              });
             });
           }
         });
-      });
+      });  // end requireLogin block
     }]);

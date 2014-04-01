@@ -1,6 +1,6 @@
 var globalCtrls = angular.module('globalCtrls', [
     'globalServices',
-    'sessionServiceModule',
+    'sessionServices',
     ]);
 
 globalCtrls.controller('LoggedInCtrl', [
@@ -22,4 +22,8 @@ globalCtrls.controller('ErrorCtrl', [
     'errorService',
     function($scope, errorService) {
       $scope.errors = errorService.errors;
+
+      $scope.$on('$locationChangeStart', function(ev) {
+        errorService.clearErrors();
+      });
     }]);

@@ -3,7 +3,7 @@ var adminChallengeCtrls = angular.module('adminChallengeCtrls', [
     'ngRoute',
     'challengeServices',
     'globalServices',
-    'sessionServiceModule',
+    'sessionServices',
     ]);
 
 adminChallengeCtrls.controller('AdminCategoryCtrl', [
@@ -20,7 +20,9 @@ adminChallengeCtrls.controller('AdminCategoryCtrl', [
           function(data) {
             errorService.error(cat.name + ' updated.', 'success');
           },
-          errorService.error);
+          function(data) {
+            errorService.error(data);
+          });
       };
 
       $scope.deleteCategory = function(cat) {
@@ -33,7 +35,9 @@ adminChallengeCtrls.controller('AdminCategoryCtrl', [
             $scope.categories.splice(idx, 1);
             errorService.error(name + ' deleted.', 'success');
           },
-          errorService.error);
+          function(data) {
+            errorService.error(data);
+          });
       };
 
       $scope.addCategory = function() {
@@ -43,7 +47,9 @@ adminChallengeCtrls.controller('AdminCategoryCtrl', [
             $scope.categories.push(data);
             $scope.newCategory = {};
           },
-          errorService.error);
+          function(data) {
+            errorService.error(data);
+          });
       };
 
       $scope.newCategory = {};
@@ -54,7 +60,9 @@ adminChallengeCtrls.controller('AdminCategoryCtrl', [
           function(data) {
             $scope.categories = data.categories;
           },
-          errorService.error);
+          function(data) {
+            errorService.error(data);
+          });
       });
     }]);
 
@@ -78,14 +86,18 @@ adminChallengeCtrls.controller('AdminChallengesCtrl', [
           function(data) {
             challenge.unlocked = data.unlocked;
           },
-          errorService.error);
+          function(data) {
+            errorService.error(data);
+          });
       };
 
       sessionService.requireLogin(function() {
         challengeService.get(function(data) {
           $scope.challenges = data.challenges;
         },
-        errorService.error);
+        function(data) {
+          errorService.error(data);
+        });
       });
     }]);
 
@@ -107,7 +119,9 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
             $scope.challenge = data;
             errorService.error('Saved.', 'success');
           },
-          errorService.error);
+          function(data) {
+            errorService.error(data);
+          });
       };
 
       $scope.addHint = function() {
@@ -124,7 +138,9 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
           function(data) {
             $scope.challenge = data;
           },
-          errorService.error);
+          function(data) {
+            errorService.error(data);
+          });
         categoryService.get(function(data) {
           $scope.categories = data.categories;
         });

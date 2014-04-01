@@ -38,7 +38,7 @@ class User(restful.Resource):
       'email': fields.String,
       'nick': fields.String,
       'admin': fields.Boolean,
-      'team': fields.Integer(attribute='team_tid'),
+      'team_tid': fields.Integer,
   }
 
   @restful.marshal_with(resource_fields)
@@ -54,7 +54,7 @@ class User(restful.Resource):
     user = models.User.query.get_or_404(user_id)
     data = flask.request.get_json()
     if flask.g.user.admin and 'admin' in data:
-      user.admin = utils.parse_bool(data['admin'])
+      user.admin = data['admin']
     if data.get('password'):
       user.set_password(data['password'])
     models.commit()
@@ -90,6 +90,7 @@ class Team(restful.Resource):
       'tid': fields.Integer,
       'name': fields.String,
       'score': fields.Integer,
+      'solves': fields.Integer,
   }
   resource_fields = team_fields.copy()
   resource_fields['players'] = fields.Nested(User.resource_fields)
@@ -99,11 +100,25 @@ class Team(restful.Resource):
     if not utils.access_team(team_id):
       raise errors.AccessDeniedError('No access to that team.')
     team = models.Team.query.get_or_404(team_id)
+    return self._marshal_team(team)
+
+  def _marshal_team(self, team):
     result = {}
     for k in self.team_fields:
       result[k] = getattr(team, k)
     result['players'] = list(team.players.all())
     return result
+
+  @restful.marshal_with(resource_fields)
+  def put(self, team_id):
+    if not utils.access_team(team_id):
+      raise errors.AccessDeniedError('No access to that team.')
+    team = models.Team.query.get_or_404(team_id)
+    data = flask.request.get_json()
+    # Writable fields
+    for field in ('name', 'score'):
+      setattr(team, field, data.get(field, getattr(team, field)))
+    return self._marshal_team(team)
 
 
 class TeamList(restful.Resource):
@@ -225,7 +240,7 @@ class ChallengeList(restful.Resource):
         data['points'],
         data['answer'],
         data['cat_cid'],
-        utils.parse_bool(data['unlocked']))
+        data['unlocked'])
     models.commit()
     return chall
 

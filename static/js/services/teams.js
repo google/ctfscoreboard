@@ -1,6 +1,9 @@
-var teamsServiceModule = angular.module('teamsServiceModule', ['ngResource']);
+var teamServices = angular.module('teamServices', ['ngResource']);
 
-teamsServiceModule.service('teamsService', ['$resource',
+teamServices.service('teamService', ['$resource',
     function($resource) {
-      return $resource('/api/teams/:tid');
+      return $resource('/api/teams/:tid', {}, {
+        save: {method: 'PUT'},
+        create: {method: 'POST'}
+        });
     }]);

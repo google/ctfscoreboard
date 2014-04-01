@@ -2,6 +2,7 @@ var scoreboardApp = angular.module('scoreboardApp', [
   'ngRoute',
   'ngSanitize',
   'adminChallengeCtrls',
+  'adminTeamCtrls',
   'challengeCtrls',
   'globalCtrls',
   'regCtrls',

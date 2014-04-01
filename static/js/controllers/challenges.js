@@ -3,7 +3,7 @@ var challengeCtrls = angular.module('challengeCtrls', [
     'ngRoute',
     'challengeServices',
     'globalServices',
-    'sessionServiceModule',
+    'sessionServices',
     ]);
 
 challengeCtrls.controller('CategoryMenuCtrl', [
