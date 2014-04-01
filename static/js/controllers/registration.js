@@ -60,3 +60,27 @@ regCtrls.controller('RegistrationCtrl', [
         });
       };
     }]);
+
+regCtrls.controller('ProfileCtrl', [
+    '$scope',
+    'errorService',
+    'sessionService',
+    'userService',
+    function($scope, errorService, sessionService, userService) {
+      $scope.user = null;
+
+      sessionService.requireLogin(function() {
+        $scope.user = sessionService.user;
+      });
+
+      $scope.updateProfile = function() {
+        userService.save({uid: $scope.user.uid}, $scope.user,
+          function(data) {
+            $scope.user = data;
+            sessionService.refresh();
+          },
+          function(data) {
+            errorService.error(data);
+          });
+      };
+    }]);

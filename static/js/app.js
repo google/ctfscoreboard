@@ -27,6 +27,10 @@ scoreboardApp.config([
           templateUrl: '/partials/register.html',
           controller: 'RegistrationCtrl'
         }).
+        when('/profile', {
+          templateUrl: '/partials/profile.html',
+          controller: 'ProfileCtrl'
+        }).
         when('/challenges/:slug?', {
           templateUrl: '/partials/challenges.html',
           controller: 'ChallengeCtrl'
