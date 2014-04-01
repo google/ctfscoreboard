@@ -101,7 +101,6 @@ def unlock_hint(hid):
   if not hint:
     flask.abort(404)
   hint.unlock(flask.g.team)
-  flask.flash('Hint unlocked.', 'success')
   logstr = 'Player %s/%s<%d>/Team %s<%d> unlocked hint %d for Challenge %s<%d>'
   logstr %= (flask.g.user.nick, flask.g.user.email, flask.g.user.uid,
       flask.g.team.name, flask.g.team.tid, hint.hid, hint.challenge.name,

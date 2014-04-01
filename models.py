@@ -130,7 +130,6 @@ class Category(db.Model):
       db.session.commit()
       return cat
     except exc.IntegrityError:
-      flask.flash('Unable to create Category.', 'danger')
       db.session.rollback()
 
   def delete(self):
