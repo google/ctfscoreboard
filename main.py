@@ -2,10 +2,11 @@ import sys
 
 from app import app
 import models
+import rest
 import views
 
 if __name__ == '__main__':
   if 'createdb' in sys.argv:
     models.db.create_all()
   else:
-    app.run(debug=True, port=app.config['PORT'])
+    app.run(host='0.0.0.0', debug=True, port=app.config['PORT'])

@@ -1,7 +1,10 @@
 import datetime
+import errors
 import flask
 import functools
+
 from app import app
+import models
 
 # Use dateutil if available
 try:
@@ -9,6 +12,82 @@ try:
 except ImportError:
   dateutil = None
 
+
+# Setup flask.g
+@app.before_request
+def load_globals():
+  uid = flask.session.get('user')
+  if uid:
+    user = models.User.query.get(uid)
+    if user:
+      flask.g.user = user
+      flask.g.team = user.team
+      return
+  flask.g.user = None
+  flask.g.team = None
+
+
+# Helper decorators
+def login_required(f):
+  @functools.wraps(f)
+  def wrapper(*args, **kwargs):
+    if not flask.g.user:
+      raise errors.AccessDeniedError('You must be logged in.')
+    return f(*args, **kwargs)
+  return wrapper
+
+
+def admin_required(f):
+  @functools.wraps(f)
+  def wrapper(*args, **kwargs):
+    try:
+      if not flask.g.user.admin:
+        abort(403)
+    except AttributeError:
+      abort(403)
+    return f(*args, **kwargs)
+  return login_required(wrapper)
+
+
+def team_required(f):
+  """Require that they are a member of a team."""
+  @functools.wraps(f)
+  def wrapper(*args, **kwargs):
+    if not flask.g.team:
+      app.logger.warning('Team request received for player without team.')
+      flask.abort(400)
+    return f(*args, **kwargs)
+  return login_required(wrapper)
+
+
+## Utility functions
+def get_required_field(name, verbose_name=None):
+  try:
+    return flask.request.form[name]
+  except KeyError:
+    verbose_name = verbose_name or name
+    raise errors.ValidationError('%s is a required field.' % verbose_name)
+
+
+def parse_bool(b):
+  b = b.lower()
+  return b in ('true', '1')
+
+
+def access_team(team):
+  """Permission to team."""
+  if flask.g.user and flask.g.user.admin:
+    return True
+  try:
+    team = team.tid
+  except AttributeError:
+    pass
+  if flask.g.team and flask.g.team.tid == team:
+    return True
+  return False
+
+
+## Game time settings
 class GameTime(object):
 
   @classmethod
@@ -46,15 +125,13 @@ class GameTime(object):
     return False
 
   @classmethod
-  def require_open(cls, f, after_end=False):
+  def require_open(cls, f, after_end=False, or_admin=True):
     """Decorator for requiring the game is open."""
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
-      if cls.open(after_end):
+      if cls.open(after_end) or (or_admin and flask.g.user and flask.g.user.admin):
         return f(*args, **kwargs)
-      return flask.make_response(
-          flask.render_template('error.html',
-            message=cls.message(), title='Forbidden'), 403)
+      raise errors.AccessDeniedError(cls.message())
     return wrapper
 
   @classmethod

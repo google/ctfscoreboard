@@ -15,7 +15,8 @@ class Team(db.Model):
   tid = db.Column(db.Integer, primary_key=True)
   name = db.Column(db.String(120), unique=True)
   score = db.Column(db.Integer, default=0)  # Denormalized
-  players = db.relationship('User', backref=db.backref('team', lazy='joined'), lazy='dynamic')
+  players = db.relationship('User', backref=db.backref('team', lazy='joined'),
+      lazy='dynamic')
   answers = db.relationship('Answer', backref='team', lazy='dynamic')
 
   def __repr__(self):
@@ -38,6 +39,10 @@ class Team(db.Model):
     db.session.add(team)
     team.name = name
     db.session.commit()
+
+  @classmethod
+  def enumerate(cls):
+    return enumerate(cls.query.order_by(cls.score.desc()).all(), 1)
 
 
 class User(db.Model):
@@ -79,11 +84,6 @@ class User(db.Model):
 
   @classmethod
   def create(cls, email, nick, password, team=None):
-    if team is None:
-      # Player = team mode
-      team = Team()
-      team.name = nick
-      db.session.add(team)
     user = cls()
     db.session.add(user)
     user.email = email
@@ -130,12 +130,17 @@ class Category(db.Model):
       db.session.commit()
       return cat
     except exc.IntegrityError:
-      flask.flash('Unable to create Category.', 'danger')
       db.session.rollback()
 
   def delete(self):
     db.session.delete(self)
     db.session.commit()
+
+  def get_challenges(self, unlocked_only=True):
+    challenges = Challenge.query.filter(Challenge.category == self)
+    if unlocked_only:
+      challenges = challenges.filter(Challenge.unlocked == True)
+    return challenges
 
 
 class Challenge(db.Model):
@@ -155,6 +160,8 @@ class Challenge(db.Model):
   def is_answered(self, team=None, answers=None):
     if team is None:
       team = flask.g.team
+    if not team:
+      return False
     if answers:
       for a in answers:
         if a.team_tid == team.tid and a.challenge_cid == self.cid:
@@ -172,6 +179,12 @@ class Challenge(db.Model):
   @property
   def solves(self):
     return self.answers.count()
+
+  @property
+  def answered(self):
+    if not flask.g.team:
+      return False
+    return self.is_answered(answers=flask.g.team.answers)
 
   @classmethod
   def create(cls, name, description, points, answer, cid, unlocked=False):
@@ -207,6 +220,8 @@ class Hint(db.Model):
   def is_unlocked(self, team=None, unlocked_hints=None):
     if team is None:
       team = flask.g.team
+    if not team:
+      return flask.g.user and flask.g.user.admin
     if unlocked_hints:
       for h in unlocked_hints:
         if h.hint_hid == self.hid and h.team_tid == team.tid:

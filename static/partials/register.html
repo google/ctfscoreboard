@@ -1,0 +1,52 @@
+<div class='col-md-6 col-md-offset-3'>
+  <form>
+    <div class='form-group'>
+      <label for='email'>Email</label>
+      <input id='email' class='form-control' name='email' placeholder='foo@bar.com'
+        ng-model='email'>
+    </div>
+    <div class='form-group'>
+      <label for='nick'>Handle/Nick</label>
+      <input id='nick' class='form-control' name='nick' placeholder='Zero Cool'
+        ng-model='nick'>
+    </div>
+    <div class='form-group'>
+      <label for='password'>Password</label>
+      <input id='password' class='form-control' name='password'
+        placeholder='password' type='password' ng-model='password'>
+    </div>
+    <div class='form-group'>
+      <label for='password2'>Repeat Password</label>
+      <input id='password2' class='form-control' name='password2'
+        placeholder='repeat password' type='password' ng-model='password2'>
+    </div>
+    <div class='ng-hide' ng-show='config.teams'>
+    <!-- Teams only! -->
+      <div class='form-group'>
+        <label for='team'>Team</label>
+        <select id='team' class='form-control' name='team' ng-model='team'>
+          <optgroup label='New Team'>
+            <option value='new'>New</option>
+          </optgroup>
+          <optgroup label='Join Team'>
+            <option ng-repeat='team in teams'
+              value='{{team.tid}}'>{{team.name}}</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class='form-group' id='div-team-code' ng-hide='team == "new"'>
+        <label for='team-code'>Team Code</label>
+        <input id='team-code' name='team_code' class='form-control'
+          placeholder='10ab03cf' ng-model='team_code'>
+      </div>
+      <div class='form-group' id='div-team-new' ng-show='team == "new"'>
+        <label for='team-name'>Team Name</label>
+        <input id='team-name' name='team_name' class='form-control'
+          placeholder='Hackers' ng-model='team_name'>
+      </div>
+    </div>
+    <!-- /Teams only -->
+    <input type='button' value='Register' class='btn btn-primary'
+      ng-click='register()'>
+  </form>
+</div>

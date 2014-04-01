@@ -1,0 +1,29 @@
+<table class='table table-striped challenge-table'>
+  <thead>
+    <tr><th class='col-md-4'>Name</th><th class='col-md-1'>Points</th><th
+        class='col-md-1'>Solves</th><th
+        class='col-md-3'>Actions</th></tr>
+  </thead>
+  <tbody>
+    <tr ng-repeat='challenge in challenges'><td>{{challenge.name}}</td>
+      <td>{{challenge.points}}</td>
+      <td>{{challenge.solves}}</td>
+      <td>
+        <!-- replace lockbutton -->
+        <a class='btn lockbtn ng-hide btn-warning'
+          ng-hide='challenge.unlocked'
+          ng-click='lockChallenge(challenge, false)'>Locked</a>
+        <a class='btn lockbtn btn-info'
+          ng-show='challenge.unlocked'
+          ng-click='lockChallenge(challenge, true)'>Unlocked</a>
+        <a
+          href='/admin/challenge/{{challenge.cid}}'
+          class='btn btn-primary'>Edit</a><a
+          ng-click='deleteChallenge(challenge)'
+          class='btn btn-danger'>Delete</a></td>
+    </tr>
+    <tr><td></td><td></td><td></td>
+      <td><a href='/admin/challenge'
+          class='btn btn-primary'>New</td></tr>
+  </tbody>
+</table>
