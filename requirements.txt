@@ -1,0 +1,15 @@
+Flask
+Flask-RESTful
+Flask-SQLAlchemy
+Jinja2
+MarkupSafe
+SQLAlchemy
+Werkzeug
+aniso8601
+argparse
+itsdangerous
+pbkdf2
+python-dateutil
+pytz
+six
+wsgiref
