@@ -1,15 +1,31 @@
-<h2>Restore Challenges</h2>
-<form method='POST' action='/admin/back/challenges/restore'
-  enctype='multipart/form-data'>
-  <input type='hidden' ng-model='config.csrf' name='csrftoken'>
-  <div class='form-group'>
-    <label for='restore-file'>Restore File (JSON)</label>
-    <input type='file' id='restore-file' name='restorefile'
-    class='form-control'>
-  </div>
-  <div class='checkbox'>
-    <label><input type='checkbox' id='replace'
-      name='replace' value='True'>Replace instead of merging.</label>
-  </div>
-  <input type='submit' value='Restore' class='btn btn-primary'>
-</form>
+<h2>Backup/Restore Challenges</h2>
+<fieldset><legend>Backup</legend>
+  <a href='/api/backup' target='_self' class='btn btn-primary'>Backup Challenges</a>
+</fieldset>
+<fieldset><legend>Restore</legend>
+  <form ng-submit='submitRestore()'>
+    <input type='file' id='restore-file-chooser' name='restorefile'
+      class='ng-hide'>
+    <div class='form-group'>
+      <label for='restore-file'>Restore File (JSON)</label>
+      <div class='row'>
+        <div class='col-md-6 filename'>{{fileName}}</div>
+        <div class='col-md-3'><input type='button' id='restore-file'
+          ng-click='chooseRestoreFile()' class='btn btn-xs btn-info'
+          value='Choose File'></div>
+      </div>
+    </div>
+    <div class='checkbox'>
+      <label><input type='checkbox' id='replace'
+        name='replace' ng-model='replace'>Replace instead of merging.</label>
+    </div>
+    <div class='ng-hide' ng-show='ready'>
+      <ul class='catlist'>
+        <li ng-repeat='(cid, cat) in fileData.categories'>{{cat.name}}
+        ({{cat.challenges.length}})</li>
+      </ul>
+    </div>
+    <input type='submit' value='Restore' class='btn btn-primary'
+      ng-disabled='!ready'>
+  </form>
+</fieldset>

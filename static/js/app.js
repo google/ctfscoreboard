@@ -51,7 +51,7 @@ scoreboardApp.config([
           templateUrl: '/partials/admin/challenge.html',
           controller: 'AdminChallengeCtrl'
         }).
-        when('/admin/restore/challenges', {
+        when('/admin/backups', {
           templateUrl: '/partials/admin/restore.html',
           controller: 'AdminRestoreCtrl'
         }).

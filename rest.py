@@ -362,3 +362,74 @@ class Config(restful.Resource):
         csrf=csrfutil.get_csrf_token())
 
 api.add_resource(Config, '/api/config')
+
+
+### Admin Backup and restore
+class BackupRestore(restful.Resource):
+  decorators = [utils.admin_required]
+
+  def get(self):
+    categories = {}
+    for cat in models.Category.query.all():
+      challenges = []
+      for q in cat.challenges:
+        hints = []
+        for h in q.hints:
+          hints.append({
+            'hint': h.hint,
+            'cost': h.cost,
+            })
+        challenges.append({
+          'category': cat.cid,
+          'name': q.name,
+          'description': q.description,
+          'points': q.points,
+          'answer_hash': q.answer_hash,
+          'hints': hints,
+          })
+      categories[cat.cid] = {
+          'name': cat.name,
+          'description': cat.description,
+          'challenges': challenges,
+          }
+    return ({'categories': categories},
+        200, 
+        {'Content-Disposition': 'attachment; filename=challenges.json'})
+
+    def post(self):
+      data = flask.request.get_json()
+      categories = data['categories']
+
+      if data.get('replace', False):
+        models.Hint.query.delete()
+        models.Challenge.query.delete()
+        models.Category.query.delete()
+
+      cats = {}
+      challs = 0
+      for catid, cat in categories.iteritems():
+        newcat = models.Category()
+        for f in ('name', 'description'):
+          setattr(newcat, f, cat[f])
+        models.db.session.add(newcat)
+        cats[int(catid)] = newcat
+      
+        for challenge in cat['challenges']:
+          newchall = models.Challenge()
+          for f in ('name', 'description', 'points', 'answer_hash'):
+            setattr(newchall, f, challenge[f])
+          newchall.category = newcat
+          models.db.session.add(newchall)
+          challs += 1
+          for h in challenge.get('hints', []):
+            hint = models.Hint()
+            hint.challenge = newchall
+            hint.hint = h['hint']
+            hint.cost = int(h['cost'])
+            models.db.session.add(hint)
+      
+      models.commit()
+      return {'message': '%d Categories and %d Challenges imported.' % 
+          (len(cats), challs)}
+
+api.add_resource(BackupRestore, '/api/backup')

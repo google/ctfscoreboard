@@ -150,9 +150,62 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
 
 adminChallengeCtrls.controller('AdminRestoreCtrl', [
     '$scope',
-    'configService',
+    '$resource',
     'errorService',
-    function($scope, configService, errorService) {
-      $scope.config = configService.get();
+    function($scope, $resource, errorService) {
+      $scope.replace = false;
+      $scope.ready = false;
+      $scope.fileData = null;
+      $scope.fileName = 'No file chosen.';
+
+      $scope.chooseRestoreFile = function() {
+        $scope.ready = false;
+        $('#restore-file-chooser').click();
+      };
+
+      $('#restore-file-chooser').change(function(evt) {
+        $scope.$apply(function() {
+          var file = evt.target.files[0];
+          if (!file) {
+            $scope.fileName = 'No file chosen.';
+            return;
+          }
+          $scope.fileName = file.name;
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            $scope.$apply(function() {
+              var contents = e.target.result;
+              $scope.fileData = $.parseJSON(contents);
+              $scope.ready = true;
+            });
+          };
+          reader.onerror = function(e) {
+            $scope.$apply(function() {
+              errorService.error('Failed to load file!');
+            });
+          };
+          reader.readAsText(file);
+        });
+      });
+
+      $scope.submitRestore = function() {
+        if (!$scope.ready) {
+          // Shouldn't even be here!
+          errorService.error('Not ready to submit!');
+          return;
+        }
+        $resource('/api/backup').save({}, {
+          categories: $scope.fileData.categories,
+          replace: $scope.replace
+        },
+        function(data) {
+          errorService.error(data.message, 'success');
+          var chooser = $('#restore-file-chooser');
+          chooser.replaceWith(chooser.clone(true));
+        },
+        function(data) {
+          errorService.error(data);
+        });
+      };
     }]);
 
