@@ -1,3 +1,5 @@
+PwnableWeb Scoreboard
+
 This is a basic CTF Scoreboard, with support for hints, teams or individual
 competitors, and a handful of other features.
 
