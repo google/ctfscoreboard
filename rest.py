@@ -68,7 +68,10 @@ class User(restful.Resource):
     user = models.User.query.get_or_404(user_id)
     data = flask.request.get_json()
     if flask.g.user.admin and 'admin' in data:
-      user.admin = data['admin']
+      if data['admin']:
+        user.promote()
+      else:
+        user.admin = False
     if data.get('password'):
       user.set_password(data['password'])
     models.commit()

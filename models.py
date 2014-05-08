@@ -98,13 +98,17 @@ class User(db.Model):
 
   @classmethod
   def create(cls, email, nick, password, team=None):
+    first_user = True if not cls.query.count() else False
     user = cls()
     db.session.add(user)
     user.email = email
     user.nick = nick
     user.set_password(password)
-    user.team = team
-    db.session.commit()
+    if not first_user:
+      user.team = team
+      db.session.commit()
+    else:
+      user.promote()
     return user
 
 
