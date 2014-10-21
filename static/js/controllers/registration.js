@@ -79,14 +79,19 @@ regCtrls.controller('RegistrationCtrl', [
 
 regCtrls.controller('ProfileCtrl', [
     '$scope',
+    'configService',
     'errorService',
     'sessionService',
     'userService',
-    function($scope, errorService, sessionService, userService) {
+    function($scope, configService, errorService, sessionService, userService) {
       $scope.user = null;
 
       sessionService.requireLogin(function() {
-        $scope.user = sessionService.user;
+        $scope.user = sessionService.session.user;
+        configService.get(function(c) {
+            if (c.teams)
+                $scope.team = sessionService.session.team;
+        });
       });
 
       $scope.updateProfile = function() {

@@ -21,9 +21,9 @@ import re
 from sqlalchemy import exc
 from sqlalchemy.orm import exc as orm_exc
 
-import app
+from app import app
 
-db = sqlalchemy.SQLAlchemy(app.app)
+db = sqlalchemy.SQLAlchemy(app)
 
 
 class Team(db.Model):
@@ -42,7 +42,7 @@ class Team(db.Model):
 
     @property
     def code(self):
-        hmac.new(app.config['SECRET_KEY'], self.name).hexdigest()[:12]
+        return hmac.new(app.config['SECRET_KEY'], self.name).hexdigest()[:12]
 
     @property
     def solves(self):

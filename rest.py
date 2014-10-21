@@ -17,7 +17,6 @@ from flask.ext import restful
 from flask.ext.restful import fields
 
 from app import app
-import csrfutil
 import controllers
 import errors
 import models
@@ -154,16 +153,20 @@ class Session(restful.Resource):
 
     """Represents a logged-in session, used for login/logout."""
 
+    team_fields = Team.team_fields.copy()
+    team_fields['code'] = fields.String
     resource_fields = {
         'user': fields.Nested(User.resource_fields),
-        'team': fields.Nested(Team.team_fields),
+        'team': fields.Nested(team_fields),
     }
 
     @restful.marshal_with(resource_fields)
     @utils.login_required
     def get(self):
         """Get the current session."""
-        return dict(user=flask.g.user, team=flask.g.team)
+        return dict(
+                user=flask.g.user,
+                team=flask.g.team)
 
     @restful.marshal_with(resource_fields)
     def post(self):
@@ -383,8 +386,7 @@ api.add_resource(APIScoreboard, '/api/scoreboard')
 class Config(restful.Resource):
 
     def get(self):
-        return dict(teams=app.config.get('TEAMS', False),
-                    csrf=csrfutil.get_csrf_token())
+        return dict(teams=app.config.get('TEAMS', False))
 
 api.add_resource(Config, '/api/config')
 
