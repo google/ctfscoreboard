@@ -1,5 +1,5 @@
 # Copyright 2014 David Tomaschik <david@systemoverlord.com>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -19,8 +19,11 @@ import models
 import rest
 import views
 
+# Imported just for views
+modules_for_views = (rest, views)
+
 if __name__ == '__main__':
-  if 'createdb' in sys.argv:
-    models.db.create_all()
-  else:
-    app.run(host='0.0.0.0', debug=True, port=app.config['PORT'])
+    if 'createdb' in sys.argv:
+        models.db.create_all()
+    else:
+        app.run(host='0.0.0.0', debug=True, port=app.config['PORT'])
