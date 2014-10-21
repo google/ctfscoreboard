@@ -192,7 +192,7 @@ api.add_resource(Session, '/api/session')
 class Challenge(restful.Resource):
     decorators = [utils.admin_required]
 
-    resource_fields = {
+    challenge_fields = {
         'cid': fields.Integer,
         'name': fields.String,
         'points': fields.Integer,
@@ -203,6 +203,12 @@ class Challenge(restful.Resource):
         'answered': fields.Boolean,
         'solves': fields.Integer,
     }
+    attachment_fields = {
+        'aid': fields.String,
+        'filename': fields.String,
+    }
+    resource_fields = challenge_fields.copy()
+    resource_fields['attachments'] = fields.Nested(attachment_fields)
 
     @restful.marshal_with(resource_fields)
     def get(self, challenge_id):
@@ -218,6 +224,8 @@ class Challenge(restful.Resource):
         if 'answer' in data and data['answer']:
             challenge.change_answer(data['answer'])
         challenge.set_hints(data['hints'])
+
+        # TODO: remove attachments
 
         models.commit()
         return challenge
