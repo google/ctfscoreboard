@@ -36,3 +36,27 @@ Author: David Tomaschik <david@systemoverlord.com>
    You probably want to register your user before your players get access.
 
 8. Have fun!  Maybe set up some challenges.  Players might like that more.
+
+
+### Development ###
+
+**Test Cases**
+
+- Setup database
+- Create user, verify admin
+- Create category
+- Create challenge
+  - With, without hint
+  - With, without attachment
+- Edit challenges
+  - Add attachment
+  - Delete attachment
+  - Add hint
+  - Delete hint
+- Download backup
+- Restore backup
+- Create 2nd user, verify not admin
+  - Solve challenge
+  - Download attachment
+  - Get hint
+  - Solve challenge w/hint
