@@ -264,7 +264,7 @@ class ChallengeList(restful.Resource):
             data['points'],
             data['answer'],
             data['cat_cid'],
-            data['unlocked'])
+            data.get('unlocked', False))
         models.commit()
         return chall
 

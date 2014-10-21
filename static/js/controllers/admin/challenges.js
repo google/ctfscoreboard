@@ -130,7 +130,14 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
 
       $scope.saveChallenge = function() {
         errorService.clearErrors();
-        $scope.challenge.$save({cid: $scope.challenge.cid},
+        var save_func;
+        if ($scope.challenge.cid) {
+            save_func = challengeService.save;
+        } else {
+            save_func = challengeService.create;
+        }
+        save_func({cid: $scope.challenge.cid},
+          $scope.challenge,
           function(data) {
             $scope.challenge = data;
             errorService.error('Saved.', 'success');
@@ -150,13 +157,17 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
       };
 
       sessionService.requireLogin(function() {
-        challengeService.get({cid: $routeParams.cid},
-          function(data) {
-            $scope.challenge = data;
-          },
-          function(data) {
-            errorService.error(data);
-          });
+        if ($routeParams.cid) {
+          challengeService.get({cid: $routeParams.cid},
+            function(data) {
+                $scope.challenge = data;
+            },
+            function(data) {
+                errorService.error(data);
+            });
+        } else {
+            $scope.challenge = {};
+        }
         categoryService.get(function(data) {
           $scope.categories = data.categories;
         });
