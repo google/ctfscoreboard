@@ -51,6 +51,8 @@ def register_user(email, nick, password, team_id=None,
     if app.config.get('TEAMS'):
         if team_id == 'new':
             try:
+                app.logger.info('Creating new team %s for user %s',
+                        team_name, nick)
                 team = models.Team.create(team_name)
             except exc.IntegrityError:
                 models.db.session.rollback()

@@ -54,6 +54,7 @@ class Team(db.Model):
         db.session.add(team)
         team.name = name
         db.session.commit()
+        return team
 
     @classmethod
     def enumerate(cls):
