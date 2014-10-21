@@ -18,12 +18,14 @@ import json
 from app import app
 import csrfutil
 import models
+import os
 import utils
 
 
 @app.route('/admin/backup/challenges')
 @utils.admin_required
 def admin_challenge_backup():
+    # TODO: remove if not needed
     categories = {}
     for cat in models.Category.query.all():
         challenges = []
@@ -96,3 +98,23 @@ def admin_challenge_restore():
 
     models.commit()
     return flask.redirect('/admin/categories')
+
+
+@app.route('/attachment/<filename>')
+@utils.login_required
+def download(filename):
+    attachment = models.Attachment.query.get_or_404(filename)
+    if not attachment.challenge.unlocked:
+        flask.abort(404)
+
+    attachment_dir = app.config.get('ATTACHMENT_DIR', None)
+    if not attachment_dir or not os.path.isdir(attachment_dir):
+        app.logger.error('Missing ATTACHMENT_DIR: %s', attachment_dir)
+        flask.abort(500)
+    attachment_dir = os.path.abspath(attachment_dir)
+
+    flask.send_from_directory(
+        attachment_dir, filename,
+        mimetype=attachment.content_type,
+        attachment_filename=attachment.filename,
+        as_attachment=True)

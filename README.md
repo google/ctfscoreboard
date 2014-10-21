@@ -22,6 +22,7 @@ Author: David Tomaschik <david@systemoverlord.com>
         SECRET_KEY = 'Some Random Value For Session Keys'
         TITLE = 'FakeCTF'
         TEAMS = True
+        ATTACHMENT_DIR = 'attachments'
 
 5. Create the database:
 

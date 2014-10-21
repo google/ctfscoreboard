@@ -175,6 +175,8 @@ class Challenge(db.Model):
     cat_cid = db.Column(db.Integer, db.ForeignKey('category.cid'))
     answers = db.relationship('Answer', backref='challenge', lazy='dynamic')
     hints = db.relationship('Hint', backref='challenge', lazy='dynamic')
+    attachments = db.relationship('Attachment', backref='challenge',
+                                  lazy='dynamic')
 
     def __repr__(self):
         return '<Challenge: %d/%s>' % (self.cid, self.name)
@@ -223,6 +225,13 @@ class Challenge(db.Model):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+
+
+class Attachment(db.Model):
+    aid = db.Column(db.String(64), primary_key=True)
+    challenge_cid = db.Column(db.Integer, db.ForeignKey('challenge.cid'))
+    filename = db.Column(db.String(100))
+    content_type = db.Column(db.String(100))
 
 
 class Hint(db.Model):

@@ -9,6 +9,11 @@
     </div>
     <div class='panel-body'>
       <p ng-bind-html='chall.description|linky'></p>
+      <ul ng-show='chall.attachments'>
+        <li ng-repeat='attachment in chall.attachments'>
+          <a href='/attachment/{{attachment.aid}}'>{{attachment.filename}}</a>
+        </li>
+      </ul>
       <div ng-hide='isAdmin()'>
         <!-- if solved -->
         <span class='alert alert-success solved ng-hide'
