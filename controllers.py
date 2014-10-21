@@ -49,7 +49,7 @@ def register_user(email, nick, password, team_id=None,
                     email):
         raise errors.ValidationError('Invalid email address.')
     if app.config.get('TEAMS'):
-        if not team_id:
+        if team_id == 'new':
             try:
                 team = models.Team.create(team_name)
             except exc.IntegrityError:

@@ -227,7 +227,7 @@ class Challenge(restful.Resource):
 
         hid_set = set()
         for hint in data['hints']:
-            hid_set.add(hint.get('hid')) if hint.get('hid')
+            hint.git('hid') and hid_set.add(hint.get('hid'))
             h = get_or_create_hint(hint.get('hid'))
             h.cost = hint['cost']
             h.hint = hint['hint']
