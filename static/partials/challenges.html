@@ -9,7 +9,7 @@
     </div>
     <div class='panel-body'>
       <p ng-bind-html='chall.description|linky'></p>
-      <ul ng-show='chall.attachments'>
+      <ul ng-show='chall.attachments' class='attachments'>
         <li ng-repeat='attachment in chall.attachments'>
           <a href='/attachment/{{attachment.aid}}'>{{attachment.filename}}</a>
         </li>
