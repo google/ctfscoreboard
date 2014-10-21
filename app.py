@@ -14,6 +14,7 @@
 
 import flask
 import logging
+import os
 import re
 from werkzeug import exceptions
 from werkzeug.utils import ImportStringError
@@ -25,6 +26,11 @@ try:
     app.config.from_object('scoreboard.config')  # Load from config.py
 except ImportStringError:
     app.config.from_object('config')  # Load from config.py
+
+# Set directory
+if not app.config.get('CWD', None):
+    app.config['CWD'] = os.path.dirname(os.path.realpath(__file__))
+os.chdir(app.config['CWD'])
 
 # Main logger
 if not app.debug:
