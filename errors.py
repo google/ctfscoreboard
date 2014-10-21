@@ -1,5 +1,5 @@
 # Copyright 2014 David Tomaschik <david@systemoverlord.com>
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -15,20 +15,23 @@
 # Custom error classes
 from werkzeug import exceptions
 
+
 class AccessDeniedError(exceptions.HTTPException):
-  code = 403
-  data = {'message': 'Forbidden'}
+    code = 403
+    data = {'message': 'Forbidden'}
+
 
 class ValidationError(exceptions.HTTPException):
-  code = 400
+    code = 400
 
-  def __init__(self, msg, *args, **kwargs):
-    super(ValidationError, self).__init__(*args, **kwargs)
-    self.data = {'message': msg}
+    def __init__(self, msg, *args, **kwargs):
+        super(ValidationError, self).__init__(*args, **kwargs)
+        self.data = {'message': msg}
 
 
 class InvalidAnswerError(AccessDeniedError):
-  data = {'message': 'Ha ha ha... No.'}
+    data = {'message': 'Ha ha ha... No.'}
+
 
 class LoginError(AccessDeniedError):
-  data = {'message': 'Invalid username/password.'}
+    data = {'message': 'Invalid username/password.'}
