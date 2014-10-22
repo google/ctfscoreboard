@@ -392,9 +392,50 @@ api.add_resource(APIScoreboard, '/api/scoreboard')
 class Config(restful.Resource):
 
     def get(self):
-        return dict(teams=app.config.get('TEAMS', False))
+        return dict(
+                teams=app.config.get('TEAMS', False),
+                news_mechanism='poll',
+                news_poll_interval=app.config.get('NEWS_POLL_INTERVAL', 60000))
 
 api.add_resource(Config, '/api/config')
+
+
+# News updates
+class News(restful.Resource):
+
+    resource_fields = {
+        'nid': fields.Integer,
+        'news_type': fields.String,
+        'timestamp': fields.DateTime,
+        'author': fields.String,
+        'message': fields.String,
+    }
+
+    @restful.marshal_with(resource_fields)
+    def get(self):
+        if flask.g.team:
+            news = models.News.for_team(flask.g.team)
+        else:
+            news = models.News.for_public()
+        return list(news)
+
+    @utils.admin_required
+    @restful.marshal_with(resource_fields)
+    def post(self):
+        data = flask.request.get_json()
+        tid = None
+        if 'tid' in data:
+            try:
+                tid = int(data['tid'])
+            except ValueError:
+                pass
+        author = flask.g.user.nick
+        if tid:
+            return models.News.unicast(tid, author, data['message'])
+        return models.News.broadcast(author, data['message'])
+
+
+api.add_resource(News, '/api/news')
 
 
 # File upload
