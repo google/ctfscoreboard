@@ -48,8 +48,19 @@ globalCtrls.controller('NewsCtrl', [
     '$scope',
     'newsService',
     function($scope, newsService) {
+        $scope.latest = 0;
         var updateNews = function(newsItems) {
+            var latest = 0;
+            angular.forEach(newsItems, function(item) {
+                var d = Date.parse(item.timestamp);
+                if (d > latest)
+                  latest = d;
+            });
             $scope.newsItems = newsItems;
+            if (latest > $scope.latest) {
+                // TODO: call attention to new news
+                $scope.latest = latest;
+            }
         };
 
         newsService.registerClient(updateNews);
