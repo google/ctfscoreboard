@@ -20,6 +20,7 @@ var adminChallengeCtrls = angular.module('adminChallengeCtrls', [
     'challengeServices',
     'globalServices',
     'sessionServices',
+    'uploadServices',
     ]);
 
 adminChallengeCtrls.controller('AdminCategoryCtrl', [
@@ -137,12 +138,17 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
     'challengeService',
     'errorService',
     'sessionService',
+    'uploadService',
     function($scope, $routeParams, categoryService, challengeService,
-      errorService, sessionService) {
+      errorService, sessionService, uploadService) {
       $scope.cid = $routeParams.cid;
+      $scope.newAttachment = {};
+      $scope.addNewAttachment = false;
 
       $scope.saveChallenge = function() {
         errorService.clearErrors();
+        // Check attachments
+
         var save_func;
         if ($scope.challenge.cid) {
             save_func = challengeService.save;
@@ -169,6 +175,44 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
         $scope.challenge.hints.splice(idx, 1);
       };
 
+      $scope.addAttachment = function() {
+          $scope.newAttachment = {};
+          $scope.addNewAttachment = true;
+      };
+
+      $scope.uploadFile = function() {
+          // Upload file and get hash
+          var fileField = $('#upload-new');
+          var file = fileField.get(0).files[0];
+
+          if (!file) {
+              errorService.error('Must select a file.');
+              return;
+          }
+
+          uploadService.upload(file).then(
+            function(filename, hash) {
+                var attachment = {
+                    'filename': filename,
+                    'aid': hash
+                };
+                $scope.challenge.attachments.push(attachment);
+                $scope.newAttachment = {};
+                $scope.addNewAttachment = false;
+                fileField.replaceWith(fileField.clone(true));
+            }, function(data) {
+                errorService.error(data);
+            });
+      };
+
+      $scope.verifyFile = function() {
+          // Verify existance by hash
+      };
+
+      $scope.deleteAttachment = function(attachment) {
+      };
+
+      /* Setup on load */
       sessionService.requireLogin(function() {
         if ($routeParams.cid) {
           challengeService.get({cid: $routeParams.cid},

@@ -208,7 +208,8 @@ class Challenge(restful.Resource):
         'filename': fields.String,
     }
     resource_fields = challenge_fields.copy()
-    resource_fields['attachments'] = fields.Nested(attachment_fields)
+    resource_fields['attachments'] = fields.List(
+            fields.Nested(attachment_fields))
 
     @restful.marshal_with(resource_fields)
     def get(self, challenge_id):
