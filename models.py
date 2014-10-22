@@ -16,8 +16,10 @@ import datetime
 import flask
 from flask.ext import sqlalchemy
 import hmac
+import os
 import pbkdf2
 import re
+import utils
 from sqlalchemy import exc
 from sqlalchemy.orm import exc as orm_exc
 
@@ -247,19 +249,40 @@ class Challenge(db.Model):
             if h.hid not in hid_set:
                 db.session.delete(h)
 
+    def set_attachments(self, attachments):
+        aid_set = set()
+        old_attachments = list(self.attachments)
+
+        for a in attachments:
+            aid_set.add(a['aid'])
+            attachment = Attachment.query.get(a['aid'])
+            if not attachment:
+                attachment = Attachment()
+                attachment.aid = a['aid']
+                attachment.filename = a['filename']
+                attachment.content_type = a['content_type']
+                attachment.challenge = self
+                db.session.add(attachment)
+
+        for a in old_attachments:
+            if a.aid not in aid_set:
+                a.delete()
+
 
 class Attachment(db.Model):
     aid = db.Column(db.String(64), primary_key=True)
     challenge_cid = db.Column(db.Integer, db.ForeignKey('challenge.cid'))
     filename = db.Column(db.String(100))
     content_type = db.Column(db.String(100))
-
-
-class Attachment(db.Model):
-    aid = db.Column(db.String(64), primary_key=True)
-    challenge_cid = db.Column(db.Integer, db.ForeignKey('challenge.cid'))
-    filename = db.Column(db.String(100))
-    content_type = db.Column(db.String(100))
+    
+    def delete(self, from_disk=True):
+        if from_disk:
+            path = os.path.join(utils.attachment_dir(), self.aid)
+            try:
+                os.unlink(path)
+            except IOError as ex:
+                app.logger.exception("Couldn't unlink: %s", str(ex))
+        db.session.delete(self)
 
 
 class Hint(db.Model):

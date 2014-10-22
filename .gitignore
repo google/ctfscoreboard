@@ -2,3 +2,5 @@
 config.py
 *.swp
 *.db
+attachments
+attachments/**

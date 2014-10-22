@@ -25,34 +25,32 @@ uploadServices.service('uploadService', ['$http', '$q',
 
         this.upload = function(file) {
             // Returns a promise with the file hash
-            // Read file metadata first
-            var reader = new FileReader();
             var filename = basename(file.name);
             // Construct the promise
             var promise = $q.defer();
             // HTTP Config
             var config = {
+                transformRequest: angular.identity,
                 'headers': {
-                    'Content-type': file.type
+                    'Content-type': undefined
                 }
             };
-            // Setup reader
-            reader.onload = function(evt) {
-                $http.post('/api/upload', evt.target.result, config).
-                    success(function(data) {
-                        promise.resolve(basename, data);
-                    }).
-                    error(function(data, status) {
-                        if (data)
-                            promise.reject(data);
-                        else
-                            promise.reject('Unknown upload error.');
-                    });
-            };
-            reader.onerror = function() {
-                promise.reject('Read error.');
-            };
-            reader.readAsDataURL(file);
+
+            // Setup form data
+            var fd = new FormData();
+            fd.append('file', file);
+            // Request
+            $http.post('/api/upload', fd, config).
+                success(function(data) {
+                    data.filename = filename;
+                    promise.resolve(data);
+                }).
+                error(function(data, status) {
+                    if (data)
+                        promise.reject(data);
+                    else
+                        promise.reject('Unknown upload error.');
+                });
             return promise.promise;
         };
     }]);

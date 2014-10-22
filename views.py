@@ -107,14 +107,8 @@ def download(filename):
     if not attachment.challenge.unlocked:
         flask.abort(404)
 
-    attachment_dir = app.config.get('ATTACHMENT_DIR', None)
-    if not attachment_dir or not os.path.isdir(attachment_dir):
-        app.logger.error('Missing ATTACHMENT_DIR: %s', attachment_dir)
-        flask.abort(500)
-    attachment_dir = os.path.abspath(attachment_dir)
-
-    flask.send_from_directory(
-        attachment_dir, filename,
+    return flask.send_from_directory(
+        utils.attachment_dir(), filename,
         mimetype=attachment.content_type,
         attachment_filename=attachment.filename,
         as_attachment=True)

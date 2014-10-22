@@ -191,12 +191,8 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
           }
 
           uploadService.upload(file).then(
-            function(filename, hash) {
-                var attachment = {
-                    'filename': filename,
-                    'aid': hash
-                };
-                $scope.challenge.attachments.push(attachment);
+            function(metadata) {
+                $scope.challenge.attachments.push(metadata);
                 $scope.newAttachment = {};
                 $scope.addNewAttachment = false;
                 fileField.replaceWith(fileField.clone(true));
@@ -207,9 +203,12 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
 
       $scope.verifyFile = function() {
           // Verify existance by hash
+          // TODO
       };
 
       $scope.deleteAttachment = function(attachment) {
+        var idx = $scope.challenge.attachments.indexOf(attachment);
+        $scope.challenge.attachments.splice(idx, 1);
       };
 
       /* Setup on load */

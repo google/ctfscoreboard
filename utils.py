@@ -16,6 +16,7 @@ import datetime
 import errors
 import flask
 import functools
+import os
 
 from app import app
 import models
@@ -100,6 +101,23 @@ def access_team(team):
     if flask.g.team and flask.g.team.tid == team:
         return True
     return False
+
+
+def attachment_dir(create=False):
+    """Return path to attachment dir."""
+    config_dir = app.config.get('ATTACHMENT_DIR', 'attachments')
+    if app.config.get('CWD'):
+        target_dir = os.path.normpath(os.path.join(app.config.get('CWD'),
+            config_dir))
+    else:
+        target_dir = os.path.abspath(config_dir)
+    if not os.path.isdir(target_dir):
+        if create:
+            os.mkdir(target_dir)
+        else:
+            app.logger.error('Missing or invalid ATTACHMENT_DIR: %s', target_dir)
+            flask.abort(500)
+    return target_dir
 
 
 # Game time settings

@@ -15,6 +15,8 @@
 import flask
 from flask.ext import restful
 from flask.ext.restful import fields
+import hashlib
+import os
 
 from app import app
 import controllers
@@ -224,11 +226,10 @@ class Challenge(restful.Resource):
                 challenge, field, data.get(field, getattr(challenge, field)))
         if 'answer' in data and data['answer']:
             challenge.change_answer(data['answer'])
-        challenge.set_hints(data['hints'])
-
-        # TODO: remove attachments
-
-        # TODO: remove attachments
+        if 'hints' in data:
+            challenge.set_hints(data['hints'])
+        if 'attachments' in data:
+            challenge.set_attachments(data['attachments'])
 
         models.commit()
         return challenge
@@ -260,7 +261,10 @@ class ChallengeList(restful.Resource):
             data['answer'],
             data['cat_cid'],
             data.get('unlocked', False))
-        chall.set_hints(data['hints'])
+        if 'hints' in data:
+            chall.set_hints(data['hints'])
+        if 'attachments' in data:
+            chall.set_attachments(data['attachments'])
         models.commit()
         return chall
 
@@ -391,6 +395,28 @@ class Config(restful.Resource):
         return dict(teams=app.config.get('TEAMS', False))
 
 api.add_resource(Config, '/api/config')
+
+
+# File upload
+class Upload(restful.Resource):
+    decorators = [utils.admin_required]
+
+    def post(self):
+        fp = flask.request.files['file']
+        # Hash the file
+        md = hashlib.sha256()
+        while True:
+            blk = fp.read(2**16)
+            if not blk:
+                break
+            md.update(blk)
+        fhash = md.hexdigest()
+        fp.seek(0, os.SEEK_SET)
+        dest_name = os.path.join(utils.attachment_dir(create=True), fhash)
+        fp.save(dest_name, buffer_size=2**16)
+        return dict(aid=fhash, content_type=fp.mimetype)
+
+api.add_resource(Upload, '/api/upload')
 
 
 # Admin Backup and restore
