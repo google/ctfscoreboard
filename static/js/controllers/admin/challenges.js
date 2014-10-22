@@ -166,7 +166,7 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
                 errorService.error(data);
             });
         } else {
-            $scope.challenge = {};
+            $scope.challenge = {'hints': []};
         }
         categoryService.get(function(data) {
           $scope.categories = data.categories;

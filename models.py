@@ -225,6 +225,26 @@ class Challenge(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+    def set_hints(self, hints):
+        hid_set = set()
+        old_hints = list(self.hints)
+
+        for h in hints:
+            if h.get('hid', None):
+                hint = Hint.query.get(h['hid'])
+                hid_set.add(h['hid'])
+            else:
+                hint = Hint()
+                db.session.add(hint)
+                hint.challenge = self
+            hint.hint = h['hint']
+            hint.cost = h['cost']
+
+        # Delete removed hints
+        for h in old_hints:
+            if h.hid not in hid_set:
+                db.session.delete(h)
+
 
 class Hint(db.Model):
     hid = db.Column(db.Integer, primary_key=True)

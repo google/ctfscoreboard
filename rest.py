@@ -217,28 +217,7 @@ class Challenge(restful.Resource):
                 challenge, field, data.get(field, getattr(challenge, field)))
         if 'answer' in data and data['answer']:
             challenge.change_answer(data['answer'])
-
-        def get_or_create_hint(hid):
-            if not hid:
-                h = models.Hint()
-                h.challenge = challenge
-                models.db.session.add(h)
-                return h
-            for h in challenge.hints:
-                if h.hid == hid:
-                    return h
-
-        hid_set = set()
-        for hint in data['hints']:
-            hint.git('hid') and hid_set.add(hint.get('hid'))
-            h = get_or_create_hint(hint.get('hid'))
-            h.cost = hint['cost']
-            h.hint = hint['hint']
-
-        # Remove those that have been removed
-        for hint in challenge.hints:
-            if hint.hid and hint.hid not in hid_set:
-                models.db.session.delete(hint)
+        challenge.set_hints(data['hints'])
 
         models.commit()
         return challenge
@@ -265,6 +244,7 @@ class ChallengeList(restful.Resource):
             data['answer'],
             data['cat_cid'],
             data.get('unlocked', False))
+        chall.set_hints(data['hints'])
         models.commit()
         return chall
 
