@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import flask
 from flask.ext import restful
 from flask.ext.restful import fields
@@ -43,6 +44,18 @@ class HintField(fields.Raw):
         if value.is_unlocked() or (flask.g.user and flask.g.user.admin):
             res['hint'] = value.hint
         return res
+
+
+class ISO8601DateTime(fields.Raw):
+
+    """Show datetimes as ISO8601."""
+
+    def format(self, value):
+        if isinstance(value, (int, float)):
+            value = datetime.fromtimestamp(value)
+        if isinstance(value, (datetime.datetime, datetime.date)):
+            return value.isoformat()
+        raise ValueError('Unable to convert %s to ISO8601.' % str(type(value)))
 
 
 # User/team management, logins, etc.
@@ -406,7 +419,7 @@ class News(restful.Resource):
     resource_fields = {
         'nid': fields.Integer,
         'news_type': fields.String,
-        'timestamp': fields.DateTime,
+        'timestamp': ISO8601DateTime,
         'author': fields.String,
         'message': fields.String,
     }
