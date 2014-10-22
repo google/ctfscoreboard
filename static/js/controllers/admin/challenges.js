@@ -107,6 +107,19 @@ adminChallengeCtrls.controller('AdminChallengesCtrl', [
           });
       };
 
+      $scope.deleteChallenge = function(challenge) {
+          var name = challenge.name;
+          challengeService.delete({cid: challenge.cid},
+            function(){
+                var idx = $scope.challenges.indexOf(challenge);
+                $scope.challenges.splice(idx, 1);
+                errorService.error(name + ' deleted.', 'success');
+            },
+            function(data) {
+                errorService.error(data);
+            });
+      };
+
       sessionService.requireLogin(function() {
         challengeService.get(function(data) {
           $scope.challenges = data.challenges;

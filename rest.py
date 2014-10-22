@@ -222,6 +222,11 @@ class Challenge(restful.Resource):
         models.commit()
         return challenge
 
+    def delete(self, challenge_id):
+        challenge = models.Challenge.query.get_or_404(challenge_id)
+        models.db.session.delete(challenge)
+        models.commit()
+
 
 class ChallengeList(restful.Resource):
     decorators = [utils.admin_required]
@@ -284,6 +289,12 @@ class Category(restful.Resource):
         res = {k: getattr(category, k) for k in self.category_fields}
         res['challenges'] = list(challenges)
         return res
+
+    @utils.admin_required
+    def delete(self, category_id):
+        category = models.Category.query.get_or_404(category_id)
+        models.db.session.delete(category)
+        models.commit()
 
 
 class CategoryList(restful.Resource):
