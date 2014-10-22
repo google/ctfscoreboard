@@ -32,8 +32,11 @@ globalServices.service('errorService',
       };
       this.error = function(msg, severity) {
         severity = severity || 'danger';
-        msg = (msg.data && msg.data.message) || msg.data || msg;
+        msg = (msg.data && msg.data.message) || msg.message || msg.data || msg;
         this.errors.push({severity: severity, msg: msg});
       };
+      this.success = function(msg) {
+        this.error(msg, 'success');
+      }
     });
 
