@@ -27,11 +27,17 @@ challengeCtrls.controller('CategoryMenuCtrl', [
     'categoryService',
     'sessionService',
     function($scope, categoryService, sessionService) {
-      sessionService.requireLogin(function() {
-        categoryService.getList(function(data) {
-          $scope.categories = data.categories;
+        var updateCategories = function() {
+            categoryService.getList(function(data) {
+                $scope.categories = data.categories;
+            });
+        };
+
+        sessionService.requireLogin(updateCategories, true);
+        $scope.$on('sessionLogin', updateCategories);
+        $scope.$on('sessionLogout', function() {
+            $scope.categories = [];
         });
-      }, true);
     }]);
 
 challengeCtrls.controller('ChallengeCtrl', [

@@ -50,6 +50,17 @@ logger = logging.getLogger('scoreboard')
 logger.addHandler(handler)
 app.challenge_log = logger
 
+
+# Add headers to responses
+@app.after_request
+def add_headers(response):
+    h = response.headers
+    # TODO: CSP
+    h.add('X-Frame-Options', 'DENY')
+    h.add('X-XSS-Protection', '1', mode='block')
+    return response
+
+
 # Install a default error handler
 error_titles = {
     403: 'Forbidden',

@@ -29,7 +29,8 @@ Author: David Tomaschik <david@systemoverlord.com>
         python main.py createdb
 
 6. Set up your favorite python application server, optionally behind a
-   webserver.  Tested with uwsgi + nginx.  Not tested with anything else,
+   webserver.  You'll want to use main.app as your WSGI handler.
+   Tested with uwsgi + nginx.  Not tested with anything else,
    let me know if you have success.
 
 7. Register a user.  The first user registed is automatically made an admin.

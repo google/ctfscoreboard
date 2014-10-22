@@ -63,7 +63,7 @@ scoreboardApp.config([
           templateUrl: '/partials/admin/challenges.html',
           controller: 'AdminChallengesCtrl'
         }).
-        when('/admin/challenge/:cid', {
+        when('/admin/challenge/:cid?', {
           templateUrl: '/partials/admin/challenge.html',
           controller: 'AdminChallengeCtrl'
         }).

@@ -17,7 +17,6 @@ from flask.ext import restful
 from flask.ext.restful import fields
 
 from app import app
-import csrfutil
 import controllers
 import errors
 import models
@@ -154,16 +153,20 @@ class Session(restful.Resource):
 
     """Represents a logged-in session, used for login/logout."""
 
+    team_fields = Team.team_fields.copy()
+    team_fields['code'] = fields.String
     resource_fields = {
         'user': fields.Nested(User.resource_fields),
-        'team': fields.Nested(Team.team_fields),
+        'team': fields.Nested(team_fields),
     }
 
     @restful.marshal_with(resource_fields)
     @utils.login_required
     def get(self):
         """Get the current session."""
-        return dict(user=flask.g.user, team=flask.g.team)
+        return dict(
+                user=flask.g.user,
+                team=flask.g.team)
 
     @restful.marshal_with(resource_fields)
     def post(self):
@@ -205,7 +208,8 @@ class Challenge(restful.Resource):
         'filename': fields.String,
     }
     resource_fields = challenge_fields.copy()
-    resource_fields['attachments'] = fields.Nested(attachment_fields)
+    resource_fields['attachments'] = fields.List(
+            fields.Nested(attachment_fields))
 
     @restful.marshal_with(resource_fields)
     def get(self, challenge_id):
@@ -220,33 +224,19 @@ class Challenge(restful.Resource):
                 challenge, field, data.get(field, getattr(challenge, field)))
         if 'answer' in data and data['answer']:
             challenge.change_answer(data['answer'])
+        challenge.set_hints(data['hints'])
 
-        def get_hint(hid):
-            if not hid:
-                h = models.Hint()
-                h.challenge = challenge
-                models.db.session.add(h)
-                return h
-            for h in challenge.hints:
-                if h.hid == hid:
-                    return h
-
-        hid = set()
-        for hint in data['hints']:
-            hid.add(hint.get('hid'))
-            h = get_hint(hint.get('hid'))
-            h.cost = hint['cost']
-            h.hint = hint['hint']
-
-        # Remove those that have been removed
-        for hint in challenge.hints:
-            if hint.hid and hint.hid not in hid:
-                models.db.session.delete(hint)
+        # TODO: remove attachments
 
         # TODO: remove attachments
 
         models.commit()
         return challenge
+
+    def delete(self, challenge_id):
+        challenge = models.Challenge.query.get_or_404(challenge_id)
+        models.db.session.delete(challenge)
+        models.commit()
 
 
 class ChallengeList(restful.Resource):
@@ -269,7 +259,8 @@ class ChallengeList(restful.Resource):
             data['points'],
             data['answer'],
             data['cat_cid'],
-            data['unlocked'])
+            data.get('unlocked', False))
+        chall.set_hints(data['hints'])
         models.commit()
         return chall
 
@@ -309,6 +300,12 @@ class Category(restful.Resource):
         res = {k: getattr(category, k) for k in self.category_fields}
         res['challenges'] = list(challenges)
         return res
+
+    @utils.admin_required
+    def delete(self, category_id):
+        category = models.Category.query.get_or_404(category_id)
+        models.db.session.delete(category)
+        models.commit()
 
 
 class CategoryList(restful.Resource):
@@ -391,8 +388,7 @@ api.add_resource(APIScoreboard, '/api/scoreboard')
 class Config(restful.Resource):
 
     def get(self):
-        return dict(teams=app.config.get('TEAMS', False),
-                    csrf=csrfutil.get_csrf_token())
+        return dict(teams=app.config.get('TEAMS', False))
 
 api.add_resource(Config, '/api/config')
 

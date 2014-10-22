@@ -20,8 +20,8 @@ var sessionServices = angular.module('sessionServices', [
     ]);
 
 sessionServices.service('sessionService', [
-    '$resource', '$location', 'errorService',
-    function($resource, $location, errorService) {
+    '$resource', '$location', '$rootScope', 'errorService',
+    function($resource, $location, $rootScope, errorService) {
       this.sessionData = $resource('/api/session');
       this.session = {
         user: null,
@@ -35,6 +35,7 @@ sessionServices.service('sessionService', [
             this.session.team = data.team;
             if (successCallback)
               successCallback();
+            $rootScope.$broadcast('sessionLogin');
           }), errorCallback || function() {});
       };
 
@@ -42,6 +43,7 @@ sessionServices.service('sessionService', [
         this.sessionData.remove();
         this.session.user = null;
         this.session.team = null;
+        $rootScope.$broadcast('sessionLogout');
       };
 
       this.refresh = function(successCallback, errorCallback) {

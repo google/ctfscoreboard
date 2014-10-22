@@ -60,6 +60,46 @@
             ng-click='addHint()'>&#x271B;</a></td></tr>
     </tfoot>
   </table>
+  <table class='table' id='attachment-table'>
+    <thead>
+        <tr><th class='col-md-4'>File</th><th
+                class='col-md-4'>Filehash</th><th class='col-md-1'></th></tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat='attachment in challenge.attachments'>
+        <td>{{attachment.filename}}</td>
+        <td>{{attachment.aid}}</td>
+        <td><a class='btn btn-sm btn-warning'
+          ng-click='deleteAttachment(hint)'>&#x2715;</a></td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr ng-hide='addNewAttachment'><td></td><td></td><td><a 
+            class='btn btn-sm btn-info'
+            ng-click='addAttachment()'>&#x271B;</a></td></tr>
+    </tfoot>
+  </table>
+  <div class='new-file' ng-show='addNewAttachment'>
+    <input type='radio' name='source-new' value='upload'
+      id='source-upload-new' ng-model='newAttachment.source'><label
+        for='source-upload-new'>Upload</label><br />
+    <input type='file' name='upload-new' id='upload-new'
+      ng-show='newAttachment.source == "upload"'>
+    <input type='button' ng-click='uploadFile()' class='btn btn-success'
+      ng-show='newAttachment.source == "upload"' value='Upload'><br />
+    <input type='radio' name='source-new' value='filehash'
+      id='source-filehash-new' ng-model='newAttachment.source'><label
+        for='source-filehash-new'>Filehash</label><br />
+    <input name='filehash-new' id='filehash-new'
+      ng-model='newAttachment.aid' ng-show='newAttachment.source == "filehash"'>
+    <div class='form-group' ng-show='newAttachment.source == "filehash"'>
+        <label for='filename-new'>Filename</label>
+        <input id='filename-new' name='filename-new'
+          class='form-control' ng-model='newAttachment.filename'>
+    </div>
+    <input type='button' ng-click='verifyFile()' class='btn btn-success'
+      ng-show='newAttachment.source == "filehash"'>
+  </div>
   <input type='submit' class='btn btn-primary' value='Save'>
 </form>
 

@@ -21,9 +21,9 @@ import re
 from sqlalchemy import exc
 from sqlalchemy.orm import exc as orm_exc
 
-import app
+from app import app
 
-db = sqlalchemy.SQLAlchemy(app.app)
+db = sqlalchemy.SQLAlchemy(app)
 
 
 class Team(db.Model):
@@ -42,7 +42,7 @@ class Team(db.Model):
 
     @property
     def code(self):
-        hmac.new(app.config['SECRET_KEY'], self.name).hexdigest()[:12]
+        return hmac.new(app.config['SECRET_KEY'], self.name).hexdigest()[:12]
 
     @property
     def solves(self):
@@ -54,6 +54,7 @@ class Team(db.Model):
         db.session.add(team)
         team.name = name
         db.session.commit()
+        return team
 
     @classmethod
     def enumerate(cls):
@@ -225,6 +226,33 @@ class Challenge(db.Model):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+
+    def set_hints(self, hints):
+        hid_set = set()
+        old_hints = list(self.hints)
+
+        for h in hints:
+            if h.get('hid', None):
+                hint = Hint.query.get(h['hid'])
+                hid_set.add(h['hid'])
+            else:
+                hint = Hint()
+                db.session.add(hint)
+                hint.challenge = self
+            hint.hint = h['hint']
+            hint.cost = h['cost']
+
+        # Delete removed hints
+        for h in old_hints:
+            if h.hid not in hid_set:
+                db.session.delete(h)
+
+
+class Attachment(db.Model):
+    aid = db.Column(db.String(64), primary_key=True)
+    challenge_cid = db.Column(db.Integer, db.ForeignKey('challenge.cid'))
+    filename = db.Column(db.String(100))
+    content_type = db.Column(db.String(100))
 
 
 class Attachment(db.Model):

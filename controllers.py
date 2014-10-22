@@ -48,9 +48,12 @@ def register_user(email, nick, password, team_id=None,
     if not re.match(r'[-0-9a-zA-Z.+_]+@[-0-9a-zA-Z.+_]+\.[a-zA-Z]{2,4}$',
                     email):
         raise errors.ValidationError('Invalid email address.')
-    if app.config.get('TEAMS'):
-        if not team_id:
+    first = models.User.query.count() == 0
+    if not first and app.config.get('TEAMS'):
+        if team_id == 'new':
             try:
+                app.logger.info('Creating new team %s for user %s',
+                        team_name, nick)
                 team = models.Team.create(team_name)
             except exc.IntegrityError:
                 models.db.session.rollback()
@@ -63,7 +66,7 @@ def register_user(email, nick, password, team_id=None,
     else:
         team = None
     try:
-        if not team:
+        if not team and not first:
             team = models.Team.create(nick)
         user = models.User.create(email, nick, password, team=team)
     except exc.IntegrityError:
