@@ -48,6 +48,13 @@
                 <a href='/admin/teams'
                   class='list-group-item'>Teams</a>
               </div>
+              <div ng-controller='NewsCtrl'>
+                <ul>
+                    <!-- TODO: make this look better, seriously -->
+                    <li ng-repeat='news in newsItems'>{{news.timestamp}}
+                    {{news.author}} {{news.message}}</li>
+                </ul>
+              </div>
           </div>
           <div class='col-md-9'>
             <!-- TODO: title -->

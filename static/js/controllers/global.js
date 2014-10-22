@@ -43,3 +43,15 @@ globalCtrls.controller('ErrorCtrl', [
         errorService.clearErrors();
       });
     }]);
+
+globalCtrls.controller('NewsCtrl', [
+    '$scope',
+    'newsService',
+    function($scope, newsService) {
+        var updateNews = function(newsItems) {
+            $scope.newsItems = newsItems;
+        };
+
+        newsService.registerClient(updateNews);
+        newsService.start();
+    }]);
