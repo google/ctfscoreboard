@@ -49,8 +49,13 @@ sessionServices.service('sessionService', [
       this.refresh = function(successCallback, errorCallback) {
         // Attempt to load
         this.sessionData.get(angular.bind(this, function(data) {
+          var currUser = this.session.user && this.session.user.nick;
           this.session.user = data.user;
           this.session.team = data.team;
+          if (currUser && !this.session.user)
+            $rootScope.$broadcast('sessionLogout');
+          if (!currUser && this.session.user)
+            $rootScope.$broadcast('sessionLogin');
           if (successCallback)
             successCallback();
         }), errorCallback || function() {});
