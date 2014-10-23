@@ -234,6 +234,7 @@ class Challenge(restful.Resource):
     def put(self, challenge_id):
         challenge = models.Challenge.query.get_or_404(challenge_id)
         data = flask.request.get_json()
+        old_unlocked = challenge.unlocked
         for field in ('name', 'description', 'points', 'cat_cid', 'unlocked'):
             setattr(
                 challenge, field, data.get(field, getattr(challenge, field)))
@@ -243,6 +244,9 @@ class Challenge(restful.Resource):
             challenge.set_hints(data['hints'])
         if 'attachments' in data:
             challenge.set_attachments(data['attachments'])
+        if challenge.unlocked and not old_unlocked:
+            news = 'Challenge "%s" unlocked!' % challenge.name
+            models.News.game_broadcast(message=news)
 
         models.commit()
         return challenge
@@ -267,17 +271,22 @@ class ChallengeList(restful.Resource):
     @restful.marshal_with(Challenge.resource_fields)
     def post(self):
         data = flask.request.get_json()
+        unlocked = data.get('unlocked', False)
         chall = models.Challenge.create(
             data['name'],
             data['description'],
             data['points'],
             data['answer'],
             data['cat_cid'],
-            data.get('unlocked', False))
+            unlocked)
         if 'hints' in data:
             chall.set_hints(data['hints'])
         if 'attachments' in data:
             chall.set_attachments(data['attachments'])
+
+        if unlocked:
+            news = 'New challenge created: "%s"' % chall.name
+            models.News.game_broadcast(message=news)
         models.commit()
         return chall
 

@@ -374,6 +374,15 @@ class News(db.Model):
         return news
 
     @classmethod
+    def game_broadcast(cls, author=None, message=None):
+        if message is None:
+            raise ValueError('Missing message.')
+        author = author or app.config.get('SYSTEM_NAME', 'root')
+        if not utils.GameTime.open():
+            return
+        return cls.broadcast(author, message)
+
+    @classmethod
     def unicast(cls, team, author, message):
         news = cls(
                 news_type='Unicast',
