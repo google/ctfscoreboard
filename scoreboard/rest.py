@@ -19,14 +19,15 @@ from flask.ext.restful import fields
 import hashlib
 import os
 
-from app import app
-import controllers
-import errors
-import models
-import utils
+from scoreboard.app import app
+from scoreboard import controllers
+from scoreboard import context
+from scoreboard import errors
+from scoreboard import models
+from scoreboard import utils
 
 api = restful.Api(app)
-
+context.ensure_setup()
 
 # Custom fields
 class HintField(fields.Raw):

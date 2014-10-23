@@ -23,7 +23,7 @@ import utils
 from sqlalchemy import exc
 from sqlalchemy.orm import exc as orm_exc
 
-from app import app
+from scoreboard.app import app
 
 db = sqlalchemy.SQLAlchemy(app)
 

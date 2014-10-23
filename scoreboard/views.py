@@ -14,12 +14,12 @@
 
 import flask
 import json
-
-from app import app
-import csrfutil
-import models
 import os
-import utils
+
+from scoreboard.app import app
+from scoreboard import csrfutil
+from scoreboard import models
+from scoreboard import utils
 
 
 @app.route('/admin/backup/challenges')

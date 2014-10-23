@@ -18,28 +18,13 @@ import flask
 import functools
 import os
 
-from app import app
-import models
+from scoreboard.app import app
 
 # Use dateutil if available
 try:
     from dateutil import parser as dateutil
 except ImportError:
     dateutil = None
-
-
-# Setup flask.g
-@app.before_request
-def load_globals():
-    uid = flask.session.get('user')
-    if uid:
-        user = models.User.query.get(uid)
-        if user:
-            flask.g.user = user
-            flask.g.team = user.team
-            return
-    flask.g.user = None
-    flask.g.team = None
 
 
 # Helper decorators
@@ -186,8 +171,3 @@ class GameTime(object):
 
 GameTime.setup()
 require_gametime = GameTime.require_open
-
-
-@app.context_processor
-def util_contexts():
-    return dict(gametime=GameTime)

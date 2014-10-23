@@ -21,16 +21,11 @@ from werkzeug.utils import ImportStringError
 
 
 app = flask.Flask('scoreboard')
-# Handle both standalone and as part of pwnableweb
-try:
-    app.config.from_object('scoreboard.config')  # Load from config.py
-except ImportStringError:
-    app.config.from_object('config')  # Load from config.py
+app.config.from_object('config')  # Load from config.py
 
 # Set directory
 if not app.config.get('CWD', None):
     app.config['CWD'] = os.path.dirname(os.path.realpath(__file__))
-os.chdir(app.config['CWD'])
 
 # Main logger
 if not app.debug:
@@ -49,16 +44,6 @@ handler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
 logger = logging.getLogger('scoreboard')
 logger.addHandler(handler)
 app.challenge_log = logger
-
-
-# Add headers to responses
-@app.after_request
-def add_headers(response):
-    h = response.headers
-    # TODO: CSP
-    h.add('X-Frame-Options', 'DENY')
-    h.add('X-XSS-Protection', '1', mode='block')
-    return response
 
 
 # Install a default error handler

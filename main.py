@@ -14,10 +14,10 @@
 
 import sys
 
-from app import app
-import models
-import rest
-import views
+from scoreboard.app import app
+from scoreboard import models
+from scoreboard import rest
+from scoreboard import views
 
 # Imported just for views
 modules_for_views = (rest, views)

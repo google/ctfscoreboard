@@ -16,10 +16,10 @@ import flask
 import re
 from sqlalchemy import exc
 
-from app import app
-import errors
-import models
-import utils
+from scoreboard.app import app
+from scoreboard import errors
+from scoreboard import models
+from scoreboard import utils
 
 
 def user_login(email=None, password=None):
