@@ -12,8 +12,8 @@
         <div class='form-group'>
             <label for='category'>Category</label>
             <select id='category' name='category' class='form-control'
-            ng-options='cat.cid as cat.name for cat in categories'
-            ng-model='challenge.cat_cid' required>
+              ng-options='cat.cid as cat.name for cat in categories'
+              ng-model='challenge.cat_cid' required>
             <option disabled>-- Select Category --</option>
             </select>
         </div>
@@ -22,27 +22,27 @@
         <div class='form-group'>
             <label for='points'>Points</label>
             <input id='points' name='points' class='form-control'
-            type='number' ng-model='challenge.points' placeholder='0'
-            required>
+              type='number' ng-model='challenge.points' placeholder='0'
+              required>
         </div>
         </div>
     </div>
     <div class='form-group'>
         <label for='description'>Description</label>
         <textarea id='description' name='description' class='form-control'
-        ng-model='challenge.description' required
-        placeholder='Description'></textarea>
+          ng-model='challenge.description' required
+          placeholder='Description'></textarea>
     </div>
     <div class='form-group'>
         <label for='answer'>Answer</label>
         <input id='answer' name='answer' class='form-control'
-        placeholder='Enter answer; leave blank to leave unchanged.'
-        ng-model='challenge.answer'>
+          placeholder='{{answerPlaceholder}}' ng-model='challenge.answer' 
+          ng-required='!editing'>
     </div>
     <div class='form-group'>
         <label for='unlocked'>Unlocked</label>
         <input id='unlocked' name='unlocked' value='1' type='checkbox'
-        ng-model='challenge.unlocked'>
+          ng-model='challenge.unlocked'>
     </div>
   </div>
   <div class='well'>
@@ -55,11 +55,11 @@
         <tbody>
         <tr id='hint-{{hint.hid}}' ng-repeat='hint in challenge.hints'>
             <td><input name='hint-{{hint.hid}}-hint' class='form-control'
-            ng-model='hint.hint'></td>
+              ng-model='hint.hint'></td>
             <td><input name='hint-{{hint.hid}}-cost' class='form-control'
-            type='number' ng-model='hint.cost'></td>
+              type='number' ng-model='hint.cost'></td>
             <td><a class='btn btn-sm btn-warning'
-            ng-click='deleteHint(hint)'>&#x2715;</a></td>
+              ng-click='deleteHint(hint)'>&#x2715;</a></td>
         </tr>
         </tbody>
         <tfoot>
@@ -81,7 +81,7 @@
             <td>{{attachment.filename}}</td>
             <td>{{attachment.aid}}</td>
             <td><a class='btn btn-sm btn-warning'
-            ng-click='deleteAttachment(hint)'>&#x2715;</a></td>
+              ng-click='deleteAttachment(hint)'>&#x2715;</a></td>
         </tr>
         </tbody>
         <tfoot>
@@ -92,24 +92,24 @@
     </table>
     <div class='new-file' ng-show='addNewAttachment'>
         <input type='radio' name='source-new' value='upload'
-        id='source-upload-new' ng-model='newAttachment.source'><label
-            for='source-upload-new'>Upload</label><br />
+          id='source-upload-new' ng-model='newAttachment.source'><label
+          for='source-upload-new'>Upload</label><br />
         <input type='file' name='upload-new' id='upload-new'
-        ng-show='newAttachment.source == "upload"'>
+          ng-show='newAttachment.source == "upload"'>
         <input type='button' ng-click='uploadFile()' class='btn btn-success'
-        ng-show='newAttachment.source == "upload"' value='Upload'><br />
+          ng-show='newAttachment.source == "upload"' value='Upload'><br />
         <input type='radio' name='source-new' value='filehash'
-        id='source-filehash-new' ng-model='newAttachment.source'><label
-            for='source-filehash-new'>Filehash</label><br />
+          id='source-filehash-new' ng-model='newAttachment.source'><label
+          for='source-filehash-new'>Filehash</label><br />
         <input name='filehash-new' id='filehash-new'
-        ng-model='newAttachment.aid' ng-show='newAttachment.source == "filehash"'>
+          ng-model='newAttachment.aid' ng-show='newAttachment.source == "filehash"'>
         <div class='form-group' ng-show='newAttachment.source == "filehash"'>
             <label for='filename-new'>Filename</label>
             <input id='filename-new' name='filename-new'
-            class='form-control' ng-model='newAttachment.filename'>
+              class='form-control' ng-model='newAttachment.filename'>
         </div>
         <input type='button' ng-click='verifyFile()' class='btn btn-success'
-        ng-show='newAttachment.source == "filehash"'>
+          ng-show='newAttachment.source == "filehash"'>
     </div>
   </div>
   <input type='submit' class='btn btn-primary' value='Save'>

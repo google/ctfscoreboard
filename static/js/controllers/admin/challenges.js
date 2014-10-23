@@ -145,6 +145,14 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
       $scope.newAttachment = {};
       $scope.addNewAttachment = false;
       $scope.action = 'New';
+      $scope.editing = false;  // New or editing?
+
+      var goEdit = function() {
+          $scope.action = 'Edit';
+          $scope.answerPlaceholder = 'Enter answer; leave blank to ' +
+                'leave unchanged.';
+          $scope.editing = true;
+      };
 
       $scope.saveChallenge = function() {
         errorService.clearErrors();
@@ -161,7 +169,7 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
           function(data) {
             $scope.challenge = data;
             errorService.error('Saved.', 'success');
-            $scope.action = 'Edit';
+            goEdit();
           },
           function(data) {
             errorService.error(data);
@@ -219,7 +227,7 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
           challengeService.get({cid: $routeParams.cid},
             function(data) {
                 $scope.challenge = data;
-                $scope.action = 'Edit';
+                goEdit();
             },
             function(data) {
                 errorService.error(data);
