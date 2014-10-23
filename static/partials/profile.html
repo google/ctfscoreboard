@@ -4,17 +4,17 @@
     <form ng-submit='updateProfile()'> 
       <div class='form-group' ng-show='!!team'>
         <label for='team'>Team</label>
-        <input type='text' disabled name='team' id='team' ng-model='team.name'
+        <input type='text' readonly name='team' id='team' ng-model='team.name'
           class='form-control'>
       </div>
       <div class='form-group' ng-show='!!team'>
         <label for='team_code'>Team Invite Code</label>
-        <input type='text' disabled name='team_code' id='team_code'
+        <input type='text' readonly name='team_code' id='team_code'
           ng-model='team.code' class='form-control'>
       </div>
       <div class='form-group'>
         <label for='email'>Email</label>
-        <input type='text' id='email' name='email' disabled
+        <input type='text' id='email' name='email' readonly
           class='form-control' ng-model='user.email'>
       </div>
       <div class='form-group'>

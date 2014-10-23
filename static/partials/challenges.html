@@ -37,7 +37,8 @@
             <div class='form-group'>
               <label for='answer-{{chall.cid}}'>Answer</label>
               <input name='answer' class='form-control'
-                id='answer-{{chall.cid}}' ng-model='chall.answer'>
+                id='answer-{{chall.cid}}' ng-model='chall.answer'
+                required>
             </div>
             <input type='submit' value='Submit' class='btn btn-primary'>
           </form>
@@ -51,6 +52,8 @@
   category.</span>
 
 <p ng-hide='!!category'>Choose a category to see challenges.</p>
+
+<!-- TODO: Category Grid -->
 
 
 <!-- Confirm modal div -->

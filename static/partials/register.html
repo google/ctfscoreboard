@@ -3,28 +3,30 @@
     <div class='form-group'>
       <label for='email'>Email</label>
       <input id='email' class='form-control' name='email' placeholder='foo@bar.com'
-        ng-model='email'>
+        ng-model='email' type='email' required>
     </div>
     <div class='form-group'>
       <label for='nick'>Handle/Nick</label>
       <input id='nick' class='form-control' name='nick' placeholder='Zero Cool'
-        ng-model='nick'>
+        ng-model='nick' required>
     </div>
     <div class='form-group'>
       <label for='password'>Password</label>
       <input id='password' class='form-control' name='password'
-        placeholder='password' type='password' ng-model='password'>
+        placeholder='password' type='password' ng-model='password' required>
     </div>
     <div class='form-group'>
       <label for='password2'>Repeat Password</label>
       <input id='password2' class='form-control' name='password2'
-        placeholder='repeat password' type='password' ng-model='password2'>
+        placeholder='repeat password' type='password' ng-model='password2'
+        required>
     </div>
     <div class='ng-hide' ng-show='config.teams'>
     <!-- Teams only! -->
       <div class='form-group'>
         <label for='team'>Team</label>
-        <select id='team' class='form-control' name='team' ng-model='team'>
+        <select id='team' class='form-control' name='team' ng-model='team'
+            ng-required='config.teams'>
           <optgroup label='New Team'>
             <option value='new'>New</option>
           </optgroup>
@@ -37,12 +39,14 @@
       <div class='form-group' id='div-team-code' ng-hide='team == "new"'>
         <label for='team-code'>Team Code</label>
         <input id='team-code' name='team_code' class='form-control'
-          placeholder='10ab03cf' ng-model='team_code'>
+          placeholder='10ab03cf' ng-model='team_code'
+          ng-required='config.teams && (team != "new")'>
       </div>
       <div class='form-group' id='div-team-new' ng-show='team == "new"'>
         <label for='team-name'>Team Name</label>
         <input id='team-name' name='team_name' class='form-control'
-          placeholder='Hackers' ng-model='team_name'>
+          placeholder='Hackers' ng-model='team_name'
+          ng-required='config.teams && (team == "new")'>
       </div>
     </div>
     <!-- /Teams only -->

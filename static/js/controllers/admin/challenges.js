@@ -144,6 +144,7 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
       $scope.cid = $routeParams.cid;
       $scope.newAttachment = {};
       $scope.addNewAttachment = false;
+      $scope.action = 'New';
 
       $scope.saveChallenge = function() {
         errorService.clearErrors();
@@ -160,6 +161,7 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
           function(data) {
             $scope.challenge = data;
             errorService.error('Saved.', 'success');
+            $scope.action = 'Edit';
           },
           function(data) {
             errorService.error(data);
@@ -217,12 +219,16 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
           challengeService.get({cid: $routeParams.cid},
             function(data) {
                 $scope.challenge = data;
+                $scope.action = 'Edit';
             },
             function(data) {
                 errorService.error(data);
             });
         } else {
-            $scope.challenge = {'hints': []};
+            $scope.challenge = {
+                'hints': [],
+                'attachments': [],
+            };
         }
         categoryService.get(function(data) {
           $scope.categories = data.categories;

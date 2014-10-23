@@ -58,3 +58,6 @@ a.btn {
   margin-left: auto;
   margin-right: auto;
 }
+.well h4 {
+  margin-top: 0;
+}
