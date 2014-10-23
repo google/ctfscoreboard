@@ -61,3 +61,21 @@ a.btn {
 .well h4 {
   margin-top: 0;
 }
+#news-box {
+    background-color: #4e5d6c;
+    height: 150px;
+    overflow: auto;
+}
+#news-box ul {
+    list-style-type: none;
+    padding: 10px 16px;
+}
+#news-box .news-item {
+    padding-bottom: 16px;
+}
+#news-box .news-item p {
+    margin: 0;
+}
+#news-box .news-item .byline {
+    font-size: 80%;
+}

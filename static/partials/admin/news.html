@@ -1,0 +1,25 @@
+<h2>Submit News</h2>
+<form ng-submit='submitNews()'>
+    <div class='form-group'>
+        <label for='news-type'>Type</label>
+        <select name='newstype' id='news-type' class='form-control'
+            ng-model='newsItem.news_type'>
+            <option>Broadcast</option>
+            <option>Unicast</option>
+        </select>
+    </div>
+    <div class='form-group' class='ng-hide'
+        ng-show='newsItem.news_type == "Unicast"'>
+        <label for='news-team'>Team</label>
+        <select name='newsteam' id='news-team' class='form-control'
+            ng-model='newsItem.tid'
+            ng-options='team.tid as team.name for team in teams.teams'>
+        </select>
+    </div>
+    <div class='form-group'>
+        <label for='news-message'>Message</label>
+        <textarea name='newsmessage' id='news-message' class='form-control'
+            ng-model='newsItem.message' placeholder='Message...'></textarea>
+    </div>
+    <input type='submit' value='Add' class='btn btn-primary'>
+</form>

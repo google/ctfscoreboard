@@ -24,6 +24,7 @@ globalServices.service('configService', ['$resource',
       });
     }]);
 
+
 globalServices.service('errorService',
     function() {
       this.errors = [];
@@ -40,3 +41,54 @@ globalServices.service('errorService',
       }
     });
 
+
+globalServices.service('newsService', [
+    '$resource',
+    '$interval',
+    'configService',
+    function($resource, $interval, configService) {
+        this.newsResource = $resource('/api/news');
+        this.get = this.newsResource.get;
+        this.query = this.newsResource.query;
+        this.save = this.newsResource.save;
+        this.pollPromise_ = undefined;
+        this.inFlight_ = false;
+
+        // Callbacks to be called on new news
+        this.clients_ = [];
+        this.registerClient = function(client) {
+            this.clients_.push(client);
+        };
+
+        // Polling handler
+        this.poll = function() {
+            if (this.inFlight_)
+                return;
+            this.inFlight_ = true;
+            this.newsResource.query(angular.bind(this, function(data) {
+                angular.forEach(this.clients_, function(cb) {
+                    cb(data);
+                });
+                this.inFlight_ = false;
+            }), angular.bind(this, function() { this.inFlight_ = false }));
+        };
+
+        // Set up polling
+        this.start = function() {
+            if (this.pollPromise_)
+                return;
+            this.poll();
+            configService.get(angular.bind(this, function(config) {
+                if (config.news_mechanism != 'poll')
+                    return;
+                var interval = config.news_poll_interval || 60000;  // 60 seconds
+                this.pollPromise_ = $interval(angular.bind(this, this.poll), interval);
+            }));
+        };
+
+        // Shutdown
+        this.stop = function() {
+            $interval.cancel(this.pollPromise_);
+            this.pollPromise_ = undefined;
+        };
+    }]);

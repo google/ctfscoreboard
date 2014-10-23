@@ -18,6 +18,7 @@ var scoreboardApp = angular.module('scoreboardApp', [
   'ngRoute',
   'ngSanitize',
   'adminChallengeCtrls',
+  'adminNewsCtrls',
   'adminTeamCtrls',
   'challengeCtrls',
   'globalCtrls',
@@ -78,6 +79,10 @@ scoreboardApp.config([
         when('/admin/users/:uid?', {
           templateUrl: '/partials/admin/users.html',
           controller: 'AdminUsersCtrl'
+        }).
+        when('/admin/news', {
+          templateUrl: '/partials/admin/news.html',
+          controller: 'AdminNewsCtrl',
         }).
         otherwise({
           redirectTo: '/'

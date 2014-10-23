@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import flask
 from flask.ext import restful
 from flask.ext.restful import fields
@@ -43,6 +44,18 @@ class HintField(fields.Raw):
         if value.is_unlocked() or (flask.g.user and flask.g.user.admin):
             res['hint'] = value.hint
         return res
+
+
+class ISO8601DateTime(fields.Raw):
+
+    """Show datetimes as ISO8601."""
+
+    def format(self, value):
+        if isinstance(value, (int, float)):
+            value = datetime.fromtimestamp(value)
+        if isinstance(value, (datetime.datetime, datetime.date)):
+            return value.isoformat()
+        raise ValueError('Unable to convert %s to ISO8601.' % str(type(value)))
 
 
 # User/team management, logins, etc.
@@ -221,6 +234,7 @@ class Challenge(restful.Resource):
     def put(self, challenge_id):
         challenge = models.Challenge.query.get_or_404(challenge_id)
         data = flask.request.get_json()
+        old_unlocked = challenge.unlocked
         for field in ('name', 'description', 'points', 'cat_cid', 'unlocked'):
             setattr(
                 challenge, field, data.get(field, getattr(challenge, field)))
@@ -230,6 +244,9 @@ class Challenge(restful.Resource):
             challenge.set_hints(data['hints'])
         if 'attachments' in data:
             challenge.set_attachments(data['attachments'])
+        if challenge.unlocked and not old_unlocked:
+            news = 'Challenge "%s" unlocked!' % challenge.name
+            models.News.game_broadcast(message=news)
 
         models.commit()
         return challenge
@@ -254,17 +271,22 @@ class ChallengeList(restful.Resource):
     @restful.marshal_with(Challenge.resource_fields)
     def post(self):
         data = flask.request.get_json()
+        unlocked = data.get('unlocked', False)
         chall = models.Challenge.create(
             data['name'],
             data['description'],
             data['points'],
             data['answer'],
             data['cat_cid'],
-            data.get('unlocked', False))
+            unlocked)
         if 'hints' in data:
             chall.set_hints(data['hints'])
         if 'attachments' in data:
             chall.set_attachments(data['attachments'])
+
+        if unlocked:
+            news = 'New challenge created: "%s"' % chall.name
+            models.News.game_broadcast(message=news)
         models.commit()
         return chall
 
@@ -395,9 +417,52 @@ class Config(restful.Resource):
         return dict(
             teams=app.config.get('TEAMS', False),
             sbname=app.config.get('TITLE', 'Scoreboard'),
+            news_mechanism='poll',
+            news_poll_interval=app.config.get('NEWS_POLL_INTERVAL', 60000),
             )
 
 api.add_resource(Config, '/api/config')
+
+
+# News updates
+class News(restful.Resource):
+
+    resource_fields = {
+        'nid': fields.Integer,
+        'news_type': fields.String,
+        'timestamp': ISO8601DateTime,
+        'author': fields.String,
+        'message': fields.String,
+    }
+
+    @restful.marshal_with(resource_fields)
+    def get(self):
+        if flask.g.team:
+            news = models.News.for_team(flask.g.team)
+        else:
+            news = models.News.for_public()
+        return list(news)
+
+    @utils.admin_required
+    @restful.marshal_with(resource_fields)
+    def post(self):
+        data = flask.request.get_json()
+        tid = None
+        if 'tid' in data:
+            try:
+                tid = int(data['tid'])
+            except ValueError:
+                pass
+        author = flask.g.user.nick
+        if tid:
+            item = models.News.unicast(tid, author, data['message'])
+        else:
+            item = models.News.broadcast(author, data['message'])
+        models.commit()
+        return item
+
+
+api.add_resource(News, '/api/news')
 
 
 # File upload

@@ -348,5 +348,67 @@ class Answer(db.Model):
         return answer
 
 
+class News(db.Model):
+    """News updates & broadcasts."""
+
+    NEWS_TYPES = [
+            'Broadcast',  # Admin broadcast
+            'Unicast',  # Team-specific update
+    ]
+
+    nid = db.Column(db.Integer, primary_key=True)
+    news_type = db.Column(db.Enum(*NEWS_TYPES), nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    author = db.Column(db.String(100))
+    message = db.Column(db.Text)
+    audience_team_tid = db.Column(db.Integer, db.ForeignKey('team.tid'))
+    audience_team = db.relationship('Team')
+
+    @classmethod
+    def broadcast(cls, author, message):
+        news = cls(
+                news_type='Broadcast',
+                author=author,
+                message=message)
+        db.session.add(news)
+        return news
+
+    @classmethod
+    def game_broadcast(cls, author=None, message=None):
+        if message is None:
+            raise ValueError('Missing message.')
+        author = author or app.config.get('SYSTEM_NAME', 'root')
+        if not utils.GameTime.open():
+            return
+        return cls.broadcast(author, message)
+
+    @classmethod
+    def unicast(cls, team, author, message):
+        news = cls(
+                news_type='Unicast',
+                author=author,
+                message=message)
+        if isinstance(team, Team):
+            news.audience_team = team
+        elif isinstance(team, int):
+            news.audience_team_tid = team
+        else:
+            raise ValueError('Invalid value for team.')
+        db.session.add(news)
+        return news
+
+    @classmethod
+    def for_team(cls, team, limit=10):
+        return cls.query.filter(
+                ((cls.news_type != 'Unicast') | 
+                    (cls.audience_team == team))
+                ).order_by(cls.timestamp.desc()).limit(limit)
+
+    @classmethod
+    def for_public(cls, limit=10):
+        return cls.query.filter(cls.news_type != 'Unicast'
+                ).order_by(cls.timestamp.desc()).limit(limit)
+
+
 # Shortcut for commiting
 commit = db.session.commit
