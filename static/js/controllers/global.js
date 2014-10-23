@@ -19,6 +19,13 @@ var globalCtrls = angular.module('globalCtrls', [
     'sessionServices',
     ]);
 
+globalCtrls.controller('GlobalCtrl', [
+    '$scope',
+    'configService',
+    function($scope, configService) {
+        $scope.config = configService.get();
+    }]);
+
 globalCtrls.controller('LoggedInCtrl', [
     '$scope',
     'sessionService',

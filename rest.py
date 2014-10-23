@@ -392,7 +392,10 @@ api.add_resource(APIScoreboard, '/api/scoreboard')
 class Config(restful.Resource):
 
     def get(self):
-        return dict(teams=app.config.get('TEAMS', False))
+        return dict(
+            teams=app.config.get('TEAMS', False),
+            sbname=app.config.get('TITLE', 'Scoreboard'),
+            )
 
 api.add_resource(Config, '/api/config')
 
