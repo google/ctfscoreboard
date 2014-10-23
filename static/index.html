@@ -48,11 +48,13 @@
                 <a href='/admin/teams'
                   class='list-group-item'>Teams</a>
               </div>
-              <div ng-controller='NewsCtrl'>
-                <ul>
-                    <!-- TODO: make this look better, seriously -->
-                    <li ng-repeat='news in newsItems'>{{news.timestamp}}
-                    {{news.author}} {{news.message}}</li>
+              <div ng-controller='NewsCtrl' id='news-box'>
+                <ul class='ng-hide' ng-show='newsItems'>
+                  <!-- TODO: make this look better, seriously -->
+                  <li ng-repeat='news in newsItems'
+                  class='news-item'><p ng-bind-html='news.message|linky'></p>
+                  <span class='byline'>{{news.author}} @
+                      {{news.timestamp|date:'yyyy-MM-dd HH:mm'}}</span></li>
                 </ul>
               </div>
           </div>

@@ -56,10 +56,10 @@ globalCtrls.controller('NewsCtrl', [
                 if (d > latest)
                   latest = d;
             });
-            $scope.newsItems = newsItems;
             if (latest > $scope.latest) {
                 // TODO: call attention to new news
                 $scope.latest = latest;
+                $scope.newsItems = newsItems;
             }
         };
 
