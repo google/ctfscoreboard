@@ -20,7 +20,11 @@ from werkzeug import exceptions
 from werkzeug.utils import ImportStringError
 
 
-app = flask.Flask('scoreboard')
+app = flask.Flask(
+        'scoreboard',
+        static_folder='../static',
+        template_folder='../templates',
+        )
 app.config.from_object('config')  # Load from config.py
 
 # Set directory
