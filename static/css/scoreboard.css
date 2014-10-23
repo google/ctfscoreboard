@@ -4,8 +4,19 @@ html,body,.full-height {
 body {
   padding-top: 40px;
 }
-.left-sidebar {
+.left-sidebar-background {
   background-color: #cbcbcb;
+  /* This is so hacky but necessary. */
+  position: absolute;
+  z-index: -1;
+  width: 100%;
+  margin-left: -15px;
+  min-height: 99999px;
+  margin-bottom: -99999px;
+  overflow: hidden;
+}
+.left-sidebar {
+  position: relative;
 }
 .btn-delete {
   display: inline;
