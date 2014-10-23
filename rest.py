@@ -444,8 +444,11 @@ class News(restful.Resource):
                 pass
         author = flask.g.user.nick
         if tid:
-            return models.News.unicast(tid, author, data['message'])
-        return models.News.broadcast(author, data['message'])
+            item = models.News.unicast(tid, author, data['message'])
+        else:
+            item = models.News.broadcast(author, data['message'])
+        models.commit()
+        return item
 
 
 api.add_resource(News, '/api/news')

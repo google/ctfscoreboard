@@ -50,6 +50,7 @@ globalServices.service('newsService', [
         this.newsResource = $resource('/api/news');
         this.get = this.newsResource.get;
         this.query = this.newsResource.query;
+        this.save = this.newsResource.save;
         this.pollPromise_ = undefined;
         this.inFlight_ = false;
 
