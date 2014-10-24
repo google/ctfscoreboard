@@ -1,4 +1,4 @@
-PwnableWeb Scoreboard
+## CTF Scoreboard ##
 
 This is a basic CTF Scoreboard, with support for hints, teams or individual
 competitors, and a handful of other features.
@@ -61,3 +61,20 @@ Author: David Tomaschik <david@systemoverlord.com>
   - Download attachment
   - Get hint
   - Solve challenge w/hint
+
+
+### Thanks ###
+
+This project stands on the shoulders of giants.
+A big thanks to the following projects used to build this:
+
+- [Flask](http://flask.pocoo.org/)
+- [Flask-SQLAlchemy](https://pythonhosted.org/Flask-SQLAlchemy/)
+- [Flask-RESTful](http://flask-restful.readthedocs.org/en/latest/)
+- [SQLAlchemy](http://www.sqlalchemy.org/)
+- [AngularJS](https://angularjs.org/)
+- [jQuery](https://jquery.com/)
+- [PageDown](https://jquery.com/)
+- [Bootstrap](http://getbootstrap.com/)
+
+And many more indirect dependencies.
