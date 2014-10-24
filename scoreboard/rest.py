@@ -23,6 +23,7 @@ import os
 from scoreboard.app import app
 from scoreboard import controllers
 from scoreboard import context
+from scoreboard import csrfutil
 from scoreboard import errors
 from scoreboard import models
 from scoreboard import utils
@@ -440,6 +441,7 @@ class Config(restful.Resource):
             sbname=app.config.get('TITLE', 'Scoreboard'),
             news_mechanism='poll',
             news_poll_interval=app.config.get('NEWS_POLL_INTERVAL', 60000),
+            csrf_token=csrfutil.get_csrf_token(),
             )
 
 api.add_resource(Config, '/api/config')
