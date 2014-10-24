@@ -4,3 +4,4 @@ config.py
 *.db
 attachments
 attachments/**
+static/js/app.min.js
