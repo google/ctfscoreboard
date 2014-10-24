@@ -27,18 +27,36 @@ globalServices.service('configService', ['$resource',
 
 globalServices.service('errorService',
     function() {
+      var inhibit = false;
       this.errors = [];
+
       this.clearErrors = function() {
+        if (inhibit) {
+          inhibit = false;
+          return;
+        }
         this.errors.length = 0;
       };
+
       this.error = function(msg, severity) {
         severity = severity || 'danger';
         msg = (msg.data && msg.data.message) || msg.message || msg.data || msg;
         this.errors.push({severity: severity, msg: msg});
       };
+
       this.success = function(msg) {
         this.error(msg, 'success');
-      }
+      };
+
+      this.inhibitClear = function() {
+        inhibit = true;
+      };
+
+      this.clearAndInhibit = function() {
+        inhibit = false;
+        this.clearErrors();
+        this.inhibitClear();
+      };
     });
 
 

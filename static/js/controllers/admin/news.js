@@ -16,6 +16,7 @@
 
 var adminNewsCtrls = angular.module('adminNewsCtrls', [
     'globalServices',
+    'sessionServices',
     'teamServices',
     ]);
 
@@ -23,8 +24,11 @@ adminNewsCtrls.controller('AdminNewsCtrl', [
     '$scope',
     'errorService',
     'newsService',
+    'sessionService',
     'teamService',
-    function($scope, errorService, newsService, teamService) {
+    function($scope, errorService, newsService, sessionService, teamService) {
+        if (!sessionService.requireAdmin()) return;
+
         var makeNewsItem = function() {
             return {
                 'news_type': 'Broadcast'

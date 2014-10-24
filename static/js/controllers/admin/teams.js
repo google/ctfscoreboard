@@ -30,6 +30,8 @@ adminTeamCtrls.controller('AdminTeamsCtrl', [
     'sessionService',
     'teamService',
     function($scope, $routeParams, errorService, sessionService, teamService) {
+      if (!sessionService.requireAdmin()) return;
+
       $scope.teams = [];
       $scope.team = null;
 
@@ -67,6 +69,8 @@ adminTeamCtrls.controller('AdminUsersCtrl', [
     'userService',
     function($scope, $routeParams, configService, errorService, sessionService,
       teamService, userService) {
+      if (!sessionService.requireAdmin()) return;
+
       $scope.users = [];
       $scope.teams = [];
       $scope.user = null;

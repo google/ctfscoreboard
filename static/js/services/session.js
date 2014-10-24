@@ -71,10 +71,24 @@ sessionServices.service('sessionService', [
             function() {
               if (no_redirect)
                 return;
+              errorService.clearAndInhibit();
               errorService.error('You must be logged in.', 'info');
               $location.path('/login');
             });
       };
+
+      this.requireAdmin = function(opt_callback) {
+        if (this.session.user && this.session.user.admin) {
+          if (opt_callback)
+            opt_callback();
+          return true;
+        }
+        errorService.clearAndInhibit();
+        errorService.error('You are not an admin!');
+        $location.path('/');
+        return false;
+      };
+
       this.refresh();
     }]);
 

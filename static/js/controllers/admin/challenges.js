@@ -29,6 +29,8 @@ adminChallengeCtrls.controller('AdminCategoryCtrl', [
     'errorService',
     'sessionService',
     function($scope, categoryService, errorService, sessionService) {
+      if (!sessionService.requireAdmin()) return;
+
       $scope.categories = [];
 
       $scope.updateCategory = function(cat) {
@@ -90,6 +92,8 @@ adminChallengeCtrls.controller('AdminChallengesCtrl', [
     'errorService',
     'sessionService',
     function($scope, $routeParams, challengeService, errorService, sessionService) {
+      if (!sessionService.requireAdmin()) return;
+
       $scope.catid = $routeParams.cid;
 
       $scope.lockChallenge = function(challenge, locked) {
@@ -141,6 +145,8 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
     'uploadService',
     function($scope, $routeParams, categoryService, challengeService,
       errorService, sessionService, uploadService) {
+      if (!sessionService.requireAdmin()) return;
+
       $scope.cid = $routeParams.cid;
       $scope.newAttachment = {};
       $scope.addNewAttachment = false;
@@ -249,7 +255,10 @@ adminChallengeCtrls.controller('AdminRestoreCtrl', [
     '$scope',
     '$resource',
     'errorService',
-    function($scope, $resource, errorService) {
+    'sessionService',
+    function($scope, $resource, errorService, sessionService) {
+      if (!sessionService.requireAdmin()) return;
+
       $scope.replace = false;
       $scope.ready = false;
       $scope.fileData = null;
