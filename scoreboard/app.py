@@ -53,7 +53,6 @@ app.challenge_log = logger
 # Install a default error handler
 error_titles = {
     403: 'Forbidden',
-    404: 'Not Found',
     500: 'Internal Error',
 }
 
@@ -63,16 +62,6 @@ def api_error_handler(ex):
         status_code = ex.code
     except AttributeError:
         status_code = 500
-    if status_code == 404:
-        path = flask.request.path[1:]
-        try:
-            # Try to serve static
-            return app.send_static_file(path)
-        except exceptions.NotFound:
-            # Send index.html for other paths
-            if not re.search('\.(js|css|gif|png|jpg|jpeg)$', path):
-                print '%s -> index.html' % path
-                return app.send_static_file('index.html')
     if flask.request.path.startswith('/api/'):
         print str(ex)
         resp = flask.jsonify(message=str(ex))

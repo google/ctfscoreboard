@@ -15,11 +15,33 @@
 import flask
 import json
 import os
+import re
+from werkzeug import exceptions
 
 from scoreboard.app import app
-from scoreboard import csrfutil
 from scoreboard import models
 from scoreboard import utils
+
+
+@app.errorhandler(404)
+def handle_404(ex):
+    path = flask.request.path[1:]
+    try:
+        return app.send_static_file(path)
+    except exceptions.NotFound:
+        if '.' not in path:
+            app.logger.info('%s -> index.html', path)
+            return render_index()
+        return '404 Not Found', 404
+
+
+@app.route('/')
+@app.route('/index.html')
+def render_index():
+    minify = not app.debug and os.path.exists(
+            os.path.join(app.static_folder, 'js/app.min.js'))
+    return flask.make_response(flask.render_template(
+        'index.html', minify=minify), 200)
 
 
 @app.route('/attachment/<filename>')
