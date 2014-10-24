@@ -295,7 +295,7 @@ adminChallengeCtrls.controller('AdminRestoreCtrl', [
       };
 
       $('#restore-file-chooser').change(fileChooserChange);
-      $scope.$on('$destroy' function() {
+      $scope.$on('$destroy', function() {
         $('#restore-file-chooser').unbind('change', fileChooserChange);
       });
 
