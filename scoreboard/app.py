@@ -27,9 +27,9 @@ app = flask.Flask(
         )
 app.config.from_object('config')  # Load from config.py
 
-# Set directory
-if not app.config.get('CWD', None):
-    app.config['CWD'] = os.path.dirname(os.path.realpath(__file__))
+# Set defaults
+app.config.setdefault('CWD', os.path.dirname(os.path.realpath(__file__)))
+app.config.setdefault('ERROR_404_HELP', False)
 
 # Main logger
 if not app.debug:

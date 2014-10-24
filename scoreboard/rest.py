@@ -486,6 +486,43 @@ class News(restful.Resource):
 api.add_resource(News, '/api/news')
 
 
+# Static pages
+class Page(restful.Resource):
+
+    resource_fields = {
+        'path': fields.String,
+        'title': fields.String,
+        'contents': fields.String,
+    }
+
+    @restful.marshal_with(resource_fields)
+    def get(self, path):
+        app.logger.info('Path: %s', path)
+        return models.Page.query.get_or_404(path)
+
+    @utils.admin_required
+    @restful.marshal_with(resource_fields)
+    def post(self, path):
+        data = flask.request.get_json()
+        page = models.Page.query.get(path)
+        if not page:
+            page = models.Page()
+            models.db.session.add(page)
+        page['title'] = data.get('title', '')
+        page['contents'] = data.get('contents', '')
+        models.commit()
+        return page
+
+    @utils.admin_required
+    def delete(self, path):
+        page = models.Page.query.get_or_404(path)
+        models.db.session.delete(page)
+        models.commit()
+        return {}
+
+api.add_resource(Page, '/api/page/<path:path>')
+
+
 # File upload
 class Upload(restful.Resource):
     decorators = [utils.admin_required]

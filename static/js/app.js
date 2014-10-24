@@ -22,8 +22,10 @@ var scoreboardApp = angular.module('scoreboardApp', [
   'adminTeamCtrls',
   'challengeCtrls',
   'globalCtrls',
+  'pageCtrls',
   'regCtrls',
-  'scoreboardCtrls'
+  'scoreboardCtrls',
+  'sbFilters'
 ]);
 
 scoreboardApp.config([
@@ -32,6 +34,10 @@ scoreboardApp.config([
     function($routeProvider, $locationProvider) {
       $locationProvider.html5Mode(true);
       $routeProvider.
+        when('/', {
+          templateUrl: '/partials/page.html',
+          controller: 'StaticPageCtrl'
+        }).
         when('/login', {
           templateUrl: '/partials/login.html',
           controller: 'LoginCtrl'
@@ -85,6 +91,7 @@ scoreboardApp.config([
           controller: 'AdminNewsCtrl',
         }).
         otherwise({
-          redirectTo: '/'
+          templateUrl: '/partials/page.html',
+          controller: 'StaticPageCtrl'
         });
     }]);

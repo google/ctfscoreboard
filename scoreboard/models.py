@@ -410,5 +410,12 @@ class News(db.Model):
                 ).order_by(cls.timestamp.desc()).limit(limit)
 
 
+class Page(db.Model):
+    """Represent static pages to be rendered with Markdown."""
+    path = db.Column(db.String(100), primary_key=True)
+    title = db.Column(db.String(100))
+    contents = db.Column(db.Text)
+
+
 # Shortcut for commiting
 commit = db.session.commit

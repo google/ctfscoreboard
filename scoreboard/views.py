@@ -29,7 +29,7 @@ def handle_404(ex):
     try:
         return app.send_static_file(path)
     except exceptions.NotFound:
-        if '.' not in path:
+        if '.' not in path and not path.startswith('api/'):
             app.logger.info('%s -> index.html', path)
             return render_index()
         return '404 Not Found', 404
