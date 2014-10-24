@@ -17,6 +17,7 @@ import flask
 from flask.ext import restful
 from flask.ext.restful import fields
 import hashlib
+import json
 import os
 
 from scoreboard.app import app
@@ -28,6 +29,7 @@ from scoreboard import utils
 
 api = restful.Api(app)
 context.ensure_setup()
+
 
 # Custom fields
 class HintField(fields.Raw):
@@ -57,6 +59,24 @@ class ISO8601DateTime(fields.Raw):
         if isinstance(value, (datetime.datetime, datetime.date)):
             return value.isoformat()
         raise ValueError('Unable to convert %s to ISO8601.' % str(type(value)))
+
+
+# JSON representation
+@api.representation('application/json')
+def output_json(data, code, headers=None):
+    """Custom JSON output with JSONP buster."""
+
+    settings = {}
+    if app.debug:
+        settings['indent'] = 4
+        settings['sort_keys'] = True
+
+    dumped = json.dumps(data, **settings)
+    dumped = ")]}',\n" + dumped + "\n"
+
+    resp = flask.make_response(dumped, code)
+    resp.headers.extend(headers or {})
+    return resp
 
 
 # User/team management, logins, etc.
