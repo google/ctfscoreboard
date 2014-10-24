@@ -269,7 +269,7 @@ adminChallengeCtrls.controller('AdminRestoreCtrl', [
         $('#restore-file-chooser').click();
       };
 
-      $('#restore-file-chooser').change(function(evt) {
+      var fileChooserChange = function(evt) {
         $scope.$apply(function() {
           var file = evt.target.files[0];
           if (!file) {
@@ -292,6 +292,11 @@ adminChallengeCtrls.controller('AdminRestoreCtrl', [
           };
           reader.readAsText(file);
         });
+      };
+
+      $('#restore-file-chooser').change(fileChooserChange);
+      $scope.$on('$destroy' function() {
+        $('#restore-file-chooser').unbind('change', fileChooserChange);
       });
 
       $scope.submitRestore = function() {

@@ -79,13 +79,13 @@ should be in {% raw %} blocks.  DFIU! -#}
       </div>
     </div>
 
-    <script src="/lib/jquery/jquery.min.js"></script>
-    <script src="/lib/bootstrap/bootstrap.min.js"></script>
-    <script src="/lib/angular/angular.js"></script>
-    <script src="/lib/angular/angular-resource.js"></script>
-    <script src="/lib/angular/angular-route.js"></script>
-    <script src="/lib/angular/angular-sanitize.js"></script>
     {%- endraw %}
+    <script src="/lib/jquery/jquery{% if minify %}.min{% endif %}.js"></script>
+    <script src="/lib/bootstrap/bootstrap{% if minify %}.min{% endif %}.js"></script>
+    <script src="/lib/angular/angular{% if minify %}.min{% endif %}.js"></script>
+    <script src="/lib/angular/angular-resource{% if minify %}.min{% endif %}.js"></script>
+    <script src="/lib/angular/angular-route{% if minify %}.min{% endif %}.js"></script>
+    <script src="/lib/angular/angular-sanitize{% if minify %}.min{% endif %}.js"></script>
     {% if minify -%}
     <script src="/js/app.min.js"></script>
     {% else -%}
