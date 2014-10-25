@@ -562,6 +562,13 @@ class BackupRestore(restful.Resource):
                         'hint': h.hint,
                         'cost': h.cost,
                     })
+                attachments = []
+                for a in q.attachments:
+                    attachments.append({
+                        'aid': a.aid,
+                        'filename': a.filename,
+                        'content_type': a.content_type,
+                    })
                 challenges.append({
                     'category': cat.cid,
                     'name': q.name,
@@ -569,6 +576,7 @@ class BackupRestore(restful.Resource):
                     'points': q.points,
                     'answer_hash': q.answer_hash,
                     'hints': hints,
+                    'attachments': attachments,
                 })
             categories[cat.cid] = {
                 'name': cat.name,
@@ -580,40 +588,48 @@ class BackupRestore(restful.Resource):
             200,
             {'Content-Disposition': 'attachment; filename=challenges.json'})
 
-        def post(self):
-            data = flask.request.get_json()
-            categories = data['categories']
+    def post(self):
+        data = flask.request.get_json()
+        categories = data['categories']
 
-            if data.get('replace', False):
-                models.Hint.query.delete()
-                models.Challenge.query.delete()
-                models.Category.query.delete()
+        if data.get('replace', False):
+            models.Attachment.query.delete()
+            models.Hint.query.delete()
+            models.Challenge.query.delete()
+            models.Category.query.delete()
 
-            cats = {}
-            challs = 0
-            for catid, cat in categories.iteritems():
-                newcat = models.Category()
-                for f in ('name', 'description'):
-                    setattr(newcat, f, cat[f])
-                models.db.session.add(newcat)
-                cats[int(catid)] = newcat
+        cats = {}
+        challs = 0
+        for catid, cat in categories.iteritems():
+            newcat = models.Category()
+            for f in ('name', 'description'):
+                setattr(newcat, f, cat[f])
+            models.db.session.add(newcat)
+            cats[int(catid)] = newcat
 
-                for challenge in cat['challenges']:
-                    newchall = models.Challenge()
-                    for f in ('name', 'description', 'points', 'answer_hash'):
-                        setattr(newchall, f, challenge[f])
-                    newchall.category = newcat
-                    models.db.session.add(newchall)
-                    challs += 1
-                    for h in challenge.get('hints', []):
-                        hint = models.Hint()
-                        hint.challenge = newchall
-                        hint.hint = h['hint']
-                        hint.cost = int(h['cost'])
-                        models.db.session.add(hint)
+            for challenge in cat['challenges']:
+                newchall = models.Challenge()
+                for f in ('name', 'description', 'points', 'answer_hash'):
+                    setattr(newchall, f, challenge[f])
+                newchall.category = newcat
+                models.db.session.add(newchall)
+                challs += 1
+                for h in challenge.get('hints', []):
+                    hint = models.Hint()
+                    hint.challenge = newchall
+                    hint.hint = h['hint']
+                    hint.cost = int(h['cost'])
+                    models.db.session.add(hint)
+                for a in challenge.get('attachments', []):
+                    attachment = models.Attachment()
+                    attachment.challenge = newchall
+                    attachment.aid = a['aid']
+                    attachment.filename = a['filename']
+                    attachment.content_type = a['content_type']
+                    models.db.session.add(attachment)
 
-            models.commit()
-            return {'message': '%d Categories and %d Challenges imported.' %
-                    (len(cats), challs)}
+        models.commit()
+        return {'message': '%d Categories and %d Challenges imported.' %
+                (len(cats), challs)}
 
 api.add_resource(BackupRestore, '/api/backup')

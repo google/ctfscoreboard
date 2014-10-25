@@ -281,7 +281,9 @@ adminChallengeCtrls.controller('AdminRestoreCtrl', [
           reader.onload = function(e) {
             $scope.$apply(function() {
               var contents = e.target.result;
-              $scope.fileData = $.parseJSON(contents);
+              if (contents.substr(0,6) == ")]}',\n")
+                contents = contents.substr(6);
+              $scope.fileData = angular.fromJson(contents);
               $scope.ready = true;
             });
           };
