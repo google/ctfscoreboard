@@ -19,6 +19,7 @@ var scoreboardApp = angular.module('scoreboardApp', [
   'ngSanitize',
   'adminChallengeCtrls',
   'adminNewsCtrls',
+  'adminPageCtrls',
   'adminTeamCtrls',
   'challengeCtrls',
   'globalCtrls',
@@ -88,7 +89,11 @@ scoreboardApp.config([
         }).
         when('/admin/news', {
           templateUrl: '/partials/admin/news.html',
-          controller: 'AdminNewsCtrl',
+          controller: 'AdminNewsCtrl'
+        }).
+        when('/admin/page/:path', {
+          templateUrl: '/partials/admin/page.html',
+          controller: 'AdminPageCtrl'
         }).
         otherwise({
           templateUrl: '/partials/page.html',

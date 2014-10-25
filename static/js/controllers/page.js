@@ -21,11 +21,10 @@ var pageCtrls = angular.module('pageCtrls', [
 
 pageCtrls.controller('StaticPageCtrl', [
     '$scope',
-    '$location',
     'pageService',
     'errorService',
-    function($scope, $location, pageService, errorService) {
-        var path = $location.path().substr(1);
+    function($scope, pageService, errorService) {
+        var path = pageService.pagePath();
         if (path == "") {
             path = "home";
         }

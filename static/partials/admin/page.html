@@ -1,0 +1,14 @@
+<h2 ng-bind='action'></h2>
+<form ng-submit='save()'>
+    <div class='form-group'>
+        <label for='page-title'>Title</label>
+        <input id='page-title' name='page_title' ng-model='page.title'
+            class='form-control' required>
+    </div>
+    <div class='form-group'>
+        <label for='page-contents'>Contents (Markdown)</label>
+        <textarea id='page-contents' ng-model='page.contents'
+            class='form-control'></textarea>
+    </div>
+    <input type='submit' class='btn btn-primary' value='Save'>
+</form>

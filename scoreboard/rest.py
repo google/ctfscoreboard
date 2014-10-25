@@ -530,8 +530,8 @@ class Page(restful.Resource):
         if not page:
             page = models.Page()
             models.db.session.add(page)
-        page['title'] = data.get('title', '')
-        page['contents'] = data.get('contents', '')
+        page.title = data.get('title', '')
+        page.contents = data.get('contents', '')
         models.commit()
         return page
 

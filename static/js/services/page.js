@@ -17,7 +17,21 @@
 /* page services */
 var pageServices = angular.module('pageServices', ['ngResource']);
 
-pageServices.service('pageService', ['$resource',
-    function($resource) {
-        return $resource('/api/page/:path');
+pageServices.service('pageService', [
+    '$resource',
+    '$location',
+    function($resource, $location) {
+        this.resource = $resource('/api/page/:path');
+        this.get = this.resource.get;
+        this.save = this.resource.save;
+
+        /** Return path to page with prefix stripped. */
+        this.pagePath = function(prefix) {
+            prefix = prefix || '/';
+            var path = $location.path();
+            if (path.substr(0, prefix.length) == prefix) {
+                path = path.substr(prefix.length);
+            }
+            return path;
+        };
     }]);
