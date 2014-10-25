@@ -17,11 +17,13 @@ from werkzeug import exceptions
 
 
 class AccessDeniedError(exceptions.HTTPException):
+    """No access to the resource."""
     code = 403
     data = {'message': 'Forbidden'}
 
 
 class ValidationError(exceptions.HTTPException):
+    """Error during input validation."""
     code = 400
 
     def __init__(self, msg, *args, **kwargs):
@@ -30,8 +32,10 @@ class ValidationError(exceptions.HTTPException):
 
 
 class InvalidAnswerError(AccessDeniedError):
+    """Submitting the wrong answer."""
     data = {'message': 'Ha ha ha... No.'}
 
 
 class LoginError(AccessDeniedError):
+    """Failing to login."""
     data = {'message': 'Invalid username/password.'}

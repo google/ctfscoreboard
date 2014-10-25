@@ -21,6 +21,7 @@ from scoreboard import utils
 # Setup flask.g
 @app.before_request
 def load_globals():
+    """Prepopulate flask.g.* with user and team."""
     uid = flask.session.get('user')
     if uid:
         user = models.User.query.get(uid)
@@ -35,6 +36,7 @@ def load_globals():
 # Add headers to responses
 @app.after_request
 def add_headers(response):
+    """Add security-related headers to all outgoing responses."""
     h = response.headers
     # TODO: CSP
     h.add('X-Frame-Options', 'DENY')

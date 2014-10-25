@@ -25,6 +25,7 @@ from scoreboard import utils
 
 @app.errorhandler(404)
 def handle_404(ex):
+    """Handle 404s, sending index.html for unhandled paths."""
     path = flask.request.path[1:]
     try:
         return app.send_static_file(path)
@@ -38,6 +39,11 @@ def handle_404(ex):
 @app.route('/')
 @app.route('/index.html')
 def render_index():
+    """Render index.
+
+    Do not include any user-controlled content to avoid XSS!
+    """
+
     minify = not app.debug and os.path.exists(
             os.path.join(app.static_folder, 'js/app.min.js'))
     return flask.make_response(flask.render_template(
@@ -47,6 +53,8 @@ def render_index():
 @app.route('/attachment/<filename>')
 @utils.login_required
 def download(filename):
+    """Download an attachment."""
+
     attachment = models.Attachment.query.get_or_404(filename)
     if not attachment.challenge.unlocked:
         flask.abort(404)

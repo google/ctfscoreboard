@@ -62,7 +62,6 @@ class ISO8601DateTime(fields.Raw):
         raise ValueError('Unable to convert %s to ISO8601.' % str(type(value)))
 
 
-# JSON representation
 @api.representation('application/json')
 def output_json(data, code, headers=None):
     """Custom JSON output with JSONP buster."""
@@ -80,8 +79,9 @@ def output_json(data, code, headers=None):
     return resp
 
 
-# User/team management, logins, etc.
 class User(restful.Resource):
+    """Wrap User model."""
+
     decorators = [utils.login_required]
 
     resource_fields = {
@@ -105,7 +105,7 @@ class User(restful.Resource):
         user = models.User.query.get_or_404(user_id)
         data = flask.request.get_json()
         if flask.g.user.admin and 'admin' in data:
-            if data['admin']:
+            if data['admin'] and not user.admin:
                 user.promote()
             else:
                 user.admin = False
@@ -116,6 +116,8 @@ class User(restful.Resource):
 
 
 class UserList(restful.Resource):
+    """Registration and listing of users."""
+
     resource_fields = {
         'users': fields.Nested(User.resource_fields),
     }
@@ -139,6 +141,8 @@ class UserList(restful.Resource):
 
 
 class Team(restful.Resource):
+    """Manage single team."""
+
     decorators = [utils.login_required]
 
     team_fields = {
@@ -177,6 +181,8 @@ class Team(restful.Resource):
 
 
 class TeamList(restful.Resource):
+    """Get a list of all teams."""
+
     resource_fields = {
         'teams': fields.Nested(Team.team_fields),
     }
@@ -225,8 +231,9 @@ api.add_resource(Team, '/api/teams/<int:team_id>')
 api.add_resource(Session, '/api/session')
 
 
-# Challenges
 class Challenge(restful.Resource):
+    """A single challenge."""
+
     decorators = [utils.admin_required]
 
     challenge_fields = {
@@ -280,6 +287,8 @@ class Challenge(restful.Resource):
 
 
 class ChallengeList(restful.Resource):
+    """Create & manage challenges for admins."""
+
     decorators = [utils.admin_required]
 
     resource_fields = {
@@ -314,6 +323,8 @@ class ChallengeList(restful.Resource):
 
 
 class Category(restful.Resource):
+    """Single category of challenges."""
+
     decorators = [utils.login_required, utils.require_gametime]
 
     category_fields = {
@@ -357,6 +368,8 @@ class Category(restful.Resource):
 
 
 class CategoryList(restful.Resource):
+    """List of all categories."""
+
     decorators = [utils.login_required, utils.require_gametime]
 
     resource_fields = {
@@ -377,6 +390,8 @@ class CategoryList(restful.Resource):
 
 
 class Hint(restful.Resource):
+    """Wrap hint just for unlocking."""
+
     decorators = [utils.login_required, utils.team_required]
 
     resource_fields = {
@@ -394,6 +409,8 @@ class Hint(restful.Resource):
 
 
 class Answer(restful.Resource):
+    """Submit an answer."""
+
     decorators = [utils.login_required, utils.team_required]
 
     # TODO: get answers for admin?
@@ -411,8 +428,8 @@ api.add_resource(Hint, '/api/unlock_hint')
 api.add_resource(Answer, '/api/answers')
 
 
-# Scoreboard
 class APIScoreboard(restful.Resource):
+    """Retrieve the scoreboard."""
 
     line_fields = {
         'position': fields.Integer,
@@ -432,8 +449,11 @@ class APIScoreboard(restful.Resource):
 api.add_resource(APIScoreboard, '/api/scoreboard')
 
 
-# Public config
 class Config(restful.Resource):
+    """Get basic config for the scoreboard.
+
+    This should not change often as it is highly-cached on the client.
+    """
 
     def get(self):
         return dict(
@@ -447,8 +467,8 @@ class Config(restful.Resource):
 api.add_resource(Config, '/api/config')
 
 
-# News updates
 class News(restful.Resource):
+    """Display and manage news."""
 
     resource_fields = {
         'nid': fields.Integer,
@@ -488,8 +508,8 @@ class News(restful.Resource):
 api.add_resource(News, '/api/news')
 
 
-# Static pages
 class Page(restful.Resource):
+    """Create and retrieve static pages."""
 
     resource_fields = {
         'path': fields.String,
@@ -525,8 +545,9 @@ class Page(restful.Resource):
 api.add_resource(Page, '/api/page/<path:path>')
 
 
-# File upload
 class Upload(restful.Resource):
+    """Allow uploading of files."""
+
     decorators = [utils.admin_required]
 
     def post(self):
@@ -547,11 +568,12 @@ class Upload(restful.Resource):
 api.add_resource(Upload, '/api/upload')
 
 
-# Admin Backup and restore
 class BackupRestore(restful.Resource):
+    """Control for backup and restore."""
     decorators = [utils.admin_required]
 
     def get(self):
+        # TODO: refactor, this is messy
         categories = {}
         for cat in models.Category.query.all():
             challenges = []
@@ -589,6 +611,7 @@ class BackupRestore(restful.Resource):
             {'Content-Disposition': 'attachment; filename=challenges.json'})
 
     def post(self):
+        # TODO: refactor, this is messy
         data = flask.request.get_json()
         categories = data['categories']
 

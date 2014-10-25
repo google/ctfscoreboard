@@ -58,12 +58,13 @@ error_titles = {
 
 
 def api_error_handler(ex):
+    """Handle errors as appropriate depending on path."""
     try:
         status_code = ex.code
     except AttributeError:
         status_code = 500
     if flask.request.path.startswith('/api/'):
-        print str(ex)
+        app.logger.error(str(ex))
         resp = flask.jsonify(message=str(ex))
         resp.status_code = status_code
         return resp

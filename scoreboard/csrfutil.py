@@ -34,16 +34,19 @@ def _get_csrf_token(user=None, expires=None):
 
 
 def get_csrf_token(*args, **kwargs):
+    """Returns a URL-safe base64 CSRF token."""
     return base64.b64encode(str(_get_csrf_token(*args, **kwargs)), '_-')
 
 
 def verify_csrf_token(token, user=None):
+    """Verify a token for a user."""
     token = base64.b64decode(str(token), '_-')
     expires = struct.unpack('<I', token[:4])[0]
     return token == _get_csrf_token(user, expires)
 
 
 def csrf_protect(f):
+    """Decorator to add CSRF protection to a request handler."""
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         if flask.request.method == 'POST':
@@ -56,6 +59,7 @@ def csrf_protect(f):
 
 
 def get_csrf_field(*args, **kwargs):
+    """Render a CSRF field."""
     token = get_csrf_token(*args, **kwargs)
     field = jinja2.Markup(
         '<input type="hidden" name="csrftoken" value="%s" />')
@@ -64,6 +68,7 @@ def get_csrf_field(*args, **kwargs):
 
 @app.before_request
 def csrf_protection_request():
+    """Add CSRF Protection to all non-GET/non-HEAD requests."""
     if flask.request.method in ('GET', 'HEAD'):
         return
     header = flask.request.headers.get('X-XSRF-TOKEN')
@@ -75,12 +80,14 @@ def csrf_protection_request():
 
 @app.after_request
 def add_csrf_protection(resp):
+    """Add the XSRF-TOKEN cookie to all outgoing requests."""
     resp.set_cookie('XSRF-TOKEN', get_csrf_token())
     return resp
 
 
 @app.context_processor
 def csrf_context_processor():
+    """Add CSRF token and field to all rendering contexts."""
     return {
         'csrftoken': get_csrf_token,
         'csrffield': get_csrf_field,
