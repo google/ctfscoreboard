@@ -86,14 +86,14 @@ should be in {% raw %} blocks.  DFIU! -#}
     </div>
 
     {%- endraw %}
-    <script src="/lib/jquery/jquery{% if minify %}.min{% endif %}.js"></script>
-    <script src="/lib/bootstrap/bootstrap{% if minify %}.min{% endif %}.js"></script>
-    <script src="/lib/angular/angular{% if minify %}.min{% endif %}.js"></script>
-    <script src="/lib/angular/angular-resource{% if minify %}.min{% endif %}.js"></script>
-    <script src="/lib/angular/angular-route{% if minify %}.min{% endif %}.js"></script>
-    <script src="/lib/angular/angular-sanitize{% if minify %}.min{% endif %}.js"></script>
-    <script src="/lib/pagedown/Markdown.Converter.js"></script>
-    <script src="/lib/pagedown/Markdown.Sanitizer.js"></script>
+    <script src="/third_party/jquery/jquery{% if minify %}.min{% endif %}.js"></script>
+    <script src="/third_party/bootstrap/bootstrap{% if minify %}.min{% endif %}.js"></script>
+    <script src="/third_party/angular/angular{% if minify %}.min{% endif %}.js"></script>
+    <script src="/third_party/angular/angular-resource{% if minify %}.min{% endif %}.js"></script>
+    <script src="/third_party/angular/angular-route{% if minify %}.min{% endif %}.js"></script>
+    <script src="/third_party/angular/angular-sanitize{% if minify %}.min{% endif %}.js"></script>
+    <script src="/third_party/pagedown/Markdown.Converter.js"></script>
+    <script src="/third_party/pagedown/Markdown.Sanitizer.js"></script>
     {% if minify -%}
     <script src="/js/app.min.js"></script>
     {% else -%}
