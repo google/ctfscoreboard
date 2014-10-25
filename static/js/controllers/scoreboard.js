@@ -22,11 +22,27 @@ var scoreboardCtrls = angular.module('scoreboardCtrls', [
 scoreboardCtrls.controller('ScoreboardCtrl', [
     '$scope',
     '$resource',
+    '$interval',
     'configService',
-    function($scope, $resource, configService) {
+    'errorService',
+    function($scope, $resource, $interval, configService, errorService) {
       $scope.config = configService.get();
-      $resource('/api/scoreboard').get(
-        function(data) {
-          $scope.scoreboard = data.scoreboard;
-        });
+      
+      var refresh = function() {
+        errorService.clearErrors();
+        $resource('/api/scoreboard').get(
+            function(data) {
+              $scope.scoreboard = data.scoreboard;
+            },
+            function(data) {
+              errorService.error(data);
+            });
+      };
+
+      refresh();
+      var iprom = $interval(refresh, 60000);
+
+      $scope.$on('$destroy', function() {
+          $interval.cancel(iprom);
+      });
     }]);
