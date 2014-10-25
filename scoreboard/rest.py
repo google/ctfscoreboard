@@ -462,6 +462,7 @@ class Config(restful.Resource):
             news_mechanism='poll',
             news_poll_interval=app.config.get('NEWS_POLL_INTERVAL', 60000),
             csrf_token=csrfutil.get_csrf_token(),
+            rules=app.config.get('RULES', '/rules'),
             )
 
 api.add_resource(Config, '/api/config')
