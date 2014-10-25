@@ -31,7 +31,7 @@ Author: David Tomaschik <david@systemoverlord.com>
 6. Set up your favorite python application server, optionally behind a
    webserver.  You'll want to use main.app as your WSGI handler.
    Tested with uwsgi + nginx.  Not tested with anything else,
-   let me know if you have success.
+   let me know if you have success.  Sample configs are in doc/.
 
 7. Register a user.  The first user registed is automatically made an admin.
    You probably want to register your user before your players get access.
