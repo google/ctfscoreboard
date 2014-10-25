@@ -23,6 +23,7 @@ from scoreboard import utils
 
 
 def user_login(email=None, password=None):
+    """Perform the login for the user."""
     email = email or flask.request.form.get('email')
     password = password or flask.request.form.get('password')
     if email and password:
@@ -114,6 +115,7 @@ def submit_answer(cid, answer):
 
 @utils.require_gametime
 def unlock_hint(hid):
+    """Perform steps for hint unlocking."""
     hint = models.Hint.query.get(int(hid))
     if not hint:
         flask.abort(404)

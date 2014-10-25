@@ -27,8 +27,9 @@ except ImportError:
     dateutil = None
 
 
-# Helper decorators
 def login_required(f):
+    """Decorator to require login for a method."""
+
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         if not flask.g.user:
@@ -38,6 +39,8 @@ def login_required(f):
 
 
 def admin_required(f):
+    """Decorator to require admin for a method."""
+
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         try:
@@ -51,6 +54,7 @@ def admin_required(f):
 
 def team_required(f):
     """Require that they are a member of a team."""
+
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         if not flask.g.team:
@@ -61,8 +65,9 @@ def team_required(f):
     return login_required(wrapper)
 
 
-# Utility functions
 def get_required_field(name, verbose_name=None):
+    """Retrieve a field or raise an error."""
+
     try:
         return flask.request.form[name]
     except KeyError:
@@ -76,7 +81,8 @@ def parse_bool(b):
 
 
 def access_team(team):
-    """Permission to team."""
+    """Check permission to team."""
+
     if flask.g.user and flask.g.user.admin:
         return True
     try:
@@ -90,6 +96,7 @@ def access_team(team):
 
 def attachment_dir(create=False):
     """Return path to attachment dir."""
+
     config_dir = app.config.get('ATTACHMENT_DIR', 'attachments')
     if app.config.get('CWD'):
         target_dir = os.path.normpath(os.path.join(app.config.get('CWD'),
@@ -105,8 +112,8 @@ def attachment_dir(create=False):
     return target_dir
 
 
-# Game time settings
 class GameTime(object):
+    """Manage start/end times for the game."""
 
     @classmethod
     def setup(cls):

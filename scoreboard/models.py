@@ -29,6 +29,7 @@ db = sqlalchemy.SQLAlchemy(app)
 
 
 class Team(db.Model):
+    """A Team of Players (Team of 1 if not using Teams)."""
     tid = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), unique=True)
     score = db.Column(db.Integer, default=0)  # Denormalized
@@ -64,6 +65,8 @@ class Team(db.Model):
 
 
 class User(db.Model):
+    """A single User for login.  Player or admin."""
+
     uid = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True)
     nick = db.Column(db.String(80), unique=True)
@@ -117,6 +120,8 @@ class User(db.Model):
 
 
 class Category(db.Model):
+    """A Category of Challenges."""
+
     cid = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True)
     slug = db.Column(db.String(100), unique=True)
@@ -169,6 +174,8 @@ class Category(db.Model):
 
 
 class Challenge(db.Model):
+    """A single challenge to be played."""
+
     cid = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
     description = db.Column(db.Text)
@@ -270,6 +277,8 @@ class Challenge(db.Model):
 
 
 class Attachment(db.Model):
+    """Attachment to a challenge."""
+
     aid = db.Column(db.String(64), primary_key=True)
     challenge_cid = db.Column(db.Integer, db.ForeignKey('challenge.cid'))
     filename = db.Column(db.String(100))
@@ -286,6 +295,8 @@ class Attachment(db.Model):
 
 
 class Hint(db.Model):
+    """Hint for a challenge."""
+
     hid = db.Column(db.Integer, primary_key=True)
     challenge_cid = db.Column(db.Integer, db.ForeignKey('challenge.cid'))
     hint = db.Column(db.Text)
@@ -318,6 +329,8 @@ class Hint(db.Model):
 
 
 class UnlockedHint(db.Model):
+    """Record that a team has unlocked a hint."""
+
     hint_hid = db.Column(
         db.Integer, db.ForeignKey('hint.hid'), primary_key=True)
     hint = db.relationship('Hint', backref='unlocked_by', lazy='joined')
@@ -328,7 +341,8 @@ class UnlockedHint(db.Model):
 
 
 class Answer(db.Model):
-    # Log correct answer
+    """Log a successfully submitted answer."""
+
     challenge_cid = db.Column(db.Integer, db.ForeignKey('challenge.cid'),
                               primary_key=True)
     team_tid = db.Column(
@@ -412,6 +426,7 @@ class News(db.Model):
 
 class Page(db.Model):
     """Represent static pages to be rendered with Markdown."""
+
     path = db.Column(db.String(100), primary_key=True)
     title = db.Column(db.String(100))
     contents = db.Column(db.Text)
