@@ -32,7 +32,7 @@
         </div> <!-- end hints -->
         <!-- if not solved -->
         <div ng-hide='chall.answered'>
-          <form ng-submit='submitChallenge(chall)'>
+            <form ng-submit='submitChallenge(chall)' name='submitForm[{{$index}}]'>
             <input type='hidden' name='cid' value='{{chall.cid}}'>
             <div class='form-group'>
               <label for='answer-{{chall.cid}}'>Answer</label>
@@ -40,7 +40,8 @@
                 id='answer-{{chall.cid}}' ng-model='chall.answer'
                 required>
             </div>
-            <input type='submit' value='Submit' class='btn btn-primary'>
+            <input type='submit' value='Submit' class='btn btn-primary'
+              ng-disabled='invalidForm($index)'>
           </form>
         </div> <!-- end submission -->
       </div> <!-- admin hide -->

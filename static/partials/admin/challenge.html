@@ -1,5 +1,5 @@
 <h2><span ng-model='action'>New</span> Challenge</h2>
-<form ng-submit='saveChallenge()'>
+<form ng-submit='saveChallenge()' name='challengeForm'>
   <div class='well'>
     <div class='form-group'>
         <label for='name'>Name</label>
@@ -112,7 +112,8 @@
           ng-show='newAttachment.source == "filehash"'>
     </div>
   </div>
-  <input type='submit' class='btn btn-primary' value='Save'>
+  <input type='submit' class='btn btn-primary' value='Save'i
+    ng-disabled='challengeForm.$invalid'>
 </form>
 
 <!-- TODO: Display solves -->

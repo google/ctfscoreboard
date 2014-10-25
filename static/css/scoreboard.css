@@ -79,3 +79,6 @@ a.btn {
 #news-box .news-item .byline {
     font-size: 80%;
 }
+input.form-control[readonly] {
+    background-color: #fff;
+}

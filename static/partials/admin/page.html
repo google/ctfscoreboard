@@ -1,5 +1,5 @@
 <h2 ng-bind='action'></h2>
-<form ng-submit='save()'>
+<form ng-submit='save()' name='pageForm'>
     <div class='form-group'>
         <label for='page-title'>Title</label>
         <input id='page-title' name='page_title' ng-model='page.title'
@@ -10,5 +10,6 @@
         <textarea id='page-contents' ng-model='page.contents'
             class='form-control'></textarea>
     </div>
-    <input type='submit' class='btn btn-primary' value='Save'>
+    <input type='submit' class='btn btn-primary' value='Save'
+      ng-disabled='pageForm.$invalid'>
 </form>

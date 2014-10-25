@@ -1,13 +1,13 @@
 <h2>{{user.nick}}</h2>
 <div class='row'>
   <div class='col-md-5 col-md-offset-2'>
-    <form ng-submit='updateProfile()'> 
-      <div class='form-group' ng-show='!!team'>
+    <form ng-submit='updateProfile()' name='profileForm'>
+      <div class='form-group' ng-show='!!team && !!team.name'>
         <label for='team'>Team</label>
         <input type='text' readonly name='team' id='team' ng-model='team.name'
           class='form-control'>
       </div>
-      <div class='form-group' ng-show='!!team'>
+      <div class='form-group' ng-show='!!team && !!team.code'>
         <label for='team_code'>Team Invite Code</label>
         <input type='text' readonly name='team_code' id='team_code'
           ng-model='team.code' class='form-control'>
@@ -19,16 +19,19 @@
       </div>
       <div class='form-group'>
         <label for='password'>Password</label>
-        <input type='password' id='password' name='password' placeholder='password'
-          class='form-control' ng-model='user.password'>
+        <input type='password' id='password' name='password'
+          placeholder='password (to change)'
+          class='form-control' ng-model='user.password'
+          required>
       </div>
       <div class='form-group'>
         <label for='password2'>Repeat Password</label>
         <input type='password' id='password2' name='password2'
           placeholder='repeat password' class='form-control'
-          ng-model='user.password2'>
+          ng-model='user.password2' required>
       </div>
-      <input type='submit' value='Save' class='btn btn-primary'>
+      <input type='submit' value='Save' class='btn btn-primary'
+        ng-disabled='profileForm.$invalid'>
     </form>
   </div>
 </div>

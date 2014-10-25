@@ -1,5 +1,5 @@
 <div class='col-md-6 col-md-offset-3'>
-  <form ng-submit='register()'>
+  <form ng-submit='register()' name='registerForm'>
     <div class='form-group'>
       <label for='email'>Email</label>
       <div class='input-group'>
@@ -53,6 +53,7 @@
       </div>
     </div>
     <!-- /Teams only -->
-    <input type='submit' value='Register' class='btn btn-primary'>
+    <input type='submit' value='Register' class='btn btn-primary'
+      ng-disabled='registerForm.$invalid'>
   </form>
 </div>

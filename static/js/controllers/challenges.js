@@ -72,6 +72,11 @@ challengeCtrls.controller('ChallengeCtrl', [
             });
         };
 
+        $scope.invalidForm = function(idx) {
+            var form = $(document.getElementsByName('submitForm['+idx+']'));
+            return form.hasClass('ng-invalid');
+        };
+
         $scope.unlockHintDialog = function(hint) {
           errorService.clearErrors();
           $scope.hint = hint;
@@ -113,5 +118,5 @@ challengeCtrls.controller('ChallengeCtrl', [
             }
           });
         });
-      }
+      } // End slug section
     }]);

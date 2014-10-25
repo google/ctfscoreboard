@@ -1,6 +1,6 @@
 <h2>Categories</h2>
 <div class='well' ng-repeat='c in categories'>
-  <form ng-submit='updateCategory(c)'>
+  <form ng-submit='updateCategory(c)' name='adminCategoryForm[$index]'>
     <div class='form-group'>
       <label for='name-{{c.cid}}'>Title</label>
       <input name='name' id='name-{{c.cid}}' class='form-control'
@@ -15,12 +15,12 @@
     <a href='/admin/challenges/{{c.cid}}' class='btn btn-info'>Challenges</a>
     <div>
       <input type='button' value='Delete' class='btn btn-danger btn-delete'
-        ng-click='deleteCategory(c)'>
+        ng-click='deleteCategory(c)' ng-disabled='invalidForm($index)'>
     </div>
   </form>
 </div>
 <div class='well'>
-  <form ng-submit='addCategory()'>
+  <form ng-submit='addCategory()' name='adminCategoryForm'>
     <div class='form-group'>
       <label for='new-name'>Title</label>
       <input name='name' id='new-name' class='form-control'
@@ -31,6 +31,7 @@
       <textarea id='new-description' name='description'
         class='form-control' ng-model='newCategory.description'></textarea>
     </div>
-    <input type='submit' value='Add New' class='btn btn-primary'>
+    <input type='submit' value='Add New' class='btn btn-primary'
+      ng-disabled='adminCategoryForm.$invalid'>
   </form>
 </div>

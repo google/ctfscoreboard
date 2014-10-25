@@ -1,5 +1,5 @@
 <h2>Submit News</h2>
-<form ng-submit='submitNews()'>
+<form ng-submit='submitNews()' name='newsForm'>
     <div class='form-group'>
         <label for='news-type'>Type</label>
         <select name='newstype' id='news-type' class='form-control'
@@ -13,7 +13,8 @@
         <label for='news-team'>Team</label>
         <select name='newsteam' id='news-team' class='form-control'
             ng-model='newsItem.tid'
-            ng-options='team.tid as team.name for team in teams.teams'>
+            ng-options='team.tid as team.name for team in teams.teams'
+            ng-required='newsItem.news_type == "Unicast"'>
         </select>
     </div>
     <div class='form-group'>
@@ -21,5 +22,6 @@
         <textarea name='newsmessage' id='news-message' class='form-control'
             ng-model='newsItem.message' placeholder='Message...'></textarea>
     </div>
-    <input type='submit' value='Add' class='btn btn-primary'>
+    <input type='submit' value='Add' class='btn btn-primary'
+      ng-disabled='newsForm.$invalid'>
 </form>

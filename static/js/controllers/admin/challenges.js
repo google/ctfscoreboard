@@ -73,6 +73,11 @@ adminChallengeCtrls.controller('AdminCategoryCtrl', [
 
       $scope.newCategory = {};
 
+      $scope.invalidForm = function(idx) {
+          var form = $(document.getElementsByName('adminCategoryForm[' + idx + ']'));
+          return form.hasClass('ng-invalid');
+      };
+
       sessionService.requireLogin(function() {
         errorService.clearErrors();
         categoryService.get(
