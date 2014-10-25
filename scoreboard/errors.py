@@ -23,7 +23,7 @@ class _MessageException(exceptions.HTTPException):
 
     def __init__(self, msg=None):
         msg = msg or default_message
-        super(ValidationError, self).__init__()
+        super(_MessageException, self).__init__()
         self.data = {'message': msg}
 
 
