@@ -604,6 +604,7 @@ class BackupRestore(restful.Resource):
                 'name': cat.name,
                 'description': cat.description,
                 'challenges': challenges,
+                'slug': cat.slug,
             }
         return (
             {'categories': categories},
@@ -625,7 +626,7 @@ class BackupRestore(restful.Resource):
         challs = 0
         for catid, cat in categories.iteritems():
             newcat = models.Category()
-            for f in ('name', 'description'):
+            for f in ('name', 'description', 'slug'):
                 setattr(newcat, f, cat[f])
             models.db.session.add(newcat)
             cats[int(catid)] = newcat
