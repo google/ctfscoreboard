@@ -16,10 +16,17 @@
 
 var userServices = angular.module('userServices', ['ngResource']);
 
-userServices.service('userService', ['$resource',
+userServices.service('userService', [
+    '$resource',
     function($resource) {
       return $resource('/api/users/:uid', {}, {
         'save': {method: 'PUT'},
         'create': {method: 'POST'}
       });
+    }]);
+
+userServices.service('passwordResetService', [
+    '$resource',
+    function($resource) {
+        return $resource('/api/pwreset/:email');
     }]);

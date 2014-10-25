@@ -26,12 +26,14 @@ regCtrls.controller('LoginCtrl', [
     '$location',
     'errorService',
     'sessionService',
-    function($scope, $location, errorService, sessionService) {
+    'passwordResetService',
+    function($scope, $location, errorService, sessionService, passwordResetService) {
       if ($location.path().indexOf('/logout') == 0) {
         sessionService.logout();
       }
       $scope.email = '';
       $scope.password = '';
+      
       $scope.login = function() {
         errorService.clearErrors();
         sessionService.login($scope.email, $scope.password,
@@ -40,8 +42,21 @@ regCtrls.controller('LoginCtrl', [
           },
           function(errData) {
             errorService.error(errData);
+            $scope.password = '';
           });
       };
+
+      $scope.pwreset = function() {
+        errorService.clearErrors();
+        passwordResetService.get({email: $scope.email},
+            function(data) {
+                errorService.success(data);
+            },
+            function(data) {
+                errorService.error(data);
+            });
+      };
+
     }]);
 
 regCtrls.controller('RegistrationCtrl', [
@@ -104,4 +119,36 @@ regCtrls.controller('ProfileCtrl', [
             errorService.error(data);
           });
       };
+    }]);
+
+regCtrls.controller('PasswordResetCtrl', [
+    '$scope',
+    '$routeParams',
+    '$location',
+    'passwordResetService',
+    'errorService',
+    'sessionService',
+    function($scope, $routeParams, $location, passwordResetService,
+        errorService, sessionService) {
+        $scope.email = $routeParams.email;
+        $scope.pwreset = function() {
+            errorService.clearErrors();
+            passwordResetService.save({email: $routeParams.email},
+                {
+                    'token': $routeParams.token,
+                    'password': $scope.password,
+                    'password2': $scope.password2
+                },
+                function(data) {
+                    errorService.clearAndInhibit();
+                    errorService.success(data);
+                    sessionService.refresh();
+                    $location.path('/');
+                },
+                function(data) {
+                    errorService.error(data);
+                    $scope.password = '';
+                    $scope.password2 = '';
+                });
+        };
     }]);

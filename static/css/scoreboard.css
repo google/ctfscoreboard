@@ -28,6 +28,8 @@ body {
 }
 .right {
   float: right;
+}
+.points {
   margin-top: -19px;
 }
 .solved {

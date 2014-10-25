@@ -1,0 +1,9 @@
+Dear {{user.nick}},
+
+Someone at {{ip}} requested a password reset for {{user.email}} at
+{{config.TITLE}}.  If you didn't request this, you can safely ignore this email.
+To proceed with the reset, click on the link below:
+
+{{token_url}}
+
+{{config.TITLE}} Administrators

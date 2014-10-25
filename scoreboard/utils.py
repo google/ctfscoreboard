@@ -16,7 +16,10 @@ import datetime
 import errors
 import flask
 import functools
+import hashlib
+import hmac
 import os
+import urlparse
 
 from scoreboard.app import app
 
@@ -110,6 +113,18 @@ def attachment_dir(create=False):
             app.logger.error('Missing or invalid ATTACHMENT_DIR: %s', target_dir)
             flask.abort(500)
     return target_dir
+
+
+def compare_digest(a, b):
+    """Intended to be a constant-time comparison."""
+    if hasattr(hmac, 'compare_digest'):
+        return hmac.compare_digest(a, b)
+    return hashlib.sha1(a).digest() == hashlib.sha1(b).digest()
+
+
+def absolute_url(path):
+    """Build an absolute URL.  Not safe for untrusted input."""
+    return urlparse.urljoin(flask.request.host_url, path)
 
 
 class GameTime(object):

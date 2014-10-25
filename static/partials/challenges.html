@@ -5,7 +5,7 @@
     ng-repeat='chall in challenges|filter:filterUnlocked'>
     <div class='panel-heading'>
       <h3 class='panel-title'>{{chall.name}}</h3>
-      <span class='right'>{{chall.points}}</span>
+      <span class='right points'>{{chall.points}}</span>
     </div>
     <div class='panel-body'>
       <p ng-bind-html='chall.description|linky'></p>

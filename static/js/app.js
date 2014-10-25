@@ -64,6 +64,10 @@ scoreboardApp.config([
           templateUrl: '/partials/scoreboard.html',
           controller: 'ScoreboardCtrl'
         }).
+        when('/pwreset/:email/:token', {
+          templateUrl: '/partials/pwreset.html',
+          controller: 'PasswordResetCtrl'
+        }).
         when('/admin/categories', {
           templateUrl: '/partials/admin/categories.html',
           controller: 'AdminCategoryCtrl'

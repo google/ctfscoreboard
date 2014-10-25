@@ -36,6 +36,11 @@ def handle_404(ex):
         return '404 Not Found', 404
 
 
+@app.route('/pwreset/<path:unused>')
+def render_pwreset(unused):
+    return render_index()
+
+
 @app.route('/')
 @app.route('/index.html')
 def render_index():

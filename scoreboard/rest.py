@@ -224,11 +224,40 @@ class Session(restful.Resource):
         flask.session['user'] = None
         return {'message': 'OK'}
 
+
+class PasswordReset(restful.Resource):
+    """Setup for password reset."""
+
+    def get(self, email):
+        """Send a password reset email."""
+        user = models.User.get_by_email(email)
+        if not user:
+            flask.abort(404)
+        controllers.offer_password_reset(user)
+        return {'message': 'Reset email sent.'}
+
+    def post(self, email):
+        """Verify reset and set new password."""
+        # TODO: Move to controller
+        data = flask.request.get_json()
+        user = models.User.get_by_email(email)
+        if not user:
+            flask.abort(404)
+        if not user.verify_token(data.get('token', '')):
+            raise errors.AccessDeniedError('Invalid token.')
+        if data['password'] != data['password2']:
+            raise errors.ValidationError("Passwords don't match.")
+        user.set_password(data['password'])
+        models.commit()
+        controllers.user_login(email, data['password'])
+        return {'message': 'Password reset.'}
+
 api.add_resource(UserList, '/api/users')
 api.add_resource(User, '/api/users/<int:user_id>')
 api.add_resource(TeamList, '/api/teams')
 api.add_resource(Team, '/api/teams/<int:team_id>')
 api.add_resource(Session, '/api/session')
+api.add_resource(PasswordReset, '/api/pwreset/<email>')
 
 
 class Challenge(restful.Resource):

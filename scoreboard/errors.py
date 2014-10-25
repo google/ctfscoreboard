@@ -16,26 +16,36 @@
 from werkzeug import exceptions
 
 
-class AccessDeniedError(exceptions.HTTPException):
+class _MessageException(exceptions.HTTPException):
+    """Message with JSON exception."""
+
+    default_message = 'Error'
+
+    def __init__(self, msg=None):
+        msg = msg or default_message
+        super(ValidationError, self).__init__()
+        self.data = {'message': msg}
+
+
+class AccessDeniedError(_MessageException):
     """No access to the resource."""
     code = 403
-    data = {'message': 'Forbidden'}
 
 
-class ValidationError(exceptions.HTTPException):
+class ValidationError(_MessageException):
     """Error during input validation."""
     code = 400
-
-    def __init__(self, msg, *args, **kwargs):
-        super(ValidationError, self).__init__(*args, **kwargs)
-        self.data = {'message': msg}
 
 
 class InvalidAnswerError(AccessDeniedError):
     """Submitting the wrong answer."""
-    data = {'message': 'Ha ha ha... No.'}
+    default_message = 'Ha ha ha... No.'
 
 
 class LoginError(AccessDeniedError):
     """Failing to login."""
-    data = {'message': 'Invalid username/password.'}
+    default_message = 'Invalid username/password.'
+
+
+class ServerError(_MessageException):
+    code = 500

@@ -15,5 +15,7 @@
     </div>
     <input type='submit' value='Login' class='btn btn-primary'
       ng-disabled='loginForm.$invalid'>
+    <input type='button' value='Reset Password' class='btn btn-danger right'
+      ng-disabled='email == ""' ng-click='pwreset()'>
   </form>
 </div>

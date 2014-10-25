@@ -12,18 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import base64
 import datetime
 import flask
 from flask.ext import sqlalchemy
+import hashlib
 import hmac
 import os
 import pbkdf2
 import re
+import time
 import utils
 from sqlalchemy import exc
 from sqlalchemy.orm import exc as orm_exc
 
 from scoreboard.app import app
+from scoreboard import errors
 
 db = sqlalchemy.SQLAlchemy(app)
 
@@ -93,11 +97,40 @@ class User(db.Model):
             db.session.delete(team)
         db.session.commit()
 
+    def get_token(self, token_type='pwreset', expires=None):
+        """Generate a user-specific token."""
+        expires = expires or int(time.time()) + 7200  # 2 hours
+        token_plain = '%d:%d:%s:%s' % (
+                self.uid, expires, token_type, self.pwhash)
+        mac = hmac.new(
+                app.config['SECRET_KEY'], token_plain, hashlib.sha1).digest()
+        token = '%d:%s' % (expires, mac)
+        return base64.urlsafe_b64encode(token)
+
+    def verify_token(self, token, token_type='pwreset'):
+        """Verify a user-specific token."""
+        token = str(token)
+        decoded = base64.urlsafe_b64decode(token)
+        expires, mac = decoded.split(':')
+        if expires > time.time():
+            raise errors.ValidationError('Expired token.')
+        expected = self.get_token(token_type=token_type, expires=int(expires))
+        if not utils.compare_digest(expected, token):
+            raise errors.ValidationError('Invalid token.')
+        return True
+
+    @classmethod
+    def get_by_email(cls, email):
+        try:
+            return cls.query.filter_by(email=email).one()
+        except exc.InvalidRequestError:
+            return None
+
     @classmethod
     def login_user(cls, email, password):
         try:
             user = cls.query.filter_by(email=email).one()
-        except:
+        except exc.InvalidRequestError:
             return None
         if pbkdf2.crypt(password, user.pwhash) == user.pwhash:
             return user
@@ -205,7 +238,8 @@ class Challenge(db.Model):
                                         Answer.team == team).count())
 
     def verify_answer(self, answer):
-        return pbkdf2.crypt(answer, self.answer_hash) == self.answer_hash
+        return utils.compare_digest(
+                pbkdf2.crypt(answer, self.answer_hash), self.answer_hash)
 
     def change_answer(self, answer):
         self.answer_hash = pbkdf2.crypt(answer)

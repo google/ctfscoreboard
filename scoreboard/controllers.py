@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import base64
 import flask
 import re
 from sqlalchemy import exc
+import urllib
 
 from scoreboard.app import app
 from scoreboard import errors
+from scoreboard import mail
 from scoreboard import models
 from scoreboard import utils
 
@@ -127,3 +130,16 @@ def unlock_hint(hid):
                hint.challenge.name, hint.challenge.cid)
     app.challenge_log.info(logstr)
     return hint
+
+
+def offer_password_reset(user):
+    token = user.get_token()
+    token_url = utils.absolute_url('/pwreset/%s/%s' %
+            (urllib.quote(user.email), token))
+    message = flask.render_template('pwreset.eml', token_url=token_url,
+            user=user, ip=flask.request.remote_addr, config=app.config)
+    subject = '%s Password Reset' % app.config.get('TITLE', 'CTF')
+    try:
+        mail.send(message, subject, user.email, to_name=user.nick)
+    except mail.MailFailure:
+        raise errors.ServerError('Could not send mail.')
