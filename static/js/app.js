@@ -26,6 +26,7 @@ var scoreboardApp = angular.module('scoreboardApp', [
   'pageCtrls',
   'regCtrls',
   'scoreboardCtrls',
+  'sbDirectives',
   'sbFilters'
 ]);
 

@@ -20,12 +20,15 @@ should be in {% raw %} blocks.  DFIU! -#}
           </div>
           <nav class='navbar-collapse collapse'>
             <ul class='nav navbar-nav'>
-              <li><a href='/challenges' class='ng-hide' ng-show='session.user'>Challenges</a></li>
-              <li><a href='/scoreboard'>Scoreboard</a></li>
-              <li><a href='/profile' class='ng-hide' ng-show='session.user'>Profile</a></li>
-              <li><a href='/logout' class='ng-hide' ng-show='session.user'>Logout</a></li>
-              <li><a href='/login' ng-hide='session.user'>Login</a></li>
-              <li><a href='/register' ng-hide='session.user'>Register</a></li>
+              <li><a href='/challenges' class='ng-hide' ng-show='session.user'
+                  highlight-active>Challenges</a></li>
+              <li><a href='/scoreboard' highlight-active>Scoreboard</a></li>
+              <li><a href='/profile' class='ng-hide' ng-show='session.user'
+                  highlight-active>Profile</a></li>
+              <li><a href='/logout' class='ng-hide' ng-show='session.user'
+                  highlight-active>Logout</a></li>
+              <li><a href='/login' ng-hide='session.user' highlight-active>Login</a></li>
+              <li><a href='/register' ng-hide='session.user' highlight-active>Register</a></li>
             </ul>
           </div>
         </div>
@@ -35,24 +38,25 @@ should be in {% raw %} blocks.  DFIU! -#}
           <div class='col-md-3 left-sidebar full-height'>
               <div class='left-sidebar-background full-height'></div>
               <div class='list-group' ng-controller='CategoryMenuCtrl'>
-                <a href='/challenges/{{c.slug}}'
+                <a ng-href='/challenges/{{c.slug}}'
                   class='list-group-item ng-hide'
-                  ng-repeat='c in categories' ng-show='c'>{{c.name}}</a>
+                  ng-repeat='c in categories' ng-show='c'
+                  highlight-active>{{c.name}}</a>
               </div>
               <!-- TODO: Admin only -->
               <div class='list-group ng-hide' ng-show='isAdmin()'>
                 <a href='/admin/categories'
-                  class='list-group-item'>Categories</a>
+                  class='list-group-item' highlight-active>Categories</a>
                 <a href='/admin/challenges'
-                  class='list-group-item'>Challenges</a>
+                  class='list-group-item' highlight-active>Challenges</a>
                 <a href='/admin/backups'
-                  class='list-group-item'>Backup/Restore</a>
+                  class='list-group-item' highlight-active>Backup/Restore</a>
                 <a href='/admin/users'
-                  class='list-group-item'>Users</a>
+                  class='list-group-item' highlight-active>Users</a>
                 <a href='/admin/teams'
-                  class='list-group-item'>Teams</a>
+                  class='list-group-item' highlight-active>Teams</a>
                 <a href='/admin/news'
-                  class='list-group-item'>News</a>
+                  class='list-group-item' highlight-active>News</a>
               </div>
               <div ng-controller='NewsCtrl' id='news-box'>
                 <ul class='ng-hide' ng-show='newsItems'>
@@ -92,6 +96,7 @@ should be in {% raw %} blocks.  DFIU! -#}
     <script src="/js/app.min.js"></script>
     {% else -%}
     <script src="/js/app.js"></script>
+    <script src="/js/directives.js"></script>
     <script src="/js/filters.js"></script>
     <script src="/js/services/challenges.js"></script>
     <script src="/js/services/global.js"></script>
