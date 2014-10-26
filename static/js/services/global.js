@@ -61,21 +61,34 @@ globalServices.service('errorService',
     });
 
 
-globalServices.service('loadingService',
-    function() {
+globalServices.service('loadingService', [
+    '$timeout',
+    function($timeout) {
         // Basically just keeps a loading flag
         var loading = false;
+        var loadTimer = null;
+        var debounce = 250;  // Debounce ms
+
         this.getState = function() {
             return loading;
         };
         this.start = function() {
-            loading = true;
+            if (loadTimer || loading)
+                return;
+            loadTimer = $timeout(
+                function() {
+                    loading = true;
+                }, debounce);
         };
         this.end = function() {
+            if (loadTimer) {
+                $timeout.cancel(loadTimer);
+                loadTimer = null;
+            }
             loading = false;
         };
         this.stop = this.end;
-    });
+    }]);
 
 
 globalServices.service('gameTimeService', [
