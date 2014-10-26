@@ -143,6 +143,7 @@ class UserList(restful.Resource):
                                              'team_id'), data.get('team_name'),
                                          data.get('team_code'))
         models.commit()
+        flask.session['user'] = user.uid
         return user
 
 

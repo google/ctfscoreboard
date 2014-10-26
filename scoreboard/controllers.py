@@ -76,7 +76,6 @@ def register_user(email, nick, password, team_id=None,
     except exc.IntegrityError:
         models.db.session.rollback()
         raise errors.ValidationError('Duplicate email/nick.')
-    flask.session['user'] = user.uid
     app.logger.info('User %s <%s> registered from IP %s.',
                     nick, email, flask.request.access_route[0])
     return user
