@@ -60,7 +60,6 @@ class Team(db.Model):
         team = cls()
         db.session.add(team)
         team.name = name
-        db.session.commit()
         return team
 
     @classmethod
@@ -95,7 +94,6 @@ class User(db.Model):
         self.team = None
         if empty_team:
             db.session.delete(team)
-        db.session.commit()
 
     def get_token(self, token_type='pwreset', expires=None):
         """Generate a user-specific token."""
@@ -146,7 +144,6 @@ class User(db.Model):
         user.set_password(password)
         if not first_user:
             user.team = team
-            db.session.commit()
         else:
             user.promote()
         return user
@@ -188,14 +185,12 @@ class Category(db.Model):
             cat.unlocked = unlocked
             cat.slugify()
             db.session.add(cat)
-            db.session.commit()
             return cat
         except exc.IntegrityError:
             db.session.rollback()
 
     def delete(self):
         db.session.delete(self)
-        db.session.commit()
 
     def get_challenges(self, unlocked_only=True):
         challenges = Challenge.query.filter(Challenge.category == self)
@@ -268,7 +263,6 @@ class Challenge(db.Model):
 
     def delete(self):
         db.session.delete(self)
-        db.session.commit()
 
     def set_hints(self, hints):
         hid_set = set()
@@ -342,7 +336,6 @@ class Hint(db.Model):
         unlocked.team = team
         unlocked.timestamp = datetime.datetime.utcnow()
         db.session.add(unlocked)
-        db.session.commit()
 
     def is_unlocked(self, team=None, unlocked_hints=None):
         if team is None:
@@ -392,7 +385,6 @@ class Answer(db.Model):
         answer.timestamp = datetime.datetime.utcnow()
         answer.answer_hash = pbkdf2.crypt(team.name + answer_text)
         db.session.add(answer)
-        db.session.commit()
         return answer
 
 

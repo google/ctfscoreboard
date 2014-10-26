@@ -142,6 +142,7 @@ class UserList(restful.Resource):
                                          data['password'], data.get(
                                              'team_id'), data.get('team_name'),
                                          data.get('team_code'))
+        models.commit()
         return user
 
 
@@ -182,6 +183,7 @@ class Team(restful.Resource):
         # Writable fields
         for field in ('name', 'score'):
             setattr(team, field, data.get(field, getattr(team, field)))
+        models.commit()
         return self._marshal_team(team)
 
 
@@ -418,9 +420,11 @@ class CategoryList(restful.Resource):
     @restful.marshal_with(Category.category_fields)
     def post(self):
         data = flask.request.get_json()
-        return models.Category.create(
+        cat = models.Category.create(
             data['name'],
             data['description'])
+        models.commit()
+        return cat
 
 
 class Hint(restful.Resource):
@@ -439,7 +443,9 @@ class Hint(restful.Resource):
     def post(self):
         """Unlock a hint."""
         data = flask.request.get_json()
-        return controllers.unlock_hint(data['hid'])
+        hint = controllers.unlock_hint(data['hid'])
+        models.commit()
+        return hint
 
 
 class Answer(restful.Resource):
@@ -452,6 +458,7 @@ class Answer(restful.Resource):
     def post(self):
         data = flask.request.get_json()
         points = controllers.submit_answer(data['cid'], data['answer'])
+        models.commit()
         return dict(points=points)
 
 api.add_resource(Category, '/api/categories/<int:category_id>')
