@@ -78,15 +78,22 @@ sessionServices.service('sessionService', [
       };
 
       this.requireAdmin = function(opt_callback) {
-        if (this.session.user && this.session.user.admin) {
-          if (opt_callback)
-            opt_callback();
-          return true;
+        var cb = angular.bind(this, function() {
+          if (this.session.user && this.session.user.admin) {
+            if (opt_callback)
+                opt_callback();
+            return true;
+          }
+          errorService.clearAndInhibit();
+          errorService.error('You are not an admin!');
+          $location.path('/');
+          return false;
+        });
+        if (this.session.user != null) {
+          return cb();
         }
-        errorService.clearAndInhibit();
-        errorService.error('You are not an admin!');
-        $location.path('/');
-        return false;
+        this.requireLogin(cb);
+        return true;
       };
 
       this.refresh();
