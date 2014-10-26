@@ -24,11 +24,16 @@ challengeServices.service('challengeService', ['$resource',
       });
     }]);
 
-challengeServices.service('categoryService', ['$resource',
-    function($resource) {
+challengeServices.service('categoryService', [
+    '$resource',
+    '$rootScope',
+    '$cacheFactory',
+    function($resource, $rootScope, $cacheFactory) {
+      var categoryCache = $cacheFactory('categoryCache');
       this.catlist = null;
 
       this.res = $resource('/api/categories/:cid', {}, {
+        'get': {method: 'GET', cache: categoryCache},
         'save': {method: 'PUT'},
         'create': {method: 'POST'},
       });
@@ -52,6 +57,11 @@ challengeServices.service('categoryService', ['$resource',
           callback(data);
         }));
       };
+
+      $rootScope.$on('$locationChangeSuccess', function() {
+          // Clear cache on navigation
+          categoryCache.removeAll();
+      });
 
     }]);
 
