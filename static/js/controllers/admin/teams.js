@@ -29,7 +29,9 @@ adminTeamCtrls.controller('AdminTeamsCtrl', [
     'errorService',
     'sessionService',
     'teamService',
-    function($scope, $routeParams, errorService, sessionService, teamService) {
+    'loadingService',
+    function($scope, $routeParams, errorService, sessionService, teamService,
+        loadingService) {
       if (!sessionService.requireAdmin()) return;
 
       $scope.teams = [];
@@ -50,10 +52,16 @@ adminTeamCtrls.controller('AdminTeamsCtrl', [
       sessionService.requireLogin(function() {
         var tid = $routeParams.tid;
         if (tid) {
-          $scope.team = teamService.get({tid: tid});
+          $scope.team = teamService.get({tid: tid},
+              function(){loadingService.stop();},
+              function(data) {
+                  errorService.error(data);
+                  loadingService.stop();
+              });
         } else {
           teamService.get(function(data) {
             $scope.teams = data.teams;
+            loadingService.stop();
           });
         }
       });
@@ -67,8 +75,9 @@ adminTeamCtrls.controller('AdminUsersCtrl', [
     'sessionService',
     'teamService',
     'userService',
+    'loadingService',
     function($scope, $routeParams, configService, errorService, sessionService,
-      teamService, userService) {
+      teamService, userService, loadingService) {
       if (!sessionService.requireAdmin()) return;
 
       $scope.users = [];
@@ -105,6 +114,7 @@ adminTeamCtrls.controller('AdminUsersCtrl', [
           if (uid) {
             $scope.user = userService.get({uid: uid},
               function() {
+                loadingService.stop();
                 $scope.user.team = getTeam($scope.user.team_tid);
               });
           } else {
@@ -113,6 +123,7 @@ adminTeamCtrls.controller('AdminUsersCtrl', [
               angular.forEach($scope.users, function(u) {
                 u.team = getTeam(u.team_tid);
               });
+              loadingService.stop();
             });
           }
         });

@@ -27,7 +27,9 @@ adminPageCtrls.controller('AdminPageCtrl', [
     'errorService',
     'pageService',
     'sessionService',
-    function($scope, $routeParams, errorService, pageService, sessionService) {
+    'loadingService',
+    function($scope, $routeParams, errorService, pageService, sessionService,
+        loadingService) {
         if (!sessionService.requireAdmin()) return;
 
         var path = $routeParams.path;
@@ -57,8 +59,10 @@ adminPageCtrls.controller('AdminPageCtrl', [
             function(data) {
                 goEdit();
                 $scope.page = data;
+                loadingService.stop();
             },
             function(data) {
+                loadingService.stop();
                 if (data.status == 404)
                     // Don't care, creating a new page?
                     return;

@@ -28,7 +28,8 @@ adminChallengeCtrls.controller('AdminCategoryCtrl', [
     'categoryService',
     'errorService',
     'sessionService',
-    function($scope, categoryService, errorService, sessionService) {
+    'loadingService',
+    function($scope, categoryService, errorService, sessionService, loadingService) {
       if (!sessionService.requireAdmin()) return;
 
       $scope.categories = [];
@@ -83,9 +84,11 @@ adminChallengeCtrls.controller('AdminCategoryCtrl', [
         categoryService.get(
           function(data) {
             $scope.categories = data.categories;
+            loadingService.stop();
           },
           function(data) {
             errorService.error(data);
+            loadingService.stop();
           });
       });
     }]);
@@ -96,7 +99,9 @@ adminChallengeCtrls.controller('AdminChallengesCtrl', [
     'challengeService',
     'errorService',
     'sessionService',
-    function($scope, $routeParams, challengeService, errorService, sessionService) {
+    'loadingService',
+    function($scope, $routeParams, challengeService, errorService,
+        sessionService, loadingService) {
       if (!sessionService.requireAdmin()) return;
 
       $scope.catid = $routeParams.cid;
@@ -133,9 +138,11 @@ adminChallengeCtrls.controller('AdminChallengesCtrl', [
       sessionService.requireLogin(function() {
         challengeService.get(function(data) {
           $scope.challenges = data.challenges;
+          loadingService.stop();
         },
         function(data) {
           errorService.error(data);
+          loadingService.stop();
         });
       });
     }]);
@@ -148,8 +155,9 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
     'errorService',
     'sessionService',
     'uploadService',
+    'loadingService',
     function($scope, $routeParams, categoryService, challengeService,
-      errorService, sessionService, uploadService) {
+      errorService, sessionService, uploadService, loadingService) {
       if (!sessionService.requireAdmin()) return;
 
       $scope.cid = $routeParams.cid;
@@ -239,9 +247,11 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
             function(data) {
                 $scope.challenge = data;
                 goEdit();
+                loadingService.stop();
             },
             function(data) {
                 errorService.error(data);
+                loadingService.stop();
             });
         } else {
             $scope.challenge = {
@@ -251,6 +261,8 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
         }
         categoryService.get(function(data) {
           $scope.categories = data.categories;
+          if (!$routeParams.cid)
+            loadingService.stop();
         });
       });
 
@@ -261,7 +273,8 @@ adminChallengeCtrls.controller('AdminRestoreCtrl', [
     '$resource',
     'errorService',
     'sessionService',
-    function($scope, $resource, errorService, sessionService) {
+    'loadingService',
+    function($scope, $resource, errorService, sessionService, loadingService) {
       if (!sessionService.requireAdmin()) return;
 
       $scope.replace = false;
@@ -325,5 +338,6 @@ adminChallengeCtrls.controller('AdminRestoreCtrl', [
           errorService.error(data);
         });
       };
+      loadingService.stop();
     }]);
 

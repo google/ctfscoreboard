@@ -25,7 +25,9 @@ scoreboardCtrls.controller('ScoreboardCtrl', [
     '$interval',
     'configService',
     'errorService',
-    function($scope, $resource, $interval, configService, errorService) {
+    'loadingService',
+    function($scope, $resource, $interval, configService, errorService,
+        loadingService) {
       $scope.config = configService.get();
       
       var refresh = function() {
@@ -33,9 +35,11 @@ scoreboardCtrls.controller('ScoreboardCtrl', [
         $resource('/api/scoreboard').get(
             function(data) {
               $scope.scoreboard = data.scoreboard;
+              loadingService.stop();
             },
             function(data) {
               errorService.error(data);
+              loadingService.stop();
             });
       };
 

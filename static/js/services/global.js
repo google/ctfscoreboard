@@ -17,7 +17,8 @@
 /* Global services */
 var globalServices = angular.module('globalServices', ['ngResource']);
 
-globalServices.service('configService', ['$resource',
+globalServices.service('configService', [
+    '$resource',
     function($resource) {
       return $resource('/api/config', {}, {
         'get': {cache: true}
@@ -57,6 +58,23 @@ globalServices.service('errorService',
         this.clearErrors();
         this.inhibitClear();
       };
+    });
+
+
+globalServices.service('loadingService',
+    function() {
+        // Basically just keeps a loading flag
+        var loading = false;
+        this.getState = function() {
+            return loading;
+        };
+        this.start = function() {
+            loading = true;
+        };
+        this.end = function() {
+            loading = false;
+        };
+        this.stop = this.end;
     });
 
 

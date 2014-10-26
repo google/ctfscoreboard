@@ -26,7 +26,9 @@ adminNewsCtrls.controller('AdminNewsCtrl', [
     'newsService',
     'sessionService',
     'teamService',
-    function($scope, errorService, newsService, sessionService, teamService) {
+    'loadingService',
+    function($scope, errorService, newsService, sessionService, teamService,
+        loadingService) {
         if (!sessionService.requireAdmin()) return;
 
         var makeNewsItem = function() {
@@ -48,4 +50,5 @@ adminNewsCtrls.controller('AdminNewsCtrl', [
                     errorService.error(msg);
                 });
         };
+        loadingService.stop();
     }]);

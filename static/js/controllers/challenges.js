@@ -48,8 +48,9 @@ challengeCtrls.controller('ChallengeCtrl', [
     'categoryService',
     'errorService',
     'sessionService',
+    'loadingService',
     function($scope, $resource, $routeParams, answerService,
-      categoryService, errorService, sessionService) {
+      categoryService, errorService, sessionService, loadingService) {
       errorService.clearErrors();
 
       $scope.filterUnlocked = function(chall) {
@@ -109,14 +110,18 @@ challengeCtrls.controller('ChallengeCtrl', [
                     $scope.category = cat;
                     $scope.category.answers = {};
                     $scope.challenges = cat.challenges;
+                    loadingService.stop();
                   });
                 found = true;
               }
             });
             if (!found) {
               errorService.error('Category not found.');
+              loadingService.stop();
             }
           });
         });
-      } // End slug section
+      } else {
+        loadingService.stop();
+      }
     }]);

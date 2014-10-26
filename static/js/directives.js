@@ -90,3 +90,20 @@ sbDirectives.directive('countdownTimer', [
             }
         };
     }]);
+
+sbDirectives.directive('loadingOverlay', [
+    'loadingService',
+    function (loadingService) {
+        return {
+            restrict: 'A',
+            link: function(scope, element, attrs) {
+                scope.$watch(function() { return loadingService.getState(); },
+                    function() {
+                        if (loadingService.getState())
+                            element.show();
+                        else
+                            element.hide();
+                    });
+            }
+        };
+    }]);

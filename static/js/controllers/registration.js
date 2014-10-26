@@ -27,7 +27,9 @@ regCtrls.controller('LoginCtrl', [
     'errorService',
     'sessionService',
     'passwordResetService',
-    function($scope, $location, errorService, sessionService, passwordResetService) {
+    'loadingService',
+    function($scope, $location, errorService, sessionService,
+        passwordResetService, loadingService) {
       if ($location.path().indexOf('/logout') == 0) {
         sessionService.logout();
       }
@@ -57,6 +59,7 @@ regCtrls.controller('LoginCtrl', [
             });
       };
 
+      loadingService.stop();
     }]);
 
 regCtrls.controller('RegistrationCtrl', [
@@ -67,8 +70,9 @@ regCtrls.controller('RegistrationCtrl', [
     'sessionService',
     'teamService',
     'userService',
+    'loadingService',
     function($scope, $location, configService, errorService, sessionService,
-        teamService, userService) {
+        teamService, userService, loadingService) {
       $scope.config = configService.get();
       $scope.teams = teamService.get(function() {
         $scope.teams = $scope.teams.teams;
@@ -90,6 +94,7 @@ regCtrls.controller('RegistrationCtrl', [
           errorService.error(errData);
         });
       };
+      loadingService.stop();
     }]);
 
 regCtrls.controller('ProfileCtrl', [
@@ -98,7 +103,9 @@ regCtrls.controller('ProfileCtrl', [
     'errorService',
     'sessionService',
     'userService',
-    function($scope, configService, errorService, sessionService, userService) {
+    'loadingService',
+    function($scope, configService, errorService, sessionService,
+        userService, loadingService) {
       $scope.user = null;
 
       sessionService.requireLogin(function() {
@@ -106,6 +113,7 @@ regCtrls.controller('ProfileCtrl', [
         configService.get(function(c) {
             if (c.teams)
                 $scope.team = sessionService.session.team;
+            loadingService.stop();
         });
       });
 
@@ -128,8 +136,9 @@ regCtrls.controller('PasswordResetCtrl', [
     'passwordResetService',
     'errorService',
     'sessionService',
+    'loadingService',
     function($scope, $routeParams, $location, passwordResetService,
-        errorService, sessionService) {
+        errorService, sessionService, loadingService) {
         $scope.email = $routeParams.email;
         $scope.pwreset = function() {
             errorService.clearErrors();
@@ -151,4 +160,5 @@ regCtrls.controller('PasswordResetCtrl', [
                     $scope.password2 = '';
                 });
         };
+        loadingService.stop();
     }]);

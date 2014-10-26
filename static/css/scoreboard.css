@@ -93,3 +93,14 @@ input.form-control[readonly] {
     line-height: 21px;
     padding-top: 9.5px;
 }
+#loading-overlay {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    opacity: 0.4;
+    z-index: 2000;
+    background-color: #000;
+    display: none;
+}

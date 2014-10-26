@@ -106,6 +106,16 @@ scoreboardApp.config([
         });
     }]);
 
+
+scoreboardApp.run([
+    '$rootScope',
+    'loadingService',
+    function($rootScope, loadingService) {
+        $rootScope.$on('$locationChangeStart', function() {
+            loadingService.start();
+        });
+    }]);
+
 var getInjector = function() {
     return angular.element('*[ng-app]').injector();
 };

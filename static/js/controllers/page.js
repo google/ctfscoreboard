@@ -23,7 +23,8 @@ pageCtrls.controller('StaticPageCtrl', [
     '$scope',
     'pageService',
     'errorService',
-    function($scope, pageService, errorService) {
+    'loadingService',
+    function($scope, pageService, errorService, loadingService) {
         var path = pageService.pagePath();
         if (path == "") {
             path = "home";
@@ -31,9 +32,11 @@ pageCtrls.controller('StaticPageCtrl', [
         pageService.get({path: path},
             function(data) {
                 $scope.page = data;
+                loadingService.stop();
             },
             function(data) {
                 // TODO: better handling here
                 errorService.error(data);
+                loadingService.stop();
             });
     }]);
