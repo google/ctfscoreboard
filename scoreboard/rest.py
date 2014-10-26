@@ -19,6 +19,7 @@ from flask.ext.restful import fields
 import hashlib
 import json
 import os
+import pytz
 
 from scoreboard.app import app
 from scoreboard import controllers
@@ -60,6 +61,8 @@ class ISO8601DateTime(fields.Raw):
         if isinstance(value, (int, float)):
             value = datetime.fromtimestamp(value)
         if isinstance(value, (datetime.datetime, datetime.date)):
+            if getattr(value, 'tzinfo', True) is None:
+                value = value.replace(tzinfo=pytz.UTC)
             return value.isoformat()
         raise ValueError('Unable to convert %s to ISO8601.' % str(type(value)))
 
