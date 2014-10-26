@@ -23,6 +23,9 @@ from scoreboard import models
 from scoreboard import utils
 
 
+_VIEW_CACHE = {}
+
+
 @app.errorhandler(404)
 def handle_404(ex):
     """Handle 404s, sending index.html for unhandled paths."""
@@ -36,6 +39,7 @@ def handle_404(ex):
         return '404 Not Found', 404
 
 
+# Needed because emails with a "." in them prevent 404 handler from working
 @app.route('/pwreset/<path:unused>')
 def render_pwreset(unused):
     return render_index()
@@ -48,11 +52,14 @@ def render_index():
 
     Do not include any user-controlled content to avoid XSS!
     """
-
-    minify = not app.debug and os.path.exists(
-            os.path.join(app.static_folder, 'js/app.min.js'))
-    return flask.make_response(flask.render_template(
-        'index.html', minify=minify), 200)
+    try:
+        tmpl = _VIEW_CACHE['index']
+    except KeyError:
+        minify = not app.debug and os.path.exists(
+                os.path.join(app.static_folder, 'js/app.min.js'))
+        tmpl = flask.render_template('index.html', minify=minify)
+        _VIEW_CACHE['index'] = tmpl
+    return flask.make_response(tmpl, 200)
 
 
 @app.route('/attachment/<filename>')
