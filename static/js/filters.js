@@ -20,7 +20,6 @@ sbFilters.filter('markdown', [
     '$sce',
     function($sce) {
         return function(input) {
-            console.log('Markdown filter called!');
             if (typeof input != "string")
                 return "";
             if (typeof Markdown == "undefined" ||
