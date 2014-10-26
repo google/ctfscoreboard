@@ -32,3 +32,17 @@ sbFilters.filter('markdown', [
             return $sce.trustAsHtml(converter.makeHtml(input));
         };
     }]);
+
+sbFilters.filter('padint',
+    function() {
+        return function(n, len) {
+            if (!len)
+                len = 2;
+            else
+                len = parseInt(len);
+            n = '' + n;
+            while(n.length < len)
+                n = '0' + n;
+            return n;
+        };
+    });

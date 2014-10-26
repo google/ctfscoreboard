@@ -55,6 +55,8 @@ class ISO8601DateTime(fields.Raw):
     """Show datetimes as ISO8601."""
 
     def format(self, value):
+        if value is None:
+            return None
         if isinstance(value, (int, float)):
             value = datetime.fromtimestamp(value)
         if isinstance(value, (datetime.datetime, datetime.date)):
@@ -485,6 +487,7 @@ class Config(restful.Resource):
     """
 
     def get(self):
+        datefmt = ISO8601DateTime()
         return dict(
             teams=app.config.get('TEAMS', False),
             sbname=app.config.get('TITLE', 'Scoreboard'),
@@ -492,6 +495,8 @@ class Config(restful.Resource):
             news_poll_interval=app.config.get('NEWS_POLL_INTERVAL', 60000),
             csrf_token=csrfutil.get_csrf_token(),
             rules=app.config.get('RULES', '/rules'),
+            game_start=datefmt.format(utils.GameTime.start),
+            game_end=datefmt.format(utils.GameTime.end),
             )
 
 api.add_resource(Config, '/api/config')

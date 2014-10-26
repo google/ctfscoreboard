@@ -60,6 +60,54 @@ globalServices.service('errorService',
     });
 
 
+globalServices.service('gameTimeService', [
+    '$q',
+    'configService',
+    'errorService',
+    function($q, configService, errorService) {
+        var future = $q.defer();
+        this.start = null;
+        this.end = null;
+
+        configService.get(
+            angular.bind(this, function(config) {
+                this.start = config.game_start && Date.parse(config.game_start);
+                this.end = config.game_end && Date.parse(config.game_end);
+                future.resolve();
+            }),
+            function(data) {
+                errorService.error(data);
+            });
+
+        this.toStart = function() {
+            // Time in seconds to start of game, or null if no start specified
+            if (!this.start)
+                return null;
+            return Math.round((this.start - Date.now()) / 1000);
+        };
+        
+        this.toEnd = function() {
+            // Time in seconds to end of game, or null if no end specified
+            if (!this.end)
+                return null;
+            return Math.round((this.end - Date.now()) / 1000);
+        };
+        
+        this.duringGame = function(opt_callback) {
+            // Return true or execute callback if in the game
+            if (this.start != null && this.toStart() > 0)
+                return false;
+            if (this.end != null && this.toEnd() < 0)
+                return false;
+            if (opt_callback)
+                return opt_callback();
+            return true;
+        };
+
+        this.then = future.promise.then;
+    }]);
+
+
 globalServices.service('newsService', [
     '$resource',
     '$interval',

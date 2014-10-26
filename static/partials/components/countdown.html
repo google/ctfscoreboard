@@ -1,0 +1,10 @@
+<span class='ng-hide countdown' ng-show='display'>
+    <span class='msg' ng-show='!!message' ng-bind='message'></span>
+    <span class='timer' ng-show='!message'>
+        <span class='to'>Game {{to}} in:</span>
+        <span
+            class='hours' ng-bind='time.hours|padint'></span>:<span
+            class='minutes' ng-bind='time.minutes|padint'></span>:<span
+            class='seconds' ng-bind='time.seconds|padint'></span>
+    </span>
+</span>

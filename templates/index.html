@@ -32,7 +32,10 @@ should be in {% raw %} blocks.  DFIU! -#}
               <li><a href='/login' ng-hide='session.user' highlight-active>Login</a></li>
               <li><a href='/register' ng-hide='session.user' highlight-active>Register</a></li>
             </ul>
-          </div>
+            <ul class='nav navbar-right'>
+                <span countdown-timer id='countdown'></span>
+            </ul>
+          </nav>
         </div>
       </header>
       <div class='container full-height'>

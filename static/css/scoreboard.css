@@ -84,3 +84,9 @@ a.btn {
 input.form-control[readonly] {
     background-color: #fff;
 }
+#countdown {
+    float: right;
+    /* Wish this didn't need to be hard coded. */
+    line-height: 21px;
+    padding-top: 9.5px;
+}

@@ -19,6 +19,7 @@ import functools
 import hashlib
 import hmac
 import os
+import pytz
 import urlparse
 
 from scoreboard.app import app
@@ -186,8 +187,12 @@ class GameTime(object):
 
     @staticmethod
     def _parsedate(datestr):
+        """Return a UTC non-TZ-aware datetime from a string."""
         if dateutil:
-            return dateutil.parse(datestr)
+            dt = dateutil.parse(datestr)
+            if dt.tzinfo:
+                dt = dt.astimezone(pytz.UTC).replace(tzinfo=None)
+            return dt
         # TODO: parse with strptime
         raise RuntimeError('No parser available.')
 

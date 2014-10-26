@@ -105,3 +105,7 @@ scoreboardApp.config([
           controller: 'StaticPageCtrl'
         });
     }]);
+
+var getInjector = function() {
+    return angular.element('*[ng-app]').injector();
+};
