@@ -121,14 +121,22 @@ class User(restful.Resource):
             raise errors.AccessDeniedError('No access to that user.')
         user = models.User.query.get_or_404(user_id)
         data = flask.request.get_json()
+        promoting = False
         if flask.g.user.admin and 'admin' in data:
             if data['admin'] and not user.admin:
                 user.promote()
+                promoting = True
             else:
                 user.admin = False
         if data.get('password'):
             user.set_password(data['password'])
-        models.commit()
+        try:
+            models.commit()
+        except AssertionError:
+            if promoting:
+                raise errors.ValidationError('Error promoting. '
+                        'Has player solved challenges?')
+            raise
         return user
 
 
