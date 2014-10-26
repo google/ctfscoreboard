@@ -35,7 +35,7 @@ db = sqlalchemy.SQLAlchemy(app)
 class Team(db.Model):
     """A Team of Players (Team of 1 if not using Teams)."""
     tid = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), unique=True)
+    name = db.Column(db.String(120), unique=True, nullable=False)
     score = db.Column(db.Integer, default=0)  # Denormalized
     players = db.relationship(
         'User', backref=db.backref('team', lazy='joined'), lazy='dynamic')
@@ -71,8 +71,8 @@ class User(db.Model):
     """A single User for login.  Player or admin."""
 
     uid = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True)
-    nick = db.Column(db.String(80), unique=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    nick = db.Column(db.String(80), unique=True, nullable=False)
     pwhash = db.Column(db.String(48))  # pbkdf2.crypt == 48 bytes
     admin = db.Column(db.Boolean, default=False)
     team_tid = db.Column(db.Integer, db.ForeignKey('team.tid'))
@@ -153,8 +153,8 @@ class Category(db.Model):
     """A Category of Challenges."""
 
     cid = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), unique=True)
-    slug = db.Column(db.String(100), unique=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    slug = db.Column(db.String(100), unique=True, nullable=False)
     description = db.Column(db.Text)
     unlocked = db.Column(db.Boolean, default=True)
     challenges = db.relationship(
@@ -205,9 +205,9 @@ class Challenge(db.Model):
     """A single challenge to be played."""
 
     cid = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
-    description = db.Column(db.Text)
-    points = db.Column(db.Integer)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    points = db.Column(db.Integer, nullable=False)
     answer_hash = db.Column(db.String(48))  # Protect answers
     unlocked = db.Column(db.Boolean, default=False)
     cat_cid = db.Column(db.Integer, db.ForeignKey('category.cid'))
@@ -308,8 +308,9 @@ class Attachment(db.Model):
     """Attachment to a challenge."""
 
     aid = db.Column(db.String(64), primary_key=True)
-    challenge_cid = db.Column(db.Integer, db.ForeignKey('challenge.cid'))
-    filename = db.Column(db.String(100))
+    challenge_cid = db.Column(db.Integer, db.ForeignKey('challenge.cid'),
+            nullable=False)
+    filename = db.Column(db.String(100), nullable=False)
     content_type = db.Column(db.String(100))
     
     def delete(self, from_disk=True):
@@ -326,8 +327,9 @@ class Hint(db.Model):
     """Hint for a challenge."""
 
     hid = db.Column(db.Integer, primary_key=True)
-    challenge_cid = db.Column(db.Integer, db.ForeignKey('challenge.cid'))
-    hint = db.Column(db.Text)
+    challenge_cid = db.Column(db.Integer, db.ForeignKey('challenge.cid'),
+            nullable=False)
+    hint = db.Column(db.Text, nullable=False)
     cost = db.Column(db.Integer)
 
     def unlock(self, team):
@@ -454,8 +456,8 @@ class Page(db.Model):
     """Represent static pages to be rendered with Markdown."""
 
     path = db.Column(db.String(100), primary_key=True)
-    title = db.Column(db.String(100))
-    contents = db.Column(db.Text)
+    title = db.Column(db.String(100), nullable=False)
+    contents = db.Column(db.Text, nullable=False)
 
 
 # Shortcut for commiting
