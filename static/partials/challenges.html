@@ -19,7 +19,7 @@
         <span class='alert alert-success solved ng-hide'
           ng-show='chall.answered'>Solved</span>
         <!-- if hints -->
-        <div class='hints' ng-show='!!chall.hints && !chall.answered'>
+        <div class='hints' ng-show='!!chall.hints.length && !chall.answered'>
           <ul>
             <li ng-repeat='hint in chall.hints' ng-show='!!hint.hint'>{{hint.hint}}</li>
           </ul>

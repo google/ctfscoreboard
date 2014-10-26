@@ -67,6 +67,7 @@ class ISO8601DateTime(fields.Raw):
         raise ValueError('Unable to convert %s to ISO8601.' % str(type(value)))
 
 
+### Utility functions
 @api.representation('application/json')
 def output_json(data, code, headers=None):
     """Custom JSON output with JSONP buster."""
@@ -82,6 +83,17 @@ def output_json(data, code, headers=None):
     resp = flask.make_response(dumped, code)
     resp.headers.extend(headers or {})
     return resp
+
+
+def get_field(name, *args):
+    data = flask.request.get_json()
+    try:
+        return data[name]
+    except KeyError:
+        if args:
+            return args[0]
+        raise errors.ValidationError(
+            'Required field {} not given.'.format(name))
 
 
 class User(restful.Resource):
@@ -383,7 +395,9 @@ class Category(restful.Resource):
     @restful.marshal_with(resource_fields)
     def put(self, category_id):
         category = models.Category.query.get_or_404(category_id)
-        # TODO: updates
+        category.name = get_field('name')
+        category.description = get_field('description', '')
+        models.commit()
         return self.get_challenges(category)
 
     def get_challenges(self, category):
@@ -420,10 +434,9 @@ class CategoryList(restful.Resource):
     @utils.admin_required
     @restful.marshal_with(Category.category_fields)
     def post(self):
-        data = flask.request.get_json()
         cat = models.Category.create(
-            data['name'],
-            data['description'])
+            get_field('name'),
+            get_field('description', ''))
         models.commit()
         return cat
 

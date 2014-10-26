@@ -64,7 +64,7 @@ challengeCtrls.controller('ChallengeCtrl', [
             function(resp) {
               chall.answered = true;
               errorService.error(
-                'Congratulations, ' + resp.points + 'awarded!',
+                'Congratulations, ' + resp.points + ' points awarded!',
                 'success');
             },
             function(resp) {
