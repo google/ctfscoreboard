@@ -122,7 +122,7 @@ class User(restful.Resource):
         user = models.User.query.get_or_404(user_id)
         data = flask.request.get_json()
         promoting = False
-        if flask.g.user.admin and 'admin' in data:
+        if utils.is_admin() and 'admin' in data:
             if data['admin'] and not user.admin:
                 user.promote()
                 promoting = True
@@ -130,6 +130,10 @@ class User(restful.Resource):
                 user.admin = False
         if data.get('password'):
             user.set_password(data['password'])
+        if utils.is_admin():
+            user.nick = data['nick']
+            if not app.config.get('TEAMS', False):
+                user.team.name = data['nick']
         try:
             models.commit()
         except AssertionError:
@@ -195,6 +199,7 @@ class Team(restful.Resource):
         result['players'] = list(team.players.all())
         return result
 
+    @utils.admin_required
     @restful.marshal_with(resource_fields)
     def put(self, team_id):
         if not utils.access_team(team_id):

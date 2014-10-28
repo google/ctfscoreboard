@@ -69,6 +69,14 @@ def team_required(f):
     return login_required(wrapper)
 
 
+def is_admin():
+    """Check if current user is an admin."""
+    try:
+        return flask.g.user.admin
+    except:
+        return False
+
+
 def get_required_field(name, verbose_name=None):
     """Retrieve a field or raise an error."""
 
