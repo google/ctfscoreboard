@@ -52,6 +52,7 @@ app.challenge_log = logger
 
 # Install a default error handler
 error_titles = {
+    401: 'Unauthorized',
     403: 'Forbidden',
     500: 'Internal Error',
 }
