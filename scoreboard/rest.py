@@ -601,6 +601,7 @@ class Page(restful.Resource):
         page = models.Page.query.get(path)
         if not page:
             page = models.Page()
+            page.path = path
             models.db.session.add(page)
         page.title = data.get('title', '')
         page.contents = data.get('contents', '')
