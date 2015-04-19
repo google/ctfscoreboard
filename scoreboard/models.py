@@ -110,7 +110,7 @@ class User(db.Model):
         token = str(token)
         decoded = base64.urlsafe_b64decode(token)
         expires, mac = decoded.split(':')
-        if expires > time.time():
+        if float(expires) > time.time():
             raise errors.ValidationError('Expired token.')
         expected = self.get_token(token_type=token_type, expires=int(expires))
         if not utils.compare_digest(expected, token):
