@@ -5,3 +5,4 @@ config.py
 attachments
 attachments/**
 static/js/app.min.js
+.virtualenv

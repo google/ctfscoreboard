@@ -4,3 +4,4 @@ SECRET_KEY = 'CHANGEME CHANGEME CHANGEME'
 TITLE = 'CTF Scoreboard Dev'
 TEAMS = True
 ATTACHMENT_DIR = 'attachments'
+LOGIN_METHOD = 'local'

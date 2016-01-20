@@ -5,7 +5,9 @@
       <div class='input-group'>
         <span class="input-group-addon">@</span>
         <input id='email' class='form-control' name='email' placeholder='foo@bar.com'
-            ng-model='email' type='email' required>
+            ng-model='email' type='email'
+            ng-required="config.login_method == 'local'"
+            ng-show="config.login_method == 'local'">
       </div>
     </div>
     <div class='form-group'>
@@ -16,13 +18,16 @@
     <div class='form-group'>
       <label for='password'>Password</label>
       <input id='password' class='form-control' name='password'
-        placeholder='password' type='password' ng-model='password' required>
+        placeholder='password' type='password' ng-model='password'
+        ng-required="config.login_method == 'local'"
+        ng-show="config.login_method == 'local'">
     </div>
     <div class='form-group'>
       <label for='password2'>Repeat Password</label>
       <input id='password2' class='form-control' name='password2'
         placeholder='repeat password' type='password' ng-model='password2'
-        required>
+        ng-required="config.login_method == 'local'"
+        ng-show="config.login_method == 'local'">
     </div>
     <div class='ng-hide' ng-show='config.teams'>
     <!-- Teams only! -->

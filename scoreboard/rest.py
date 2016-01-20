@@ -22,6 +22,7 @@ import os
 import pytz
 
 from scoreboard.app import app
+from scoreboard import auth
 from scoreboard import controllers
 from scoreboard import context
 from scoreboard import csrfutil
@@ -161,12 +162,7 @@ class UserList(restful.Resource):
         """Register a new user."""
         if flask.g.user:
             raise errors.ValidationError('Cannot register while logged in.')
-        data = flask.request.get_json()
-        user = controllers.register_user(data['email'], data['nick'],
-                                         data['password'], data.get(
-                                             'team_id'), data.get('team_name'),
-                                         data.get('team_code'))
-        models.commit()
+        user = auth.register(flask.request)
         flask.session['user'] = user.uid
         return user
 
@@ -234,6 +230,7 @@ class Session(restful.Resource):
     resource_fields = {
         'user': fields.Nested(User.resource_fields),
         'team': fields.Nested(team_fields),
+        'redirect': fields.String,
     }
 
     @restful.marshal_with(resource_fields)
@@ -241,19 +238,23 @@ class Session(restful.Resource):
     def get(self):
         """Get the current session."""
         return dict(
-                user=flask.g.user,
-                team=flask.g.team)
+                user=getattr(flask.g, 'user', None),
+                team=getattr(flask.g, 'team', None))
 
     @restful.marshal_with(resource_fields)
     def post(self):
         """Login a user."""
-        data = flask.request.get_json()
-        user = controllers.user_login(data['email'], data['password'])
+        user = auth.login_user(flask.request)
         if not user:
-            raise errors.LoginError('Invalid username/password')
+            redir = auth.get_login_url()
+            if redir:
+                return dict(redirect=redir)
+            return {}
+        flask.session['user'] = user.uid
         return dict(user=user, team=user.team)
 
     def delete(self):
+        auth.logout()
         flask.session['user'] = None
         return {'message': 'OK'}
 
@@ -534,6 +535,9 @@ class Config(restful.Resource):
             rules=app.config.get('RULES', '/rules'),
             game_start=datefmt.format(utils.GameTime.start),
             game_end=datefmt.format(utils.GameTime.end),
+            login_url=auth.get_login_uri(),
+            register_url=auth.get_register_uri(),
+            login_method=app.config.get('LOGIN_METHOD', 'local'),
             )
 
 api.add_resource(Config, '/api/config')

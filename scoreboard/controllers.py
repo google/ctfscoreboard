@@ -25,17 +25,6 @@ from scoreboard import models
 from scoreboard import utils
 
 
-def user_login(email=None, password=None):
-    """Perform the login for the user."""
-    email = email or flask.request.form.get('email')
-    password = password or flask.request.form.get('password')
-    if email and password:
-        user = models.User.login_user(email, password)
-        if user:
-            flask.session['user'] = user.uid
-            return user
-
-
 def register_user(email, nick, password, team_id=None,
                   team_name=None, team_code=None):
     """Registers a player.
@@ -44,7 +33,6 @@ def register_user(email, nick, password, team_id=None,
       email: User's email
       nick: User's nick
       password: Player's password
-      password2: Validation of password
       team_id: Id# of team, or None to create new team.
       team_name: Name of new team.
       team_code: Validation code to join team.

@@ -23,6 +23,7 @@ Author: David Tomaschik <david@systemoverlord.com>
         TITLE = 'FakeCTF'
         TEAMS = True
         ATTACHMENT_DIR = 'attachments'
+        LOGIN_METHOD = 'local'  # or appengine
 
 5. Create the database:
 
