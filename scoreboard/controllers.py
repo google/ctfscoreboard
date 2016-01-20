@@ -49,7 +49,7 @@ def register_user(email, nick, password, team_id=None,
       team_name: Name of new team.
       team_code: Validation code to join team.
     """
-    if not re.match(r'[-0-9a-zA-Z.+_]+@[-0-9a-zA-Z.+_]+\.[a-zA-Z]{2,4}$',
+    if not re.match(r'[-0-9a-zA-Z.+_]+@[-0-9a-zA-Z.+_]+\.[a-zA-Z]+$',
                     email):
         raise errors.ValidationError('Invalid email address.')
     first = models.User.query.count() == 0
