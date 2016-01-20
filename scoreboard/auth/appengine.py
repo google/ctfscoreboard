@@ -1,8 +1,11 @@
 """Appengine based login support."""
 
 
+import flask
+
 from google.appengine.api import users
 
+from scoreboard.app import app
 from scoreboard import controllers
 from scoreboard import errors
 from scoreboard import models
@@ -20,7 +23,7 @@ def login_user(_):
 
 
 def get_login_uri():
-    return users.create_login_url('/')
+    return users.create_login_url('/gae_login')
 
 
 def get_register_uri():
@@ -43,3 +46,12 @@ def register(flask_request):
             data.get('team_id'), data.get('team_name'), data.get('team_code'))
     models.commit()
     return user
+
+
+@app.route('/gae_login')
+def gae_login_handler():
+    user = login_user(None)
+    if not user:
+        raise errors.LoginError('Not logged into GAE.')
+    flask.session['user'] = user.uid
+    return flask.redirect('/')

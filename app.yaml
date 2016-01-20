@@ -6,23 +6,23 @@ threadsafe: true
 
 handlers:
   - url: /css
-    static_dir: /static/css
+    static_dir: static/css
     secure: always
 
   - url: /js
-    static_dir: /static/js
+    static_dir: static/js
     secure: always
 
   - url: /partials
-    static_dir: /static/partials
+    static_dir: static/partials
     secure: always
 
   - url: /fonts
-    static_dir: /static/fonts
+    static_dir: static/fonts
     secure: always
 
   - url: /third_party
-    static_dir: /static/third_party
+    static_dir: static/third_party
     secure: always
 
   - url: /.*

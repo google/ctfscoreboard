@@ -31,9 +31,9 @@ should be in {% raw %} blocks.  DFIU! -#}
               <li><a href='/logout' class='ng-hide' ng-show='session.user'
                   highlight-active>Logout</a></li>
               <li><a href='#' ng-href='{{config.login_url}}' ng-hide='session.user'
-                  highlight-active>Login</a></li>
+                  highlight-active target="_self">Login</a></li>
               <li><a href='#' ng-href='{{config.register_url}}' ng-hide='session.user'
-                  highlight-active>Register</a></li>
+                  highlight-active target="_self">Register</a></li>
             </ul>
             <ul class='nav navbar-right'>
                 <span countdown-timer id='countdown'></span>
