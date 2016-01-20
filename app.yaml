@@ -1,0 +1,30 @@
+application: yourappnamehere
+version: release-1
+runtime: python27
+api_version: 1
+threadsafe: true
+
+handlers:
+  - url: /css
+    static_dir: /static/css
+    secure: always
+
+  - url: /js
+    static_dir: /static/js
+    secure: always
+
+  - url: /partials
+    static_dir: /static/partials
+    secure: always
+
+  - url: /fonts
+    static_dir: /static/fonts
+    secure: always
+
+  - url: /third_party
+    static_dir: /static/third_party
+    secure: always
+
+  - url: /.*
+    script: main.app
+    secure: always

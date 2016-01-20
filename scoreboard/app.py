@@ -15,9 +15,7 @@
 import flask
 import logging
 import os
-import re
 from werkzeug import exceptions
-from werkzeug.utils import ImportStringError
 
 
 app = flask.Flask(
@@ -31,23 +29,35 @@ app.config.from_object('config')  # Load from config.py
 app.config.setdefault('CWD', os.path.dirname(os.path.realpath(__file__)))
 app.config.setdefault('ERROR_404_HELP', False)
 
-# Main logger
-if not app.debug:
-    handler = logging.FileHandler(
-        app.config.get('LOGFILE', '/tmp/scoreboard.wsgi.log'))
-    handler.setLevel(logging.INFO)
-    handler.setFormatter(logging.Formatter(
-        '%(asctime)s %(levelname)8s [%(filename)s:%(lineno)d] %(message)s'))
-    app.logger.addHandler(handler)
 
-# Challenge logger
-handler = logging.FileHandler(
-    app.config.get('CHALLENGELOG', '/tmp/scoreboard.challenge.log'))
-handler.setLevel(logging.INFO)
-handler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
-logger = logging.getLogger('scoreboard')
-logger.addHandler(handler)
-app.challenge_log = logger
+def on_appengine():
+    """Returns true if we're running on AppEngine."""
+    runtime = os.environ.get('SERVER_SOFTWARE', '')
+    return (runtime.startswith('Development/') or
+            runtime.startswith('Google App Engine/'))
+
+
+# log to files unless on AppEngine
+if not on_appengine():
+    # Main logger
+    if not app.debug:
+        handler = logging.FileHandler(
+            app.config.get('LOGFILE', '/tmp/scoreboard.wsgi.log'))
+        handler.setLevel(logging.INFO)
+        handler.setFormatter(logging.Formatter(
+            '%(asctime)s %(levelname)8s [%(filename)s:%(lineno)d] %(message)s'))
+        app.logger.addHandler(handler)
+
+    # Challenge logger
+    handler = logging.FileHandler(
+        app.config.get('CHALLENGELOG', '/tmp/scoreboard.challenge.log'))
+    handler.setLevel(logging.INFO)
+    handler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
+    logger = logging.getLogger('scoreboard')
+    logger.addHandler(handler)
+    app.challenge_log = logger
+else:
+    app.challenge_log = app.logger
 
 
 # Install a default error handler
