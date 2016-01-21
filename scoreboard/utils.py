@@ -106,24 +106,6 @@ def access_team(team):
     return False
 
 
-def attachment_dir(create=False):
-    """Return path to attachment dir."""
-
-    config_dir = app.config.get('ATTACHMENT_DIR', 'attachments')
-    if app.config.get('CWD'):
-        target_dir = os.path.normpath(os.path.join(app.config.get('CWD'),
-            config_dir))
-    else:
-        target_dir = os.path.abspath(config_dir)
-    if not os.path.isdir(target_dir):
-        if create:
-            os.mkdir(target_dir)
-        else:
-            app.logger.error('Missing or invalid ATTACHMENT_DIR: %s', target_dir)
-            flask.abort(500)
-    return target_dir
-
-
 def compare_digest(a, b):
     """Intended to be a constant-time comparison."""
     if hasattr(hmac, 'compare_digest'):

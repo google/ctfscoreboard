@@ -3,5 +3,5 @@ SQLALCHEMY_DATABASE_URI = 'mysql+mysqldb://scoreboard:pass123word@localhost/scor
 SECRET_KEY = 'CHANGEME CHANGEME CHANGEME'
 TITLE = 'CTF Scoreboard Dev'
 TEAMS = True
-ATTACHMENT_DIR = 'attachments'
+ATTACHMENT_BACKEND = 'file:///tmp/attachments'
 LOGIN_METHOD = 'appengine'

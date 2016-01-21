@@ -6,16 +6,36 @@ Local filesystem backend for attachments.
 import hashlib
 import os
 import os.path
+import urlparse
 
 import flask
 
-from scoreboard import utils
+from scoreboard.app import app
+
+
+def attachment_dir(create=False):
+    """Return path and optionally create attachment directory."""
+    components = urlparse.urlparse(app.config.get('ATTACHMENT_BACKEND',
+        'file://attachments'))
+    config_dir = components.path or components.netloc
+    if app.config.get('CWD'):
+        target_dir = os.path.normpath(os.path.join(app.config.get('CWD'),
+            config_dir))
+    else:
+        target_dir = os.path.abspath(config_dir)
+    if not os.path.isdir(target_dir):
+        if create:
+            os.mkdir(target_dir)
+        else:
+            app.logger.error('Missing or invalid ATTACHMENT_DIR: %s', target_dir)
+            flask.abort(500)
+    return target_dir
 
 
 def send(attachment):
     """Send the attachment to the client."""
     return flask.send_from_directory(
-        utils.attachment_dir(), attachment.aid,
+        attachment_dir(), attachment.aid,
         mimetype=attachment.content_type,
         attachment_filename=attachment.filename,
         as_attachment=True)
@@ -23,7 +43,7 @@ def send(attachment):
 
 def delete(attachment):
     """Delete the attachment from disk."""
-    path = os.path.join(utils.attachment_dir(), attachment.aid)
+    path = os.path.join(attachment_dir(), attachment.aid)
     os.unlink(path)
 
 
@@ -37,7 +57,7 @@ def upload(fp):
         md.update(blk)
     aid = md.hexdigest()
     fp.seek(0, os.SEEK_SET)
-    dest_name = os.path.join(utils.attachment_dir(create=True), aid)
+    dest_name = os.path.join(attachment_dir(create=True), aid)
     fp.save(dest_name, buffer_size=2**16)
     # TODO: add file:// prefix
     return aid, dest_name
