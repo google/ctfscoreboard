@@ -27,5 +27,7 @@ def get_backend_type():
 _backend_type = get_backend_type()
 if _backend_type == "file":
     from scoreboard.attachments.file import *
+if _backend_type == "gcs":
+    from scoreboard.attachments.gcs import * 
 else:
     raise ImportError('Unhandled attachment backend %s' % _backend_type)
