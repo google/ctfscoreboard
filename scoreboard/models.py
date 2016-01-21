@@ -18,7 +18,6 @@ import flask
 from flask.ext import sqlalchemy
 import hashlib
 import hmac
-import os
 import pbkdf2
 import re
 import time
@@ -27,6 +26,7 @@ from sqlalchemy import exc
 from sqlalchemy.orm import exc as orm_exc
 
 from scoreboard.app import app
+from scoreboard import attachments
 from scoreboard import errors
 
 db = sqlalchemy.SQLAlchemy(app)
@@ -312,14 +312,14 @@ class Attachment(db.Model):
             nullable=False)
     filename = db.Column(db.String(100), nullable=False)
     content_type = db.Column(db.String(100))
-    
+    storage_path = db.Column(db.String(256))
+
     def delete(self, from_disk=True):
         if from_disk:
-            path = os.path.join(utils.attachment_dir(), self.aid)
             try:
-                os.unlink(path)
+                attachments.delete(self)
             except IOError as ex:
-                app.logger.exception("Couldn't unlink: %s", str(ex))
+                app.logger.exception("Couldn't delete: %s", str(ex))
         db.session.delete(self)
 
 
@@ -442,7 +442,7 @@ class News(db.Model):
     @classmethod
     def for_team(cls, team, limit=10):
         return cls.query.filter(
-                ((cls.news_type != 'Unicast') | 
+                ((cls.news_type != 'Unicast') |
                     (cls.audience_team == team))
                 ).order_by(cls.timestamp.desc()).limit(limit)
 

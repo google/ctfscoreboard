@@ -13,12 +13,11 @@
 # limitations under the License.
 
 import flask
-import json
 import os
-import re
 from werkzeug import exceptions
 
 from scoreboard.app import app
+from scoreboard import attachments
 from scoreboard import models
 from scoreboard import utils
 
@@ -71,8 +70,4 @@ def download(filename):
     if not attachment.challenge.unlocked:
         flask.abort(404)
 
-    return flask.send_from_directory(
-        utils.attachment_dir(), filename,
-        mimetype=attachment.content_type,
-        attachment_filename=attachment.filename,
-        as_attachment=True)
+    return attachments.send(attachment)
