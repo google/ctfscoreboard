@@ -3,6 +3,10 @@ html,body,.full-height {
 }
 body {
   padding-top: 40px;
+  background-color: #2f343a;
+}
+.navbar-default {
+  background-color: #27326d;
 }
 .left-sidebar-background {
   background-color: #cbcbcb;
@@ -25,6 +29,15 @@ body {
 }
 .list-group {
   margin-top: 20px;
+}
+a.list-group-item {
+  background-color: #27326d;
+}
+a.list-group-item.active,
+a.list-group-item.active:hover,
+a.list-group-item.active:focus {
+  background-color: #8899b7;
+  border-color: #8899b7;
 }
 .right {
   float: right;
