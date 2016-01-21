@@ -71,3 +71,14 @@ def download(filename):
         flask.abort(404)
 
     return attachments.send(attachment)
+
+
+@app.route('/createdb')
+def createdb():
+    """Create database schema without CLI access.
+
+    Useful for AppEngine and other container environments.
+    Should be safe to be exposed, as operation is idempotent and does not
+    clear any data.
+    """
+    models.db.create_all()

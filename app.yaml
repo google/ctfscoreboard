@@ -25,6 +25,11 @@ handlers:
     static_dir: static/third_party
     secure: always
 
+  - url: /createdb
+    script: main.app
+    secure: always
+    login: admin
+
   - url: /.*
     script: main.app
     secure: always
