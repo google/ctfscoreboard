@@ -24,20 +24,29 @@ var challengeCtrls = angular.module('challengeCtrls', [
 
 challengeCtrls.controller('CategoryMenuCtrl', [
     '$scope',
+    '$interval',
     'categoryService',
     'sessionService',
-    function($scope, categoryService, sessionService) {
+    function($scope, $interval, categoryService, sessionService) {
         var updateCategories = function() {
             categoryService.getList(function(data) {
                 $scope.categories = data.categories;
             });
         };
 
-        sessionService.requireLogin(updateCategories, true);
-        $scope.$on('sessionLogin', updateCategories);
+        var update;
+        var startUpdate = function() {
+            updateCategories();
+            update = $interval(updateCategories, 60*1000);
+        };
+
+        sessionService.requireLogin(startUpdate, true);
+        $scope.$on('sessionLogin', startUpdate);
         $scope.$on('sessionLogout', function() {
             $scope.categories = [];
+            $interval.cancel(update);
         });
+        $scope.$on('correctAnswer', updateCategories);
     }]);
 
 challengeCtrls.controller('ChallengeCtrl', [

@@ -397,6 +397,8 @@ class Category(restful.Resource):
         'slug': fields.String,
         'unlocked': fields.Boolean,
         'description': fields.String,
+        'challenge_count': fields.Integer,
+        'solved_count': fields.Integer,
     }
     resource_fields = category_fields.copy()
     resource_fields['challenges'] = fields.Nested(Challenge.resource_fields)

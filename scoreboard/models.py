@@ -164,6 +164,20 @@ class Category(db.Model):
     def __repr__(self):
         return '<Category: %d/%s>' % (self.cid, self.name)
 
+    @property
+    def challenge_count(self):
+        """Count of unlocked challenges."""
+        return self.get_challenges().count()
+
+    @property
+    def solved_count(self):
+        """Count of solved challenges for current team."""
+        ct = 0
+        for ch in self.get_challenges():
+            if ch.answered:
+                ct += 1
+        return ct
+
     def slugify(self):
         base_slug = '-'.join(w.lower() for w in re.split('\W+', self.name))
         if self.slug == base_slug:
