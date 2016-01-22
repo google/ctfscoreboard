@@ -1,2 +1,3 @@
 # AppEngine edition requirements file
 GoogleAppEngineCloudStorageClient
+MySQL-python
