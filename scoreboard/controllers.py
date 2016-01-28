@@ -89,6 +89,7 @@ def submit_answer(cid, answer):
             points = challenge.points - deduction
             flask.g.team.score += points
             models.Answer.create(challenge, flask.g.team, answer)
+            models.ScoreHistory.add_entry(flask.g.team)
             correct = 'CORRECT'
             return points
         else:
