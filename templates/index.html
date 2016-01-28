@@ -52,7 +52,8 @@ should be in {% raw %} blocks.  DFIU! -#}
                   highlight-active>{{c.name}}</a>
               </div>
               <!-- TODO: Admin only -->
-              <div class='list-group ng-hide' ng-show='isAdmin()'>
+              <div id='admin-links' class='list-group ng-hide admin-links'
+                ng-show='isAdmin()'>
                 <a href='/admin/categories'
                   class='list-group-item' highlight-active>Categories</a>
                 <a href='/admin/challenges'
