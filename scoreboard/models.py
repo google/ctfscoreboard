@@ -23,6 +23,7 @@ import re
 import time
 import utils
 from sqlalchemy import exc
+from sqlalchemy import orm
 from sqlalchemy.orm import exc as orm_exc
 
 from scoreboard.app import app
@@ -68,7 +69,7 @@ class Team(db.Model):
         if not with_history:
             return enumerate(cls.query.order_by(cls.score.desc()).all(), 1)
         qry = cls.query.options(
-                joinedload(cls.score_history)).order_by(cls.score.desc())
+                orm.joinedload(cls.score_history)).order_by(cls.score.desc())
         return enumerate(qry.all(), 1)
 
 
