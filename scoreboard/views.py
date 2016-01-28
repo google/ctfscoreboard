@@ -82,3 +82,4 @@ def createdb():
     clear any data.
     """
     models.db.create_all()
+    return 'Tables created.'

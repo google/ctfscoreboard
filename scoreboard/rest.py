@@ -397,6 +397,8 @@ class Category(restful.Resource):
         'slug': fields.String,
         'unlocked': fields.Boolean,
         'description': fields.String,
+        'challenge_count': fields.Integer,
+        'solved_count': fields.Integer,
     }
     resource_fields = category_fields.copy()
     resource_fields['challenges'] = fields.Nested(Challenge.resource_fields)
@@ -501,10 +503,15 @@ api.add_resource(Answer, '/api/answers')
 class APIScoreboard(restful.Resource):
     """Retrieve the scoreboard."""
 
+    history_fields = {
+        'when': ISO8601DateTime(),
+        'score': fields.Integer,
+    }
     line_fields = {
         'position': fields.Integer,
         'name': fields.String,
         'score': fields.Integer,
+        'history': fields.Nested(history_fields),
     }
     resource_fields = {
         'scoreboard': fields.Nested(line_fields),
@@ -513,8 +520,9 @@ class APIScoreboard(restful.Resource):
     @restful.marshal_with(resource_fields)
     def get(self):
         return dict(scoreboard=[
-            {'position': i, 'name': v.name, 'score': v.score}
-            for i, v in models.Team.enumerate()])
+            {'position': i, 'name': v.name,
+             'score': v.score, 'history': v.score_history}
+            for i, v in models.Team.enumerate(with_history=True)])
 
 api.add_resource(APIScoreboard, '/api/scoreboard')
 

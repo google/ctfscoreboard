@@ -117,3 +117,6 @@ input.form-control[readonly] {
     background-color: #000;
     display: none;
 }
+.cat-count {
+    float: right;
+}

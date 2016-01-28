@@ -28,7 +28,8 @@ challengeServices.service('categoryService', [
     '$resource',
     '$rootScope',
     '$cacheFactory',
-    function($resource, $rootScope, $cacheFactory) {
+    '$timeout',
+    function($resource, $rootScope, $cacheFactory, $timeout) {
       var categoryCache = $cacheFactory('categoryCache');
       this.catlist = null;
 
@@ -51,9 +52,13 @@ challengeServices.service('categoryService', [
         }
         this.res.get(angular.bind(this, function(data) {
           this.catlist = data;
-          setTimeout(
-            angular.bind(this, function() { this.catlist = null; }),
-            30000);
+          $timeout(
+            angular.bind(this, function() {
+              this.catlist = null;
+              categoryCache.removeAll();
+            }),
+            30000,
+            false);
           callback(data);
         }));
       };
@@ -65,9 +70,19 @@ challengeServices.service('categoryService', [
 
     }]);
 
-challengeServices.service('answerService', ['$resource',
-    function($resource) {
-      return $resource('/api/answers/:aid', {}, {
+challengeServices.service('answerService', [
+    '$resource',
+    '$rootScope',
+    function($resource, $rootScope) {
+      this.res = $resource('/api/answers/:aid', {}, {
         'create': {method: 'POST'}
       });
+      this.create = function(what, success, failure) {
+        this.res.create(what,
+            function(resp) {
+              success(resp);
+              $rootScope.$broadcast('correctAnswer');
+            },
+            failure);
+      };
     }]);

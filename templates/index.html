@@ -49,7 +49,9 @@ should be in {% raw %} blocks.  DFIU! -#}
                 <a ng-href='/challenges/{{c.slug}}'
                   class='list-group-item ng-hide'
                   ng-repeat='c in categories' ng-show='c'
-                  highlight-active>{{c.name}}</a>
+                  highlight-active>{{c.name}}<span
+                    class='cat-count' ng-hide='isAdmin()'
+                    >[{{c.solved_count}}/{{c.challenge_count}}]</span></a>
               </div>
               <!-- TODO: Admin only -->
               <div id='admin-links' class='list-group ng-hide admin-links'

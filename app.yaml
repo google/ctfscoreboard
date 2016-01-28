@@ -4,32 +4,46 @@ runtime: python27
 api_version: 1
 threadsafe: true
 
+libraries:
+- name: jinja2
+  version: "latest"
+- name: MySQLdb
+  version: "latest"
+
 handlers:
-  - url: /css
-    static_dir: static/css
-    secure: always
+- url: /css
+  static_dir: static/css
+  secure: always
 
-  - url: /js
-    static_dir: static/js
-    secure: always
+- url: /js
+  static_dir: static/js
+  secure: always
 
-  - url: /partials
-    static_dir: static/partials
-    secure: always
+- url: /partials
+  static_dir: static/partials
+  secure: always
 
-  - url: /fonts
-    static_dir: static/fonts
-    secure: always
+- url: /fonts
+  static_dir: static/fonts
+  secure: always
 
-  - url: /third_party
-    static_dir: static/third_party
-    secure: always
+- url: /third_party
+  static_dir: static/third_party
+  secure: always
 
-  - url: /createdb
-    script: main.app
-    secure: always
-    login: admin
+- url: /createdb
+  script: main.app
+  secure: always
+  login: admin
 
-  - url: /.*
-    script: main.app
-    secure: always
+- url: /.*
+  script: main.app
+  secure: always
+
+skip_files:
+- ^(.*/)?#.*#$
+- ^(.*/)?.*~$
+- ^(.*/)?.*\.py[co]$
+- ^(.*/)?.*/RCS/.*$
+- ^(.*/)?\..*$
+- ^(.*/)?.git/.*$

@@ -40,6 +40,7 @@ class Team(db.Model):
     players = db.relationship(
         'User', backref=db.backref('team', lazy='joined'), lazy='dynamic')
     answers = db.relationship('Answer', backref='team', lazy='dynamic')
+    score_history = db.relationship('ScoreHistory', backref='team')
 
     def __repr__(self):
         return '<Team: %s>' % self.name
@@ -63,8 +64,27 @@ class Team(db.Model):
         return team
 
     @classmethod
-    def enumerate(cls):
-        return enumerate(cls.query.order_by(cls.score.desc()).all(), 1)
+    def enumerate(cls, with_history=False):
+        if not with_history:
+            return enumerate(cls.query.order_by(cls.score.desc()).all(), 1)
+        qry = cls.query.options(
+                joinedload(cls.score_history)).order_by(cls.score.desc())
+        return enumerate(qry.all(), 1)
+
+
+class ScoreHistory(db.Model):
+    team_tid = db.Column(db.Integer, db.ForeignKey('team.tid'), nullable=False,
+            primary_key=True)
+    when = db.Column(db.DateTime, nullable=False, primary_key=True,
+            default=datetime.datetime.now)
+    score = db.Column(db.Integer, default=0, nullable=False)
+
+    @classmethod
+    def add_entry(cls, team):
+        entry = cls()
+        entry.team = team
+        entry.score = team.score
+        db.session.add(entry)
 
 
 class User(db.Model):
@@ -163,6 +183,20 @@ class Category(db.Model):
 
     def __repr__(self):
         return '<Category: %d/%s>' % (self.cid, self.name)
+
+    @property
+    def challenge_count(self):
+        """Count of unlocked challenges."""
+        return self.get_challenges().count()
+
+    @property
+    def solved_count(self):
+        """Count of solved challenges for current team."""
+        ct = 0
+        for ch in self.get_challenges():
+            if ch.answered:
+                ct += 1
+        return ct
 
     def slugify(self):
         base_slug = '-'.join(w.lower() for w in re.split('\W+', self.name))
