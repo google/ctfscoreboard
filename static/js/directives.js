@@ -107,3 +107,69 @@ sbDirectives.directive('loadingOverlay', [
             }
         };
     }]);
+
+
+/* Score over time charts based on Chart.Scatter.js
+ * chartData should be an object with structure like:
+ * {"label": [{time: datestring, score: value}...], ...}
+ */
+sbDirectives.directive('scoreChart', [
+    function() {
+      return {
+        restrict: 'AE',
+        replace: false,
+        scope: {
+          chartData: '='
+        },
+        link: function(scope, element, attrs) {
+          if (!Chart || Chart === undefined) {
+            console.log('Chart.js is not available.');
+            element.remove();
+            return;
+          }
+          scope.$watch('chartData', function() {
+            if (scope.chartData === undefined)
+              return;
+            element.empty();
+
+            // Create canvas inside our element
+            var canvas = document.createElement("canvas");
+            element.append(canvas);
+            canvas = $(canvas);
+            canvas.height(element.height());
+            canvas.width(element.width());
+            var ctx = canvas[0].getContext("2d");
+
+            // Transform data
+            var datasets = [];
+            angular.forEach(scope.chartData, function(series, label) {
+              var set = {
+                label: label,
+                // TODO: colors
+                data: []
+              };
+              angular.forEach(series, function(point) {
+                set.data.push({x: new Date(point.time), y: point.score});
+              });
+              set.data.sort(function(a, b) {
+                if (a.x < b.x)
+                  return -1;
+                if (a.x > b.x)
+                  return 1;
+                return 0;
+              });
+              datasets.push(set);
+            });
+            
+            var options = {
+              pointDot: false,
+              scaleType: "date"
+            };
+
+            console.log(scope.chartData);
+
+            var scatterChart = new Chart(ctx).Scatter(datasets, options);
+          });
+        }
+      }
+    }]);
