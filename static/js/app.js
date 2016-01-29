@@ -26,6 +26,7 @@ var scoreboardApp = angular.module('scoreboardApp', [
   'pageCtrls',
   'regCtrls',
   'scoreboardCtrls',
+  'teamCtrls',
   'sbDirectives',
   'sbFilters'
 ]);
@@ -63,6 +64,10 @@ scoreboardApp.config([
         when('/scoreboard', {
           templateUrl: '/partials/scoreboard.html',
           controller: 'ScoreboardCtrl'
+        }).
+        when('/teams/:tid', {
+          templateUrl: '/partials/team.html',
+          controller: 'TeamPageCtrl'
         }).
         when('/pwreset/:email/:token', {
           templateUrl: '/partials/pwreset.html',

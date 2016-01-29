@@ -1,0 +1,13 @@
+<h2>{{team.name}}</h2>
+<div class='col-md-5 col-md-offset-2'>
+  <h4>Solved Challenges</h4>
+  <p ng-hide='team.solved_challenges'>This team has not solved any challenges.</p>
+  <table ng-show='team.solved_challenges'>
+    <tr><th>Name</th><th>Points</th><th>Solved</th></tr>
+    <tr ng-repeat='chall in team.solved_challenges'>
+      <td ng-bind='chall.name'></td>
+      <td ng-bind='chall.points'></td>
+      <td ng-bind='chall.solved|date:"yy/MM/dd HH:mm"'></td>
+    </tr>
+  </table>
+</div>
