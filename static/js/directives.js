@@ -127,25 +127,46 @@ sbDirectives.directive('scoreChart', [
             element.remove();
             return;
           }
+          var colorScheme = [
+            '#a6cee3',
+            '#1f78b4',
+            '#b2df8a',
+            '#33a02c',
+            '#fb9a99',
+            '#e31a1c',
+            '#fdbf6f',
+            '#ff7f00',
+            '#cab2d6',
+            '#6a3d9a',
+            '#ffff99',
+            '#b15928'];
           scope.$watch('chartData', function() {
             if (scope.chartData === undefined)
               return;
             element.empty();
 
+            var legendWidth = Math.min(100, element.width() * 0.2);
+
             // Create canvas inside our element
             var canvas = document.createElement("canvas");
+            canvas.height = element.height();
+            // Leave space for legend
+            canvas.width = element.width() - legendWidth;
             element.append(canvas);
-            canvas = $(canvas);
-            canvas.height(element.height());
-            canvas.width(element.width());
-            var ctx = canvas[0].getContext("2d");
+
+            // Prepare a legend
+            var legend = document.createElement("div");
+            element.append(legend);
+            legend.style.width = legendWidth;
+            $(legend).addClass('sbchart-legend');
 
             // Transform data
             var datasets = [];
             angular.forEach(scope.chartData, function(series, label) {
+              var color = colorScheme[datasets.length % colorScheme.length];
               var set = {
                 label: label,
-                // TODO: colors
+                strokeColor: color,
                 data: []
               };
               angular.forEach(series, function(point) {
@@ -166,9 +187,9 @@ sbDirectives.directive('scoreChart', [
               scaleType: "date"
             };
 
-            console.log(scope.chartData);
-
-            var scatterChart = new Chart(ctx).Scatter(datasets, options);
+            var ctx = canvas.getContext("2d");
+            var scatterChart = new Chart(ctx).Step(datasets, options);
+            legend.innerHTML = scatterChart.generateLegend();
           });
         }
       }
