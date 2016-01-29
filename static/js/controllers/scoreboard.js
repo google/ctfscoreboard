@@ -44,14 +44,6 @@ scoreboardCtrls.controller('ScoreboardCtrl', [
             function(data) {
               $scope.scoreboard = data.scoreboard;
               $scope.scoreHistory = getHistory(data.scoreboard);
-              /* Fake for testing */
-              $scope.scoreHistory = {
-                'a': [
-                  {time: '2016-01-19T09:00', score: 100},
-                  {time: '2016-01-19T09:10', score: 200},
-                  {time: '2016-01-19T09:15', score: 400}
-                ]
-              };
               loadingService.stop();
             },
             function(data) {

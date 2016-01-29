@@ -26,7 +26,7 @@ DEFAULT_CSP_POLICY = {
         'default-src': ["'self'"],
         'script-src': [
             "'self'",
-            "'unsafe-eval'",
+            "'unsafe-eval'",  # Needed for Charts.js
         ],
         'frame-ancestors': ["'none'"],
         'img-src': [
@@ -42,6 +42,7 @@ DEFAULT_CSP_POLICY = {
         'style-src': [
             "'self'",
             'fonts.googleapis.com',
+            "'unsafe-inline'",  # Needed for Charts.js
         ],
         }
 
