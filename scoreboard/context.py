@@ -24,6 +24,10 @@ from scoreboard import utils
 
 DEFAULT_CSP_POLICY = {
         'default-src': ["'self'"],
+        'script-src': [
+            "'self'",
+            "'unsafe-eval'",
+        ],
         'frame-ancestors': ["'none'"],
         'img-src': [
             "'self'",
