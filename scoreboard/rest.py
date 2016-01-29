@@ -218,8 +218,13 @@ class Team(restful.Resource):
                     })
             result['solved_challenges'] = challenges
             result['score_history'] = team.score_history
+        else:
+            result['solved_challenges'] = []
+            result['score_history'] = []
         if utils.access_team(team.tid):
             result['players'] = list(team.players.all())
+        else:
+            result['players'] = []
         return result
 
     @utils.admin_required
