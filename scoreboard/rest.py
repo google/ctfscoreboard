@@ -173,27 +173,53 @@ class Team(restful.Resource):
 
     decorators = [utils.login_required]
 
+    history_fields = {
+        'when': ISO8601DateTime(),
+        'score': fields.Integer,
+    }
     team_fields = {
         'tid': fields.Integer,
         'name': fields.String,
         'score': fields.Integer,
         'solves': fields.Integer,
     }
+    solved_challenges = {
+        'cid': fields.Integer,
+        'name': fields.String,
+        'cat_id': fields.Integer,
+        'cat_name': fields.String,
+        'solved': ISO8601DateTime(),
+        'points': fields.Integer,
+    }
     resource_fields = team_fields.copy()
     resource_fields['players'] = fields.Nested(User.resource_fields)
+    resource_fields['score_history'] = fields.Nested(history_fields)
+    resource_fields['solved_challenges'] = fields.Nested(solved_challenges)
 
     @restful.marshal_with(resource_fields)
     def get(self, team_id):
-        if not utils.access_team(team_id):
-            raise errors.AccessDeniedError('No access to that team.')
         team = models.Team.query.get_or_404(team_id)
-        return self._marshal_team(team)
+        return self._marshal_team(team, extended=True)
 
-    def _marshal_team(self, team):
+    def _marshal_team(self, team, extended=False):
         result = {}
         for k in self.team_fields:
             result[k] = getattr(team, k)
-        result['players'] = list(team.players.all())
+        if extended:
+            challenges = []
+            for answer in team.answers:
+                challenges.append({
+                    'solved': answer.timestamp,
+                    'points': answer.challenge.points,
+                    'name': answer.challenge.name,
+                    'cid': answer.challenge_cid,
+                    'cat_id': answer.challenge.category.cid,
+                    'cat_name': answer.challenge.category.name,
+                    })
+            result['solved_challenges'] = challenges
+            result['score_history'] = team.score_history
+        if utils.access_team(team.tid):
+            result['players'] = list(team.players.all())
         return result
 
     @utils.admin_required
@@ -503,15 +529,11 @@ api.add_resource(Answer, '/api/answers')
 class APIScoreboard(restful.Resource):
     """Retrieve the scoreboard."""
 
-    history_fields = {
-        'when': ISO8601DateTime(),
-        'score': fields.Integer,
-    }
     line_fields = {
         'position': fields.Integer,
         'name': fields.String,
         'score': fields.Integer,
-        'history': fields.Nested(history_fields),
+        'history': fields.Nested(Team.history_fields),
     }
     resource_fields = {
         'scoreboard': fields.Nested(line_fields),
