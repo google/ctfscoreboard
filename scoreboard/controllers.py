@@ -64,6 +64,8 @@ def register_user(email, nick, password, team_id=None,
     except exc.IntegrityError:
         models.db.session.rollback()
         raise errors.ValidationError('Duplicate email/nick.')
+    if not user.admin:
+        models.ScoreHistory.add_entry(team)
     app.logger.info('User %s <%s> registered from IP %s.',
                     nick, email, flask.request.access_route[0])
     return user
