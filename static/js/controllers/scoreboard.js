@@ -30,9 +30,15 @@ scoreboardCtrls.controller('ScoreboardCtrl', [
         loadingService) {
       $scope.config = configService.get();
 
+      var topTeams = function(scoreboard, numTeams) {
+        // Scoreboard data is sorted by backend
+        var numTeams = numTeams || 10;
+        return scoreboard.slice(0, numTeams);
+      };
+
       var getHistory = function(scoreboard) {
         var histories = {};
-        angular.forEach(scoreboard, function(entry) {
+        angular.forEach(topTeams(scoreboard), function(entry) {
           histories[entry.name] = entry.history;
         });
         return histories;
