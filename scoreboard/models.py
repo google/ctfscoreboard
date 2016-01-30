@@ -77,7 +77,7 @@ class ScoreHistory(db.Model):
     team_tid = db.Column(db.Integer, db.ForeignKey('team.tid'), nullable=False,
             primary_key=True)
     when = db.Column(db.DateTime, nullable=False, primary_key=True,
-            default=datetime.datetime.now)
+            default=datetime.datetime.utcnow)
     score = db.Column(db.Integer, default=0, nullable=False)
 
     @classmethod
