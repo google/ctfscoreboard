@@ -536,6 +536,7 @@ class APIScoreboard(restful.Resource):
 
     line_fields = {
         'position': fields.Integer,
+        'tid': fields.Integer,
         'name': fields.String,
         'score': fields.Integer,
         'history': fields.Nested(Team.history_fields),
@@ -547,7 +548,7 @@ class APIScoreboard(restful.Resource):
     @restful.marshal_with(resource_fields)
     def get(self):
         return dict(scoreboard=[
-            {'position': i, 'name': v.name,
+            {'position': i, 'name': v.name, 'tid': v.tid,
              'score': v.score, 'history': v.score_history}
             for i, v in models.Team.enumerate(with_history=True)])
 

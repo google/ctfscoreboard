@@ -1,8 +1,13 @@
 <h2>{{team.name}}</h2>
-<div class='col-md-5 col-md-offset-2'>
+<div class='row'>
+  <div class='category-chart col-md-6' donut-chart chart-data='categoryData'></div>
+  <div class='team-score-chart col-md-6' score-chart chart-data='scoreHistory'></div>
+</div>
+<div class='col-md-8 col-md-offset-2 team-solved'>
   <h4>Solved Challenges</h4>
   <p ng-hide='team.solved_challenges'>This team has not solved any challenges.</p>
-  <table ng-show='team.solved_challenges'>
+  <table ng-show='team.solved_challenges'
+    class='team-challenges table table-striped table-responsive'>
     <tr><th>Name</th><th>Points</th><th>Solved</th></tr>
     <tr ng-repeat='chall in team.solved_challenges'>
       <td ng-bind='chall.name'></td>

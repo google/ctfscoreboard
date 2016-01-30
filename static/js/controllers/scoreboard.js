@@ -29,12 +29,27 @@ scoreboardCtrls.controller('ScoreboardCtrl', [
     function($scope, $resource, $interval, configService, errorService,
         loadingService) {
       $scope.config = configService.get();
+
+      var topTeams = function(scoreboard, numTeams) {
+        // Scoreboard data is sorted by backend
+        var numTeams = numTeams || 10;
+        return scoreboard.slice(0, numTeams);
+      };
+
+      var getHistory = function(scoreboard) {
+        var histories = {};
+        angular.forEach(topTeams(scoreboard), function(entry) {
+          histories[entry.name] = entry.history;
+        });
+        return histories;
+      };
       
       var refresh = function() {
         errorService.clearErrors();
         $resource('/api/scoreboard').get(
             function(data) {
               $scope.scoreboard = data.scoreboard;
+              $scope.scoreHistory = getHistory(data.scoreboard);
               loadingService.stop();
             },
             function(data) {

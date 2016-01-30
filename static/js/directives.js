@@ -107,3 +107,195 @@ sbDirectives.directive('loadingOverlay', [
             }
         };
     }]);
+
+
+/* Score over time charts based on Chart.Scatter.js
+ * chartData should be an object with structure like:
+ * {"label": [{time: datestring, score: value}...], ...}
+ */
+sbDirectives.directive('scoreChart', [
+    function() {
+      return {
+        restrict: 'AE',
+        replace: false,
+        scope: {
+          chartData: '='
+        },
+        link: function(scope, element, attrs) {
+          if (!Chart || Chart === undefined) {
+            console.log('Chart.js is not available.');
+            element.remove();
+            return;
+          }
+          var padding = 5;
+          var colorScheme = [
+            '#a6cee3',
+            '#1f78b4',
+            '#b2df8a',
+            '#33a02c',
+            '#fb9a99',
+            '#e31a1c',
+            '#fdbf6f',
+            '#ff7f00',
+            '#cab2d6',
+            '#6a3d9a',
+            '#ffff99',
+            '#b15928'];
+          var withLegend = (attrs.withLegend !== undefined);
+
+          scope.$watch('chartData', function() {
+            if (scope.chartData === undefined)
+              return;
+            element.empty();
+
+            var legendWidth = Math.min(100, Math.floor(element.width() * 0.2));
+
+            // Transform data
+            var datasets = [];
+            angular.forEach(scope.chartData, function(series, label) {
+              var color = colorScheme[datasets.length % colorScheme.length];
+              var set = {
+                label: label,
+                strokeColor: color,
+                data: []
+              };
+              angular.forEach(series, function(point) {
+                set.data.push({x: new Date(point.when), y: point.score});
+              });
+              if (set.data.length == 0)
+                return;
+              set.data.sort(function(a, b) {
+                if (a.x < b.x)
+                  return -1;
+                if (a.x > b.x)
+                  return 1;
+                return 0;
+              });
+              var last = set.data[set.data.length - 1];
+              // Extend to present
+              set.data.push({x: new Date(), y: last.score});
+              datasets.push(set);
+            });
+            console.log(datasets);
+            
+            var options = {
+              pointDot: false,
+              scaleType: "date"
+            };
+
+            // Create canvas inside our element
+            var canvas = document.createElement("canvas");
+            canvas.height = element.height();
+            if (withLegend)
+              // Leave space for legend
+              canvas.width = element.width() - legendWidth - padding;
+            else
+              canvas.width = element.width() - padding;
+            element.append(canvas);
+
+            var legend;
+            if (withLegend) {
+              // Prepare a legend
+              legend = document.createElement("div");
+              element.append(legend);
+              legend.style.width = legendWidth;
+              legend.style.maxWidth = legendWidth;
+              $(legend).addClass('sbchart-legend');
+            }
+
+            var ctx = canvas.getContext("2d");
+            var stepChart = new Chart(ctx).Step(datasets, options);
+            if (withLegend)
+              legend.innerHTML = stepChart.generateLegend();
+          });
+        }
+      };
+    }]);
+
+
+/* Draw a donut chart of, well, anything.
+ * Expects data like:
+ * {category: value}
+ */
+sbDirectives.directive('donutChart', [
+    function() {
+      return {
+        restrict: 'AE',
+        replace: false,
+        scope: {
+          chartData: '='
+        },
+        link: function(scope, element, attrs) {
+          if (!Chart || Chart === undefined) {
+            console.log('Chart.js is not available.');
+            element.remove();
+            return;
+          }
+          var colorScheme = [
+            '#a6cee3',
+            '#1f78b4',
+            '#b2df8a',
+            '#33a02c',
+            '#fb9a99',
+            '#e31a1c',
+            '#fdbf6f',
+            '#ff7f00',
+            '#cab2d6',
+            '#6a3d9a',
+            '#ffff99',
+            '#b15928'];
+          var withLegend = (attrs.withLegend !== undefined);
+
+          scope.$watch('chartData', function() {
+            /* TODO: add a legend */
+            if (scope.chartData === undefined)
+              return;
+            element.empty();
+
+            // Massage the data
+            var dataset = [];
+            var numElements = 0;
+            angular.forEach(scope.chartData, function() {
+              numElements++;
+            });
+            var getColors;
+            var colorIdx = 0;
+            if ((numElements * 2) < colorScheme.length) {
+              getColors = function() {
+                var rv = [colorScheme[colorIdx * 2], colorScheme[colorIdx * 2 + 1]];
+                colorIdx ++;
+                return rv;
+              };
+            } else {
+              getColors = function() {
+                var rv = [colorScheme[colorIdx], colorScheme[colorIdx]];
+                colorIdx ++;
+                return rv;
+              };
+            }
+            angular.forEach(scope.chartData, function(value, key) {
+              var colors = getColors();
+              dataset.push({
+                value: value,
+                color: colors[0],
+                highlight: colors[1],
+                label: key
+              });
+            });
+
+            // Create our canvas
+            var canvas = document.createElement("canvas");
+            canvas.height = element.height();
+            canvas.width = element.width();
+            element.append(canvas);
+
+            var options = {
+              percentageInnerCutout: 30
+            };
+
+            var ctx = canvas.getContext("2d");
+            var donutChart = new Chart(ctx).Doughnut(dataset, options);
+          });
+        }
+      };
+    }]);
