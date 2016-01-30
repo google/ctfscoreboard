@@ -129,10 +129,15 @@ input.form-control[readonly] {
 
 .sbchart-legend {
   float: right;
+  overflow: auto;
 }
 
 ul.step-legend {
   list-style-type: none;
+}
+
+ul.step-legend li {
+  white-space: nowrap;
 }
 
 .step-legend-marker {

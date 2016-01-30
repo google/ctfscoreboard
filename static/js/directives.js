@@ -127,6 +127,7 @@ sbDirectives.directive('scoreChart', [
             element.remove();
             return;
           }
+          var padding = 5;
           var colorScheme = [
             '#a6cee3',
             '#1f78b4',
@@ -147,7 +148,7 @@ sbDirectives.directive('scoreChart', [
               return;
             element.empty();
 
-            var legendWidth = Math.min(100, element.width() * 0.2);
+            var legendWidth = Math.min(100, Math.floor(element.width() * 0.2));
 
             // Transform data
             var datasets = [];
@@ -187,9 +188,9 @@ sbDirectives.directive('scoreChart', [
             canvas.height = element.height();
             if (withLegend)
               // Leave space for legend
-              canvas.width = element.width() - legendWidth;
+              canvas.width = element.width() - legendWidth - padding;
             else
-              canvas.width = element.width();
+              canvas.width = element.width() - padding;
             element.append(canvas);
 
             var legend;
@@ -198,6 +199,7 @@ sbDirectives.directive('scoreChart', [
               legend = document.createElement("div");
               element.append(legend);
               legend.style.width = legendWidth;
+              legend.style.maxWidth = legendWidth;
               $(legend).addClass('sbchart-legend');
             }
 
