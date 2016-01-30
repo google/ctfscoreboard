@@ -16,6 +16,7 @@
 import collections
 
 import flask
+from sqlalchemy import event
 
 from scoreboard.app import app
 from scoreboard import models
@@ -77,6 +78,7 @@ def load_globals():
     """Prepopulate flask.g.* with user and team."""
     uid = flask.session.get('user')
     if uid:
+        # TODO: perform some kind of caching here
         user = models.User.query.get(uid)
         if user:
             flask.g.user = user
@@ -100,6 +102,25 @@ def add_headers(response):
 @app.context_processor
 def util_contexts():
     return dict(gametime=utils.GameTime)
+
+
+_query_count = 0
+
+
+if app.config.get('COUNT_QUERIES', False):
+    @event.listens_for(models.db.engine, 'before_cursor_execute')
+    def receive_before_cursor_execute(
+            conn, cursor, statement, parameters, context, executemany):
+        global _query_count
+        _query_count += 1
+
+    @app.after_request
+    def count_queries(response):
+        global _query_count
+        if _query_count > 0:
+            app.logger.info('Request issued %d queries.', _query_count)
+            _query_count = 0
+        return response
 
 
 def ensure_setup():
