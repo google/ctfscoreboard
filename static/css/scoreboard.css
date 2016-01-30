@@ -141,3 +141,20 @@ ul.step-legend {
   display: inline-block;
   margin-right: 3px;
 }
+
+/* Team page */
+.team-solved {
+  margin-top: 20px;
+}
+
+table.team-challenges {
+  font-size: 100%;
+}
+
+.category-chart {
+  height: 250px;
+}
+
+.team-score-chart {
+  height: 250px;
+}

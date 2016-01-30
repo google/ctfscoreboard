@@ -30,6 +30,17 @@ teamCtrls.controller('TeamPageCtrl', [
       teamService.get({tid: tid},
           function(team) {
             $scope.team = team;
+            var catData = {};
+            angular.forEach(team.solved_challenges, function(chall) {
+              if (!(chall.cat_name in catData))
+                catData[chall.cat_name] = chall.points;
+              else
+                catData[chall.cat_name] += chall.points;
+            });
+            $scope.categoryData = catData;
+            $scope.scoreHistory = {};
+            $scope.scoreHistory[team.name] = team.score_history;
+            console.log($scope.scoreHistory);
             loadingService.stop();
           },
           function(err) {
