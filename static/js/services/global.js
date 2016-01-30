@@ -135,7 +135,9 @@ globalServices.service('gameTimeService', [
             return true;
         };
 
-        this.then = future.promise.then;
+        this.then = function(callback) {
+          future.promise.then(callback);
+        };
     }]);
 
 
