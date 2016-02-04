@@ -27,9 +27,9 @@ sbDirectives.directive('highlightActive', [
                 scope.$watch(function() { return $location.path(); },
                     function() {
                         if (element[0].pathname == $location.path()) {
-                            element.addClass('active');
+                            element.addClass('active is-active');
                         } else {
-                            element.removeClass('active');
+                            element.removeClass('active is-active');
                         }
                     });
             }
