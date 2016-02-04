@@ -176,7 +176,6 @@ sbDirectives.directive('scoreChart', [
               set.data.push({x: new Date(), y: last.score});
               datasets.push(set);
             });
-            console.log(datasets);
             
             var options = {
               pointDot: false,
