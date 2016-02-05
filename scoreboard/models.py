@@ -328,6 +328,9 @@ class Challenge(db.Model):
         challenge.answer_hash = pbkdf2.crypt(answer)
         challenge.cat_cid = cid
         challenge.unlocked = unlocked
+        weight = db.session.query(db.func.max(Challenge.weight)).scalar()
+        challenge.weight = weight + 1
+        challenge.prerequisite = ''
         db.session.add(challenge)
         return challenge
 
