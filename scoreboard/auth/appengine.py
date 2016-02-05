@@ -18,7 +18,8 @@ def login_user(_):
         return None
     user = models.User.get_by_email(gae_user.email())
     if not user:
-        raise errors.LoginError('No user found for user %s' % gae_user.email())
+        logging.error('No user found for user %s' % gae_user.email())
+        return flask.redirect('/register')
     return user
 
 
