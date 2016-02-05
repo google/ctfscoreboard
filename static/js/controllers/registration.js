@@ -32,6 +32,8 @@ regCtrls.controller('LoginCtrl', [
         passwordResetService, loadingService) {
       if ($location.path().indexOf('/logout') == 0) {
         sessionService.logout();
+        $location.path('/');
+        return;
       }
       $scope.email = '';
       $scope.password = '';
