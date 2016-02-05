@@ -80,7 +80,7 @@ def submit_answer(cid, answer):
     """
     try:
         challenge = models.Challenge.query.get(cid)
-        if not challenge.unlocked:
+        if not challenge.unlocked_for_team(flask.g.team):
             raise errors.AccessDeniedError('Challenge is locked!')
         if challenge.verify_answer(answer):
             # Deductions for hints
