@@ -179,7 +179,10 @@ sbDirectives.directive('scoreChart', [
             
             var options = {
               pointDot: false,
-              scaleType: "date"
+              scaleType: "date",
+              useUtc: false,
+              scaleTimeFormat: "HH:MM",
+              scaleDateTimeFormat: "mmm d, HH:MM"
             };
 
             // Create canvas inside our element
