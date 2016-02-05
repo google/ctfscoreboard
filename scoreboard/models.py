@@ -18,6 +18,8 @@ import flask
 from flask.ext import sqlalchemy
 import hashlib
 import hmac
+import json
+import logging
 import pbkdf2
 import re
 import time
@@ -233,7 +235,7 @@ class Category(db.Model):
             unlocked_identity = True
             challenges = challenges.filter(
                 Challenge.unlocked == unlocked_identity)
-        return challenges
+        return challenges.order_by(Challenge.weight)
 
 
 class Challenge(db.Model):
@@ -245,6 +247,8 @@ class Challenge(db.Model):
     points = db.Column(db.Integer, nullable=False)
     answer_hash = db.Column(db.String(48))  # Protect answers
     unlocked = db.Column(db.Boolean, default=False)
+    weight = db.Column(db.Integer, nullable=False)  # Order for display
+    prerequisite = db.Column(db.Text, nullable=False)  # Prerequisite Metadata
     cat_cid = db.Column(db.Integer, db.ForeignKey('category.cid'))
     answers = db.relationship('Answer', backref='challenge', lazy='dynamic')
     hints = db.relationship('Hint', backref='challenge', lazy='dynamic')
@@ -283,6 +287,37 @@ class Challenge(db.Model):
         if not flask.g.team:
             return False
         return self.is_answered(answers=flask.g.team.answers)
+
+    def unlocked_for_team(self, team):
+        """Checks if prerequisites are met for this team."""
+        if not self.unlocked:
+            return False
+        if not self.prerequisite:
+            return True
+        try:
+            prereq = json.loads(self.prerequisite)
+        except ValueError:
+            logging.error('Unable to parse prerequisite data for challenge %d',
+                    self.cid)
+            return False
+        try:
+            eval_func = getattr(self, 'prereq_' + prereq['type'])
+        except AttributeError:
+            logging.error(
+                'Could not find prerequisite function for challenge %d',
+                self.cid)
+            return False
+        return eval_func(prereq, team)
+
+    def prereq_solved(self, prereq, team):
+        """Require that another challenge be solved first."""
+        chall = Challenge.get(int(prereq['challenge']))
+        if not chall:
+            logging.error('Challenge %d prerequisite depends on '
+                    'non-existent challenge %d.', self.cid,
+                    int(prereq['challenge']))
+            return False
+        return chall.is_answered(team=team)
 
     @classmethod
     def create(cls, name, description, points, answer, cid, unlocked=False):
@@ -337,6 +372,9 @@ class Challenge(db.Model):
         for a in old_attachments:
             if a.aid not in aid_set:
                 a.delete()
+
+    def set_prerequisite(self, prerequisite):
+        self.prerequisite = json.dumps(prerequisite)
 
 
 class Attachment(db.Model):

@@ -71,6 +71,9 @@ a.btn {
 .challenge-table .btn {
   margin-right: 10px;
 }
+.challenge-table .btn.btn-xs {
+  margin-right: 0px;
+}
 .center {
   text-align: center;
   margin-left: auto;
@@ -162,4 +165,9 @@ table.team-challenges {
 
 .team-score-chart {
   height: 250px;
+}
+
+/* Helpers */
+.oneline {
+  white-space: nowrap;
 }

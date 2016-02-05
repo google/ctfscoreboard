@@ -341,6 +341,7 @@ class Challenge(restful.Resource):
         'cat_cid': fields.Integer,
         'answered': fields.Boolean,
         'solves': fields.Integer,
+        'weight': fields.Integer,
     }
     attachment_fields = {
         'aid': fields.String,
@@ -359,7 +360,8 @@ class Challenge(restful.Resource):
         challenge = models.Challenge.query.get_or_404(challenge_id)
         data = flask.request.get_json()
         old_unlocked = challenge.unlocked
-        for field in ('name', 'description', 'points', 'cat_cid', 'unlocked'):
+        for field in (
+                'name', 'description', 'points', 'cat_cid', 'unlocked', 'weight'):
             setattr(
                 challenge, field, data.get(field, getattr(challenge, field)))
         if 'answer' in data and data['answer']:
@@ -368,6 +370,8 @@ class Challenge(restful.Resource):
             challenge.set_hints(data['hints'])
         if 'attachments' in data:
             challenge.set_attachments(data['attachments'])
+        if 'prerequisite' in data:
+            chall.set_prerequisite(data['prerequisite'])
         if challenge.unlocked and not old_unlocked:
             news = 'Challenge "%s" unlocked!' % challenge.name
             models.News.game_broadcast(message=news)
@@ -409,6 +413,8 @@ class ChallengeList(restful.Resource):
             chall.set_hints(data['hints'])
         if 'attachments' in data:
             chall.set_attachments(data['attachments'])
+        if 'prerequisite' in data:
+            chall.set_prerequisite(data['prerequisite'])
 
         if unlocked:
             news = 'New challenge created: "%s"' % chall.name
@@ -452,9 +458,9 @@ class Category(restful.Resource):
         if flask.g.user and flask.g.user.admin:
             challenges = category.challenges
         else:
-            unlocked_identity = True
-            challenges = category.challenges.filter(
-                models.Challenge.unlocked == unlocked_identity)
+            challenges = category.get_challenges()
+            challenges = [c for c in challenges if
+                    c.unlocked_for_team(flask.g.team)]
         res = {k: getattr(category, k) for k in self.category_fields}
         res['challenges'] = list(challenges)
         return res

@@ -8,7 +8,7 @@
     <tr ng-repeat='challenge in challenges'><td>{{challenge.name}}</td>
       <td>{{challenge.points}}</td>
       <td>{{challenge.solves}}</td>
-      <td>
+      <td class='oneline'>
         <!-- replace lockbutton -->
         <a class='btn lockbtn ng-hide btn-warning'
           ng-hide='challenge.unlocked'
@@ -16,14 +16,20 @@
         <a class='btn lockbtn btn-info'
           ng-show='challenge.unlocked'
           ng-click='lockChallenge(challenge, true)'>Unlocked</a>
-        <a
-          href='/admin/challenge/{{challenge.cid}}'
-          class='btn btn-primary'>Edit</a><a
-          ng-click='deleteChallenge(challenge)'
-          class='btn btn-danger'>Delete</a></td>
+        <a href='/admin/challenge/{{challenge.cid}}'
+          class='btn btn-primary'>Edit</a>
+        <a ng-click='deleteChallenge(challenge)'
+          class='btn btn-danger'>Delete</a>
+        <a ng-click='moveUp(challenge)' ng-disabled='$first'
+          ng-show='categoryPage' class='btn btn-xs'>&#x25b2;</a>
+        <a ng-click='moveDown(challenge)' ng-disabled='$last'
+          ng-show='categoryPage' class='btn btn-xs'>&#x25bc;</a>
+      </td>
     </tr>
     <tr><td></td><td></td><td></td>
       <td><a href='/admin/challenge'
-          class='btn btn-primary'>New</td></tr>
+          class='btn btn-primary'>New</a><a ng-click='saveBulk()'
+          ng-enabled='weightsChanged' class='btn btn-info'
+          ng-show='categoryPage'>Save Order</a></td></tr>
   </tbody>
 </table>

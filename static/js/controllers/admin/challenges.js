@@ -95,16 +95,37 @@ adminChallengeCtrls.controller('AdminCategoryCtrl', [
 
 adminChallengeCtrls.controller('AdminChallengesCtrl', [
     '$scope',
+    '$filter',
     '$routeParams',
     'challengeService',
     'errorService',
     'sessionService',
     'loadingService',
-    function($scope, $routeParams, challengeService, errorService,
+    function($scope, $filter, $routeParams, challengeService, errorService,
         sessionService, loadingService) {
       if (!sessionService.requireAdmin()) return;
 
+      var filterChallenges = function(challenges) {
+        if (!$routeParams.cid)
+          return challenges;
+        var filtered = [];
+        angular.forEach(challenges, function(ch) {
+          if (ch.cat_cid == $routeParams.cid)
+            filtered.push(ch);
+        });
+        return filtered;
+      };
+
+
+      var updateChallenges = function(challenges) {
+        $scope.challenges = $filter('orderBy')(challenges,
+            function(item) {
+              return item.weight;
+            });
+      };
+
       $scope.catid = $routeParams.cid;
+      $scope.categoryPage = !!$routeParams.cid;
 
       $scope.lockChallenge = function(challenge, locked) {
         var copy = {};
@@ -135,9 +156,66 @@ adminChallengeCtrls.controller('AdminChallengesCtrl', [
             });
       };
 
+      // Ordering things
+      var swapChallenges = function(idx, offset) {
+        var temp = $scope.challenges[idx];
+        $scope.challenges[idx] = $scope.challenges[idx + offset];
+        $scope.challenges[idx + offset] = temp;
+        $scope.weightsChanged = true;
+      };
+      $scope.moveUp = function(challenge) {
+        var idx = $scope.challenges.indexOf(challenge);
+        if (idx < 1) {
+          console.log('Attempt to moveUp non-existent or first item.');
+          return;
+        }
+        swapChallenges(idx, -1);
+      };
+      $scope.moveDown = function(challenge) {
+        var idx = $scope.challenges.indexOf(challenge);
+        if (idx > ($scope.challenges.length - 1) || idx == -1) {
+          console.log('Attempt to moveDown non-existent or last item.');
+          return;
+        }
+        swapChallenges(idx, 1);
+      };
+      $scope.weightsChanged = false;
+      $scope.saveBulk = function() {
+        loadingService.start();
+        var failed = false;
+        // Set new weights
+        var weight = 0;
+        // Make a copy to avoid overwriting other challenge updates
+        challengeService.get(function(data) {
+          angular.forEach($scope.challenges, function(mod_chall) {
+            weight += 1;
+            angular.forEach(filterChallenges(data.challenges), function(chall) {
+              if (mod_chall.cid == chall.cid) {
+                if (weight == chall.weight)
+                  return;
+                chall.weight = weight;
+                challengeService.save({cid: chall.cid},
+                    chall,
+                    function() {},
+                    function(data) {
+                      failed = true;
+                      errorService.error(data);
+                    });
+              }
+            });
+          });
+          updateChallenges(filterChallenges(data.challenges));
+          loadingService.stop();
+        },
+        function (data) {
+          errorService.error(data);
+          loadingService.stop();
+        });
+      };
+
       sessionService.requireLogin(function() {
         challengeService.get(function(data) {
-          $scope.challenges = data.challenges;
+          updateChallenges(filterChallenges(data.challenges));
           loadingService.stop();
         },
         function(data) {
