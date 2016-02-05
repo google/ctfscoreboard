@@ -112,6 +112,27 @@
           ng-show='newAttachment.source == "filehash"'>
     </div>
   </div>
+  <div class='well'>
+    <h4>Prerequisite</h4>
+    <div class='form-group'>
+      <label for='prereq_type'>Type</label>
+      <select id='prereq_type' ng-model='challenge.prerequisite.type'
+        ng-change='updatePrerequisite()' class='form-control'>
+        <option value='None'>None</option>
+        <option value='solved'>Solved Another</option>
+      </select>
+    </div>
+    <div class='form-group'
+      ng-show='challenge.prerequisite.type=="solved"'>
+      <label for='prereq_challenge'>Required Challenge</label>
+      <select id='prereq_challenge'
+        ng-model='challenge.prerequisite.challenge'
+        class='form-control'>
+        <option ng-repeat='ch in challengeList' value='{{ch.cid}}'
+          ng-bind='ch.name'></option>
+      </select>
+    </div>
+  </div>
   <input type='submit' class='btn btn-primary' value='Save'i
     ng-disabled='challengeForm.$invalid'>
 </form>

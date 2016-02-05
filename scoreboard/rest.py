@@ -37,7 +37,6 @@ context.ensure_setup()
 
 # Custom fields
 class HintField(fields.Raw):
-
     """Custom to show hint only if unlocked or admin."""
 
     def format(self, value):
@@ -54,7 +53,6 @@ class HintField(fields.Raw):
 
 
 class ISO8601DateTime(fields.Raw):
-
     """Show datetimes as ISO8601."""
 
     def format(self, value):
@@ -67,6 +65,18 @@ class ISO8601DateTime(fields.Raw):
                 value = value.replace(tzinfo=pytz.UTC)
             return value.isoformat()
         raise ValueError('Unable to convert %s to ISO8601.' % str(type(value)))
+
+
+class PrerequisiteField(fields.Raw):
+    """Prerequisite data."""
+
+    def format(self, value):
+        try:
+            data = json.loads(value)
+        except ValueError:
+            return {'type': 'None'}
+        return data
+
 
 
 ### Utility functions
@@ -342,6 +352,7 @@ class Challenge(restful.Resource):
         'answered': fields.Boolean,
         'solves': fields.Integer,
         'weight': fields.Integer,
+        'prerequisite': PrerequisiteField,
     }
     attachment_fields = {
         'aid': fields.String,

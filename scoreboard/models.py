@@ -300,6 +300,8 @@ class Challenge(db.Model):
             logging.error('Unable to parse prerequisite data for challenge %d',
                     self.cid)
             return False
+        if prereq['type'] == 'None':
+            return True
         try:
             eval_func = getattr(self, 'prereq_' + prereq['type'])
         except AttributeError:
@@ -311,7 +313,7 @@ class Challenge(db.Model):
 
     def prereq_solved(self, prereq, team):
         """Require that another challenge be solved first."""
-        chall = Challenge.get(int(prereq['challenge']))
+        chall = Challenge.query.get(int(prereq['challenge']))
         if not chall:
             logging.error('Challenge %d prerequisite depends on '
                     'non-existent challenge %d.', self.cid,
@@ -377,7 +379,10 @@ class Challenge(db.Model):
                 a.delete()
 
     def set_prerequisite(self, prerequisite):
-        self.prerequisite = json.dumps(prerequisite)
+        if 'type' in prerequisite and prerequisite['type'] == 'None':
+            self.prerequisite = ''
+        else:
+            self.prerequisite = json.dumps(prerequisite)
 
 
 class Attachment(db.Model):

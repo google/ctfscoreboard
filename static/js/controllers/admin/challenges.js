@@ -253,7 +253,11 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
 
       $scope.saveChallenge = function() {
         errorService.clearErrors();
-        // Check attachments
+        // TODO: Check attachments
+
+        if ($scope.challenge.prerequisite.type == 'None') {
+          delete $scope.challenge.prerequisite;
+        };
 
         var save_func;
         if ($scope.challenge.cid) {
@@ -318,6 +322,27 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
         $scope.challenge.attachments.splice(idx, 1);
       };
 
+      // Prerequisite handlers
+      $scope.updatePrerequisite = function() {
+        var type = $scope.challenge.prerequisite.type || 'None';
+        if (type == 'None')
+          return;
+        if (type == 'solved') {
+          // Load the challenge list
+          loadingService.start();
+          challengeService.get(function(data) {
+            $scope.challengeList = [];
+            angular.forEach(data.challenges, function(c) {
+              $scope.challengeList.push({'cid': c.cid, 'name': c.name});
+            })
+            loadingService.stop();
+          }, function(data) {
+            errorService.error(data);
+            loadingService.stop();
+          });
+        }
+      };
+
       /* Setup on load */
       sessionService.requireLogin(function() {
         if ($routeParams.cid) {
@@ -335,6 +360,9 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
             $scope.challenge = {
                 'hints': [],
                 'attachments': [],
+                'prerequisite': {
+                  'type': 'None'
+                }
             };
         }
         categoryService.get(function(data) {
