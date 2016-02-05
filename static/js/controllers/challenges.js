@@ -62,6 +62,16 @@ challengeCtrls.controller('ChallengeCtrl', [
       categoryService, errorService, sessionService, loadingService) {
       errorService.clearErrors();
 
+      var refresh = function(cid) {
+        categoryService.get({cid: cid},
+            function(cat) {
+              $scope.category = cat;
+              $scope.category.answers = {};
+              $scope.challenges = cat.challenges;
+              loadingService.stop();
+            });
+      };
+
       $scope.filterUnlocked = function(chall) {
         return chall.unlocked == true;
       };
@@ -69,6 +79,7 @@ challengeCtrls.controller('ChallengeCtrl', [
       var slug = $routeParams.slug;
       if (slug) {
         $scope.submitChallenge = function(chall) {
+          loadingService.start();
           errorService.clearErrors();
           answerService.create({cid: chall.cid, answer: chall.answer},
             function(resp) {
@@ -76,9 +87,11 @@ challengeCtrls.controller('ChallengeCtrl', [
               errorService.error(
                 'Congratulations, ' + resp.points + ' points awarded!',
                 'success');
+              refresh($scope.cid);
             },
             function(resp) {
               errorService.error(resp);
+              loadingService.stop();
             });
         };
 
@@ -114,13 +127,8 @@ challengeCtrls.controller('ChallengeCtrl', [
           categoryService.getList(function(data) {
             angular.forEach(data.categories, function(c) {
               if (c.slug == slug){
-                categoryService.get({cid: c.cid},
-                  function(cat) {
-                    $scope.category = cat;
-                    $scope.category.answers = {};
-                    $scope.challenges = cat.challenges;
-                    loadingService.stop();
-                  });
+                $scope.cid = c.cid;
+                refresh(c.cid);
                 found = true;
               }
             });
