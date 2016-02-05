@@ -288,6 +288,14 @@ class Challenge(db.Model):
             return False
         return self.is_answered(answers=flask.g.team.answers)
 
+    @property
+    def teaser(self):
+        if not app.config.get('TEASE_HIDDEN', True):
+            return False
+        if not flask.g.team:
+            return False
+        return not self.unlocked_for_team(flask.g.team) 
+
     def unlocked_for_team(self, team):
         """Checks if prerequisites are met for this team."""
         if not self.unlocked:

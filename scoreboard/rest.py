@@ -353,6 +353,7 @@ class Challenge(restful.Resource):
         'solves': fields.Integer,
         'weight': fields.Integer,
         'prerequisite': PrerequisiteField,
+        'teaser': fields.Boolean,
     }
     attachment_fields = {
         'aid': fields.String,
@@ -469,11 +470,22 @@ class Category(restful.Resource):
         if flask.g.user and flask.g.user.admin:
             challenges = category.challenges
         else:
-            challenges = category.get_challenges()
-            challenges = [c for c in challenges if
-                    c.unlocked_for_team(flask.g.team)]
+            raw = category.get_challenges()
+            challenges = []
+            for ch in raw:
+                if ch.unlocked_for_team(flask.g.team):
+                    challenges.append(ch)
+                elif ch.teaser:
+                    challenges.append(self._tease_challenge(ch))
         res = {k: getattr(category, k) for k in self.category_fields}
         res['challenges'] = list(challenges)
+        return res
+
+    @staticmethod
+    def _tease_challenge(chall):
+        res = {k: getattr(chall, k) for k in Challenge.resource_fields}
+        for f in ('description', 'hints', 'attachments'):
+            del res[f]
         return res
 
     @utils.admin_required
