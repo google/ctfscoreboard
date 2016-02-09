@@ -54,13 +54,10 @@ def upload(fp):
         if not blk:
             break
         md.update(blk)
+    fp.seek(0, os.SEEK_SET)
     aid = md.hexdigest()
     path = make_path(aid)
     gcsfp = gcs.open(path, "w", content_type=fp.mimetype)
-    while True:
-        blk = fp.read(2**16)
-        if not blk:
-            break
-        gcsfp.write(blk)
+    fp.save(gcsfp)
     gcsfp.close()
     return aid, path
