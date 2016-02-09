@@ -27,12 +27,12 @@ def make_path(aid):
 def send(attachment):
     """Send to download URI."""
     path = make_path(attachment.aid)
-    fp = gcs.open(path)
     try:
+        fp = gcs.open(path)
         return flask.send_file(fp,
             mimetype=attachment.content_type,
             attachment_filename=attachment.filename,
-            as_attachment=True)
+            add_etags=False, as_attachment=True)
     except gcs.NotFoundError:
         return flask.abort(404)
 
