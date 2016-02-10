@@ -40,7 +40,6 @@ teamCtrls.controller('TeamPageCtrl', [
             $scope.categoryData = catData;
             $scope.scoreHistory = {};
             $scope.scoreHistory[team.name] = team.score_history;
-            console.log($scope.scoreHistory);
             loadingService.stop();
           },
           function(err) {
