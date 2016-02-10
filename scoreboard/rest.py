@@ -297,7 +297,9 @@ class Session(restful.Resource):
 
     def delete(self):
         auth.logout()
-        flask.session['user'] = None
+        del flask.session['user']
+        flask.g.user = None
+        flask.g.team = None
         return {'message': 'OK'}
 
 
