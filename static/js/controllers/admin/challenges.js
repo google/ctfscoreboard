@@ -17,6 +17,7 @@
 var adminChallengeCtrls = angular.module('adminChallengeCtrls', [
     'ngResource',
     'ngRoute',
+    'adminServices',
     'challengeServices',
     'globalServices',
     'sessionServices',
@@ -96,13 +97,15 @@ adminChallengeCtrls.controller('AdminCategoryCtrl', [
 adminChallengeCtrls.controller('AdminChallengesCtrl', [
     '$scope',
     '$filter',
+    '$location',
     '$routeParams',
     'challengeService',
     'errorService',
     'sessionService',
     'loadingService',
-    function($scope, $filter, $routeParams, challengeService, errorService,
-        sessionService, loadingService) {
+    'adminStateService',
+    function($scope, $filter, $location, $routeParams, challengeService,
+        errorService, sessionService, loadingService, adminStateService) {
       if (!sessionService.requireAdmin()) return;
 
       var filterChallenges = function(challenges) {
@@ -124,7 +127,7 @@ adminChallengeCtrls.controller('AdminChallengesCtrl', [
             });
       };
 
-      $scope.catid = $routeParams.cid;
+      $scope.catid = parseInt($routeParams.cid) || undefined;
       $scope.categoryPage = !!$routeParams.cid;
 
       $scope.lockChallenge = function(challenge, locked) {
@@ -154,6 +157,11 @@ adminChallengeCtrls.controller('AdminChallengesCtrl', [
             function(data) {
                 errorService.error(data);
             });
+      };
+
+      $scope.newChallenge = function() {
+        adminStateService.saveCategory($scope.catid);
+        $location.path('/admin/challenge');
       };
 
       // Ordering things
@@ -235,8 +243,9 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
     'sessionService',
     'uploadService',
     'loadingService',
+    'adminStateService',
     function($scope, $location, $routeParams, categoryService, challengeService,
-      errorService, sessionService, uploadService, loadingService) {
+      errorService, sessionService, uploadService, loadingService, adminStateService) {
       if (!sessionService.requireAdmin()) return;
 
       $scope.cid = $routeParams.cid;
@@ -369,6 +378,10 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
                   'type': 'None'
                 }
             };
+            var cid = adminStateService.getCategory();
+            if (typeof cid === "number") {
+              $scope.challenge.cat_cid = cid;
+            }
         }
         categoryService.get(function(data) {
           $scope.categories = data.categories;
