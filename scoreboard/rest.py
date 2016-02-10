@@ -466,7 +466,8 @@ class Category(restful.Resource):
         models.commit()
         return self.get_challenges(category)
 
-    def get_challenges(self, category):
+    @classmethod
+    def get_challenges(cls, category):
         if flask.g.user and flask.g.user.admin:
             challenges = category.challenges
         else:
@@ -476,8 +477,8 @@ class Category(restful.Resource):
                 if ch.unlocked_for_team(flask.g.team):
                     challenges.append(ch)
                 elif ch.teaser:
-                    challenges.append(self._tease_challenge(ch))
-        res = {k: getattr(category, k) for k in self.category_fields}
+                    challenges.append(cls._tease_challenge(ch))
+        res = {k: getattr(category, k) for k in cls.category_fields}
         res['challenges'] = list(challenges)
         return res
 
@@ -501,12 +502,14 @@ class CategoryList(restful.Resource):
     decorators = [utils.login_required, utils.require_gametime]
 
     resource_fields = {
-        'categories': fields.Nested(Category.category_fields)
+        'categories': fields.Nested(Category.resource_fields)
     }
 
     @restful.marshal_with(resource_fields)
     def get(self):
-        return dict(categories=list(models.Category.query.all()))
+        q = models.Category.joined_query()
+        categories = [Category.get_challenges(c) for c in q.all()]
+        return dict(categories=categories)
 
     @utils.admin_required
     @restful.marshal_with(Category.category_fields)

@@ -22,6 +22,7 @@ import json
 import logging
 import pbkdf2
 import re
+import sqlalchemy as sqlalchemy_base
 import time
 import utils
 from sqlalchemy import exc
@@ -182,7 +183,7 @@ class Category(db.Model):
     unlocked = db.Column(db.Boolean, default=True)
     challenges = db.relationship(
         'Challenge', backref=db.backref('category', lazy='joined'),
-        lazy='dynamic')
+        lazy='select')
 
     def __repr__(self):
         return '<Category: %d/%s>' % (self.cid, self.name)
@@ -190,13 +191,19 @@ class Category(db.Model):
     @property
     def challenge_count(self):
         """Count of unlocked challenges."""
-        return self.get_challenges().count()
+        if 'challenges' not in sqlalchemy_base.inspect(self).unloaded:
+            return len(self.challenges)
+        return self.get_challenges(sort=False).count()
 
     @property
     def solved_count(self):
         """Count of solved challenges for current team."""
+        if 'challenges' not in sqlalchemy_base.inspect(self).unloaded:
+            challs = self.challenges
+        else:
+            challs = self.get_challenges(sort=False)
         ct = 0
-        for ch in self.get_challenges():
+        for ch in challs:
             if ch.answered:
                 ct += 1
         return ct
@@ -229,13 +236,20 @@ class Category(db.Model):
     def delete(self):
         db.session.delete(self)
 
-    def get_challenges(self, unlocked_only=True):
+    def get_challenges(self, unlocked_only=True, sort=True):
         challenges = Challenge.query.filter(Challenge.category == self)
         if unlocked_only:
             unlocked_identity = True
             challenges = challenges.filter(
                 Challenge.unlocked == unlocked_identity)
+        if not sort:
+            return challenges
         return challenges.order_by(Challenge.weight)
+
+    @classmethod
+    def joined_query(cls):
+        return cls.query.options(orm.joinedload(cls.challenges)
+                                .joinedload(Challenge.answers))
 
 
 class Challenge(db.Model):
@@ -250,10 +264,10 @@ class Challenge(db.Model):
     weight = db.Column(db.Integer, nullable=False)  # Order for display
     prerequisite = db.Column(db.Text, nullable=False)  # Prerequisite Metadata
     cat_cid = db.Column(db.Integer, db.ForeignKey('category.cid'))
-    answers = db.relationship('Answer', backref='challenge', lazy='dynamic')
-    hints = db.relationship('Hint', backref='challenge', lazy='dynamic')
+    answers = db.relationship('Answer', backref='challenge', lazy='select')
+    hints = db.relationship('Hint', backref='challenge', lazy='joined')
     attachments = db.relationship('Attachment', backref='challenge',
-                                  lazy='dynamic')
+                                  lazy='joined')
 
     def __repr__(self):
         return '<Challenge: %d/%s>' % (self.cid, self.name)
@@ -280,7 +294,7 @@ class Challenge(db.Model):
 
     @property
     def solves(self):
-        return self.answers.count()
+        return len(self.answers)
 
     @property
     def answered(self):
@@ -339,7 +353,7 @@ class Challenge(db.Model):
         challenge.cat_cid = cid
         challenge.unlocked = unlocked
         weight = db.session.query(db.func.max(Challenge.weight)).scalar()
-        challenge.weight = weight + 1
+        challenge.weight = (weight + 1) if weight else 1
         challenge.prerequisite = ''
         db.session.add(challenge)
         return challenge
