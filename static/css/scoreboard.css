@@ -171,3 +171,39 @@ table.team-challenges {
 .oneline {
   white-space: nowrap;
 }
+
+/* Jeopardy grid */
+.jeopardy-container {
+  display: flex;
+  width: 100%;
+}
+
+.jeopardy-col {
+  flex-grow: 1;
+}
+
+.jeopardy-box {
+  height: 60px;
+  text-align: center;
+  background: #2444c1;
+  border-radius: 6px;
+  margin: 10px 8px;
+  position: relative;
+}
+
+.jeopardy-box p {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  position: absolute;
+}
+
+.jeopardy-cat {
+  font-weight: bolder;
+  background: #3e5edb;
+  font-size: 1.5em;
+}
+
+.jeopardy-chall {
+  font-size: 1.2em;
+}

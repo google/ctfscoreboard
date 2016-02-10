@@ -142,3 +142,28 @@ challengeCtrls.controller('ChallengeCtrl', [
         loadingService.stop();
       }
     }]);
+
+
+challengeCtrls.controller('ChallengeGridCtrl', [
+    '$scope',
+    '$location',
+    'categoryService',
+    'loadingService',
+    'sessionService',
+    function($scope, $location, categoryService, loadingService, sessionService) {
+      $scope.categories = {};
+      var refresh = function() {
+          categoryService.getList(function(data) {
+              $scope.categories = data.categories;
+          });
+      };
+
+      $scope.goChallenge = function(cat, chall) {
+        $location.url('/challenges/' + cat.slug + '#' + chall.cid);
+      };
+
+      sessionService.requireLogin(function() {
+        refresh();
+        loadingService.stop();
+      });
+  }]);

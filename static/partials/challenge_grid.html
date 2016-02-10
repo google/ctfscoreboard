@@ -1,0 +1,8 @@
+<div class='row jeopardy-container'>
+  <div class='jeopardy-col' ng-repeat='cat in categories'>
+    <div class='jeopardy-cat jeopardy-box'
+      ng-href='"/challenges/" + cat.slug'><p ng-bind='cat.name'></p></div>
+    <div class='jeopardy-chall jeopardy-box' ng-repeat='chall in cat.challenges'
+      ng-click='goChallenge(cat, chall)'><p ng-bind='chall.name'></p></div>
+  </div>
+</div>

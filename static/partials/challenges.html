@@ -3,7 +3,7 @@
   <div class='well' ng-bind-html='category.description|linky'></div>
   <div class='panel panel-primary'
     ng-repeat='chall in challenges|filter:filterUnlocked'>
-    <div class='panel-heading'>
+    <div class='panel-heading' id='{{chall.cid}}'>
       <h3 class='panel-title'>{{chall.name}}</h3>
       <span class='right points'>{{chall.points}}</span>
     </div>
@@ -54,11 +54,6 @@
 
 <span class='alert alert-info ng-hide' ng-show='!!category && !challenges.length'>There are no open challenges in this
   category.</span>
-
-<p ng-hide='!!category'>Choose a category to see challenges.</p>
-
-<!-- TODO: Category Grid -->
-
 
 <!-- Confirm modal div -->
 <div id='hint-modal' class='modal fade'>

@@ -57,9 +57,13 @@ scoreboardApp.config([
           templateUrl: '/partials/profile.html',
           controller: 'ProfileCtrl'
         }).
-        when('/challenges/:slug?', {
+        when('/challenges/:slug', {
           templateUrl: '/partials/challenges.html',
           controller: 'ChallengeCtrl'
+        }).
+        when('/challenges/', {
+          templateUrl: '/partials/challenge_grid.html',
+          controller: 'ChallengeGridCtrl'
         }).
         when('/scoreboard', {
           templateUrl: '/partials/scoreboard.html',
