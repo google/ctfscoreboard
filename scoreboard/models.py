@@ -43,7 +43,7 @@ class Team(db.Model):
     score = db.Column(db.Integer, default=0)  # Denormalized
     players = db.relationship(
         'User', backref=db.backref('team', lazy='joined'), lazy='dynamic')
-    answers = db.relationship('Answer', backref='team', lazy='dynamic')
+    answers = db.relationship('Answer', backref='team', lazy='select')
     score_history = db.relationship('ScoreHistory', backref='team')
 
     def __repr__(self):
@@ -58,7 +58,7 @@ class Team(db.Model):
 
     @property
     def solves(self):
-        return self.answers.count()
+        return len(self.answers)
 
     @classmethod
     def create(cls, name):
@@ -236,7 +236,22 @@ class Category(db.Model):
     def delete(self):
         db.session.delete(self)
 
-    def get_challenges(self, unlocked_only=True, sort=True):
+    def get_challenges(self, unlocked_only=True, sort=True, force_query=False):
+        if force_query or 'challenges' in sqlalchemy_base.inspect(self).unloaded:
+            return self._get_challenges_query(
+                    unlocked_only=unlocked_only, sort=sort)
+        return self._get_challenges_cached(
+                unlocked_only=unlocked_only, sort=sort)
+
+    def _get_challenges_cached(self, unlocked_only=True, sort=True):
+        challenges = self.challenges
+        if unlocked_only:
+            challenges = [c for c in challenges if c.unlocked]
+        if sort:
+            challenges = sorted(challenges, key=lambda c: c.weight)
+        return challenges
+
+    def _get_challenges_query(self, unlocked_only=True, sort=True):
         challenges = Challenge.query.filter(Challenge.category == self)
         if unlocked_only:
             unlocked_identity = True
