@@ -3,13 +3,8 @@ html,body,.full-height {
 }
 body {
   padding-top: 40px;
-  background-color: #2f343a;
-}
-.navbar-default {
-  background-color: #27326d;
 }
 .left-sidebar-background {
-  background-color: #cbcbcb;
   /* This is so hacky but necessary. */
   position: absolute;
   z-index: -1;
@@ -29,15 +24,6 @@ body {
 }
 .list-group {
   margin-top: 20px;
-}
-a.list-group-item {
-  background-color: #27326d;
-}
-a.list-group-item.active,
-a.list-group-item.active:hover,
-a.list-group-item.active:focus {
-  background-color: #8899b7;
-  border-color: #8899b7;
 }
 .right {
   float: right;
@@ -83,7 +69,6 @@ a.btn {
   margin-top: 0;
 }
 #news-box {
-    background-color: #4e5d6c;
     height: 150px;
     overflow: auto;
 }
@@ -100,9 +85,6 @@ a.btn {
 #news-box .news-item .byline {
     font-size: 80%;
 }
-input.form-control[readonly] {
-    background-color: #fff;
-}
 #countdown {
     float: right;
     /* Wish this didn't need to be hard coded. */
@@ -117,7 +99,6 @@ input.form-control[readonly] {
     right: 0;
     opacity: 0.4;
     z-index: 2000;
-    background-color: #000;
     display: none;
 }
 .cat-count {
@@ -202,7 +183,6 @@ table.team-challenges {
 
 .jeopardy-cat {
   font-weight: bolder;
-  background: #3e5edb;
   font-size: 1.8em;
   border-radius: 6px;
 }
@@ -231,7 +211,6 @@ table.team-challenges {
   backface-visibility: hidden;
   height: 100%;
   width: 100%;
-  background: #2444c1;
   border-radius: 6px;
 }
 
@@ -242,8 +221,4 @@ table.team-challenges {
 
 .jeopardy-chall .back {
   transform: rotateY(180deg);
-}
-
-.jeopardy-chall.solved .card {
-  background: #1c3596;
 }
