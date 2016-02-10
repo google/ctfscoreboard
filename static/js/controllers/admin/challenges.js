@@ -227,6 +227,7 @@ adminChallengeCtrls.controller('AdminChallengesCtrl', [
 
 adminChallengeCtrls.controller('AdminChallengeCtrl', [
     '$scope',
+    '$location',
     '$routeParams',
     'categoryService',
     'challengeService',
@@ -234,7 +235,7 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
     'sessionService',
     'uploadService',
     'loadingService',
-    function($scope, $routeParams, categoryService, challengeService,
+    function($scope, $location, $routeParams, categoryService, challengeService,
       errorService, sessionService, uploadService, loadingService) {
       if (!sessionService.requireAdmin()) return;
 
@@ -245,10 +246,14 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
       $scope.editing = false;  // New or editing?
 
       var goEdit = function() {
-          $scope.action = 'Edit';
-          $scope.answerPlaceholder = 'Enter answer; leave blank to ' +
-                'leave unchanged.';
-          $scope.editing = true;
+        $scope.action = 'Edit';
+        $scope.answerPlaceholder = 'Enter answer; leave blank to ' +
+          'leave unchanged.';
+        $scope.editing = true;
+        if (!$routeParams.cid) {
+          $location.path($location.path() + '/' + $scope.challenge.cid);
+          $scope.cid = $scope.challenge.cid;
+        }
       };
 
       $scope.saveChallenge = function() {
@@ -269,8 +274,8 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
           $scope.challenge,
           function(data) {
             $scope.challenge = data;
-            errorService.error('Saved.', 'success');
             goEdit();
+            errorService.error('Saved.', 'success');
           },
           function(data) {
             errorService.error(data);
