@@ -39,7 +39,7 @@ db = sqlalchemy.SQLAlchemy(app)
 class Team(db.Model):
     """A Team of Players (Team of 1 if not using Teams)."""
     tid = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), unique=True, nullable=False)
+    name = db.Column(db.String(120), unique=True, nullable=False, index=True)
     score = db.Column(db.Integer, default=0)  # Denormalized
     players = db.relationship(
         'User', backref=db.backref('team', lazy='joined'), lazy='dynamic')
@@ -66,6 +66,13 @@ class Team(db.Model):
         db.session.add(team)
         team.name = name
         return team
+
+    @classmethod
+    def get_by_name(cls, name):
+        try:
+            return cls.query.filter_by(name=name).one()
+        except exc.InvalidRequestError:
+            return None
 
     @classmethod
     def enumerate(cls, with_history=False):
@@ -95,8 +102,8 @@ class User(db.Model):
     """A single User for login.  Player or admin."""
 
     uid = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    nick = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    nick = db.Column(db.String(80), unique=True, nullable=False, index=True)
     pwhash = db.Column(db.String(48))  # pbkdf2.crypt == 48 bytes
     admin = db.Column(db.Boolean, default=False)
     team_tid = db.Column(db.Integer, db.ForeignKey('team.tid'))
@@ -149,6 +156,13 @@ class User(db.Model):
             return None
 
     @classmethod
+    def get_by_nick(cls, nick):
+        try:
+            return cls.query.filter_by(nick=nick).one()
+        except exc.InvalidRequestError:
+            return None
+
+    @classmethod
     def login_user(cls, email, password):
         try:
             user = cls.query.filter_by(email=email).one()
@@ -178,7 +192,7 @@ class Category(db.Model):
 
     cid = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
-    slug = db.Column(db.String(100), unique=True, nullable=False)
+    slug = db.Column(db.String(100), unique=True, nullable=False, index=True)
     description = db.Column(db.Text)
     unlocked = db.Column(db.Boolean, default=True)
     challenges = db.relationship(

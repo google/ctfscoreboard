@@ -40,6 +40,7 @@ def register_user(email, nick, password, team_id=None,
     if not re.match(r'[-0-9a-zA-Z.+_]+@[-0-9a-zA-Z.+_]+\.[a-zA-Z]+$',
                     email):
         raise errors.ValidationError('Invalid email address.')
+    # TODO: Sanitize other fields
     first = models.User.query.count() == 0
     if not first and app.config.get('TEAMS'):
         if team_id == 'new':
@@ -61,11 +62,19 @@ def register_user(email, nick, password, team_id=None,
         if not team and not first:
             team = models.Team.create(nick)
         user = models.User.create(email, nick, password, team=team)
+        models.commit()
     except exc.IntegrityError:
         models.db.session.rollback()
-        raise errors.ValidationError('Duplicate email/nick.')
+        if models.User.get_by_email(email):
+            raise errors.ValidationError('Duplicate email address.')
+        if models.User.get_by_nick(nick):
+            raise errors.ValidationError('Duplicate nick.')
+        if team_name and models.Team.get_by_name(team_name):
+            raise errors.ValidationError('Duplicate team name.')
+        raise errors.ValidationError('Unknown integrity error.')
     if not user.admin:
         models.ScoreHistory.add_entry(team)
+        models.commit()
     app.logger.info('User %s <%s> registered from IP %s.',
                     nick, email, flask.request.access_route[0])
     return user
