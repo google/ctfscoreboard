@@ -45,7 +45,7 @@ a.list-group-item.active:focus {
 .points {
   margin-top: -19px;
 }
-.solved {
+.challenge .solved {
   padding-top: 8px;
   padding-bottom: 8px;
   margin-top: 10px;
@@ -178,15 +178,17 @@ table.team-challenges {
   width: 100%;
 }
 
+.row.jeopardy-container {
+  margin: 0;
+}
+
 .jeopardy-col {
   flex-grow: 1;
 }
 
 .jeopardy-box {
-  height: 60px;
+  height: 80px;
   text-align: center;
-  background: #2444c1;
-  border-radius: 6px;
   margin: 10px 8px;
   position: relative;
 }
@@ -201,9 +203,47 @@ table.team-challenges {
 .jeopardy-cat {
   font-weight: bolder;
   background: #3e5edb;
-  font-size: 1.5em;
+  font-size: 1.8em;
+  border-radius: 6px;
 }
 
 .jeopardy-chall {
-  font-size: 1.2em;
+  font-size: 1.4em;
+  perspective: 1000;
+}
+
+.jeopardy-chall:hover .flipper,
+.jeopardy-chall.hover .flipper {
+  transform: rotateY(180deg);
+}
+
+.flipper {
+  transition: 0.8s;
+  transform-style: preserve-3d;
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+.jeopardy-chall .front,
+.jeopardy-chall .back {
+  position: absolute;
+  backface-visibility: hidden;
+  height: 100%;
+  width: 100%;
+  background: #2444c1;
+  border-radius: 6px;
+}
+
+.jeopardy-chall .front {
+  z-index: 2;
+  transform: rotateY(0deg);
+}
+
+.jeopardy-chall .back {
+  transform: rotateY(180deg);
+}
+
+.jeopardy-chall.solved .card {
+  background: #1c3596;
 }

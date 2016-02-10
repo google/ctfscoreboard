@@ -1,7 +1,7 @@
 <div class='ng-hide' ng-show='!!category'>
   <h2>{{category.name}}</h2>
   <div class='well' ng-bind-html='category.description|linky'></div>
-  <div class='panel panel-primary'
+  <div class='panel panel-primary challenge'
     ng-repeat='chall in challenges|filter:filterUnlocked'>
     <div class='panel-heading' id='{{chall.cid}}'>
       <h3 class='panel-title'>{{chall.name}}</h3>

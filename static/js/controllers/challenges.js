@@ -162,6 +162,13 @@ challengeCtrls.controller('ChallengeGridCtrl', [
         $location.url('/challenges/' + cat.slug + '#' + chall.cid);
       };
 
+      $scope.flipSide = function(chall) {
+        if (chall.answered)
+          return "Solved!";
+        else
+          return chall.points + " points";
+      };
+
       sessionService.requireLogin(function() {
         refresh();
         loadingService.stop();
