@@ -22,7 +22,7 @@ adminServices.service('adminStateService', [
       this.cid = null;
 
       this.saveCategory = function(cat) {
-        this.cid = cat.cid || cat;
+        this.cid = (cat && cat.cid) || cat;
       };
 
       this.getCategory = function() {
