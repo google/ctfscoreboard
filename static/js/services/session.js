@@ -39,11 +39,13 @@ sessionServices.service('sessionService', [
           }), errorCallback || function() {});
       };
 
-      this.logout = function() {
-        this.sessionData.remove();
+      this.logout = function(callback) {
+        this.sessionData.remove(function() {
+          $rootScope.$broadcast('sessionLogout');
+          callback();
+        });
         this.session.user = null;
         this.session.team = null;
-        $rootScope.$broadcast('sessionLogout');
       };
 
       this.refresh = function(successCallback, errorCallback) {

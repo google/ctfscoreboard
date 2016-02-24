@@ -24,20 +24,17 @@ var regCtrls = angular.module('regCtrls', [
 regCtrls.controller('LoginCtrl', [
     '$scope',
     '$location',
-    '$timeout',
     '$window',
     'errorService',
     'sessionService',
     'passwordResetService',
     'loadingService',
-    function($scope, $location, $timeout, $window, errorService, sessionService,
+    function($scope, $location, $window, errorService, sessionService,
         passwordResetService, loadingService) {
       if ($location.path().indexOf('/logout') == 0) {
-        sessionService.logout();
-        // Delay to ensure cookie saved
-        $timeout(function() {
+        sessionService.logout(function() {
           $window.location.href = '/';
-        }, 10);
+        });
         return;
       }
       $scope.email = '';
