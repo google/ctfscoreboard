@@ -15,7 +15,8 @@
  */
 
 var sbDirectives = angular.module('sbDirectives', [
-        'globalServices'
+        'globalServices',
+        'ngSanitize'
         ]);
 
 sbDirectives.directive('highlightActive', [
@@ -114,7 +115,8 @@ sbDirectives.directive('loadingOverlay', [
  * {"label": [{time: datestring, score: value}...], ...}
  */
 sbDirectives.directive('scoreChart', [
-    function() {
+    '$sanitize',
+    function($sanitize) {
       return {
         restrict: 'AE',
         replace: false,
@@ -155,7 +157,7 @@ sbDirectives.directive('scoreChart', [
             angular.forEach(scope.chartData, function(series, label) {
               var color = colorScheme[datasets.length % colorScheme.length];
               var set = {
-                label: label,
+                label: $sanitize(label),
                 strokeColor: color,
                 data: []
               };
@@ -220,7 +222,8 @@ sbDirectives.directive('scoreChart', [
  * {category: value}
  */
 sbDirectives.directive('donutChart', [
-    function() {
+    '$sanitize',
+    function($sanitize) {
       return {
         restrict: 'AE',
         replace: false,
@@ -281,7 +284,7 @@ sbDirectives.directive('donutChart', [
                 value: value,
                 color: colors[0],
                 highlight: colors[1],
-                label: key
+                label: $sanitize(key)
               });
             });
 
