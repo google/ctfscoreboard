@@ -115,8 +115,8 @@ sbDirectives.directive('loadingOverlay', [
  * {"label": [{time: datestring, score: value}...], ...}
  */
 sbDirectives.directive('scoreChart', [
-    '$sanitize',
-    function($sanitize) {
+    '$filter',
+    function($filter) {
       return {
         restrict: 'AE',
         replace: false,
@@ -157,7 +157,7 @@ sbDirectives.directive('scoreChart', [
             angular.forEach(scope.chartData, function(series, label) {
               var color = colorScheme[datasets.length % colorScheme.length];
               var set = {
-                label: $sanitize(label),
+                label: $filter('escapeHtml')(label),
                 strokeColor: color,
                 data: []
               };
@@ -222,8 +222,8 @@ sbDirectives.directive('scoreChart', [
  * {category: value}
  */
 sbDirectives.directive('donutChart', [
-    '$sanitize',
-    function($sanitize) {
+    '$filter',
+    function($filter) {
       return {
         restrict: 'AE',
         replace: false,
@@ -284,7 +284,7 @@ sbDirectives.directive('donutChart', [
                 value: value,
                 color: colors[0],
                 highlight: colors[1],
-                label: $sanitize(key)
+                label: $filter('escapeHtml')(key)
               });
             });
 

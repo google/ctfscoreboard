@@ -45,3 +45,10 @@ sbFilters.filter('padint',
             return n;
         };
     });
+
+sbFilters.filter('escapeHtml', [
+    function() {
+      return function(input) {
+        return $("<div/>").text(input).html();
+      };
+    }]);
