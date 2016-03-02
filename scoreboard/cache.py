@@ -29,21 +29,55 @@ class CacheWrapper(object):
 global_cache = CacheWrapper(app)
 
 
+def rest_cache(f, cache_key=None):
+    """Mark a function for global caching."""
+    @functools.wraps(f)
+    def wrapped(*args, **kwargs):
+        if not cache_key:
+            try:
+                cache_key = '%s/%s' % (
+                        f.im_class.__name__, f.__name__)
+            except AttributeError:
+                cache_key = f.__name__
+        return _rest_cache_caller(f, cache_key, *args, **kwargs)
+    return wrapped
+
+
 def rest_team_cache(f, name=None):
     """Mark a function for per-team caching."""
     @functools.wraps(f)
     def wrapped(*args, **kwargs):
         cache_key = None
         if flask.g.team:
-            try:
-                cache_key = '%s/%s/%s' % (
-                        f.im_class.__name__, f.__name__, flask.g.team.tid)
-            except AttributeError:
-                cache_key = '%s/%s' % (
-                        f.__name__, flask.g.team.tid)
+            if name:
+                cache_key = name % (flask.g.team.tid)
+            else:
+                try:
+                    cache_key = '%s/%s/%s' % (
+                            f.im_class.__name__, f.__name__, flask.g.team.tid)
+                except AttributeError:
+                    cache_key = '%s/%s' % (
+                            f.__name__, flask.g.team.tid)
             return _rest_cache_caller(f, cache_key, *args, **kwargs)
         return f(*args, **kwargs)
     return wrapped
+
+
+def delete(key):
+    """Delete cache entry."""
+    global_cache.delete(key)
+
+
+def clear():
+    """Flush global cache."""
+    global_cache.clear()
+
+
+def delete_team(base_key):
+    """Delete team-based cache entry."""
+    if not flask.g.team:
+        return
+    global_cache.delete(base_key % flask.g.team.tid)
 
 
 def _rest_cache_caller(f, cache_key, *args, **kwargs):

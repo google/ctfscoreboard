@@ -207,7 +207,7 @@ class Team(restful.Resource):
     resource_fields['score_history'] = fields.Nested(history_fields)
     resource_fields['solved_challenges'] = fields.Nested(solved_challenges)
 
-    @cache.rest_team_cache
+    @cache.rest_team_cache('team/%d')
     @restful.marshal_with(resource_fields)
     def get(self, team_id):
         team = models.Team.query.get_or_404(team_id)
@@ -250,6 +250,7 @@ class Team(restful.Resource):
         for field in ('name', 'score'):
             setattr(team, field, data.get(field, getattr(team, field)))
         models.commit()
+        cache.delete_team('team/%d')
         return self._marshal_team(team)
 
 
@@ -393,12 +394,14 @@ class Challenge(restful.Resource):
             models.News.game_broadcast(message=news)
 
         models.commit()
+        cache.clear()
         return challenge
 
     def delete(self, challenge_id):
         challenge = models.Challenge.query.get_or_404(challenge_id)
         models.db.session.delete(challenge)
         models.commit()
+        cache.clear()
 
 
 class ChallengeList(restful.Resource):
@@ -456,7 +459,6 @@ class Category(restful.Resource):
     resource_fields = category_fields.copy()
     resource_fields['challenges'] = fields.Nested(Challenge.resource_fields)
 
-    @cache.rest_team_cache
     @restful.marshal_with(resource_fields)
     def get(self, category_id):
         category = models.Category.query.get_or_404(category_id)
@@ -469,6 +471,7 @@ class Category(restful.Resource):
         category.name = get_field('name')
         category.description = get_field('description', '')
         models.commit()
+        cache.clear()
         return self.get_challenges(category)
 
     @classmethod
@@ -498,6 +501,7 @@ class Category(restful.Resource):
     def delete(self, category_id):
         category = models.Category.query.get_or_404(category_id)
         models.db.session.delete(category)
+        cache.clear()
         models.commit()
 
 
@@ -510,7 +514,7 @@ class CategoryList(restful.Resource):
         'categories': fields.Nested(Category.resource_fields)
     }
 
-    @cache.rest_team_cache
+    @cache.rest_team_cache('cats/%d')
     @restful.marshal_with(resource_fields)
     def get(self):
         q = models.Category.joined_query()
@@ -524,6 +528,7 @@ class CategoryList(restful.Resource):
             get_field('name'),
             get_field('description', ''))
         models.commit()
+        cache.clear()
         return cat
 
 
@@ -545,6 +550,7 @@ class Hint(restful.Resource):
         data = flask.request.get_json()
         hint = controllers.unlock_hint(data['hid'])
         models.commit()
+        cache.delete_team('cats/%d')
         return hint
 
 
@@ -559,6 +565,8 @@ class Answer(restful.Resource):
         data = flask.request.get_json()
         points = controllers.submit_answer(data['cid'], data['answer'])
         models.commit()
+        cache.delete_team('cats/%d')
+        cache.delete('scoreboard')
         return dict(points=points)
 
 api.add_resource(Category, '/api/categories/<int:category_id>')
@@ -583,7 +591,7 @@ class APIScoreboard(restful.Resource):
         'scoreboard': fields.Nested(line_fields),
     }
 
-    @cache.rest_team_cache
+    @cache.rest_cache('scoreboard')
     @restful.marshal_with(resource_fields)
     def get(self):
         return dict(scoreboard=[
@@ -796,6 +804,7 @@ class BackupRestore(restful.Resource):
                     models.db.session.add(attachment)
 
         models.commit()
+        cache.clear()
         return {'message': '%d Categories and %d Challenges imported.' %
                 (len(cats), challs)}
 
