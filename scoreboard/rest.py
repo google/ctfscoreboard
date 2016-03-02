@@ -24,6 +24,7 @@ import pytz
 from scoreboard.app import app
 from scoreboard import attachments
 from scoreboard import auth
+from scoreboard import cache
 from scoreboard import controllers
 from scoreboard import context
 from scoreboard import csrfutil
@@ -150,8 +151,8 @@ class User(restful.Resource):
             models.commit()
         except AssertionError:
             if promoting:
-                raise errors.ValidationError('Error promoting. '
-                        'Has player solved challenges?')
+                raise errors.ValidationError(
+                        'Error promoting. Has player solved challenges?')
             raise
         return user
 
@@ -206,6 +207,7 @@ class Team(restful.Resource):
     resource_fields['score_history'] = fields.Nested(history_fields)
     resource_fields['solved_challenges'] = fields.Nested(solved_challenges)
 
+    @cache.rest_team_cache
     @restful.marshal_with(resource_fields)
     def get(self, team_id):
         team = models.Team.query.get_or_404(team_id)
@@ -454,6 +456,7 @@ class Category(restful.Resource):
     resource_fields = category_fields.copy()
     resource_fields['challenges'] = fields.Nested(Challenge.resource_fields)
 
+    @cache.rest_team_cache
     @restful.marshal_with(resource_fields)
     def get(self, category_id):
         category = models.Category.query.get_or_404(category_id)
@@ -507,6 +510,7 @@ class CategoryList(restful.Resource):
         'categories': fields.Nested(Category.resource_fields)
     }
 
+    @cache.rest_team_cache
     @restful.marshal_with(resource_fields)
     def get(self):
         q = models.Category.joined_query()
@@ -579,6 +583,7 @@ class APIScoreboard(restful.Resource):
         'scoreboard': fields.Nested(line_fields),
     }
 
+    @cache.rest_team_cache
     @restful.marshal_with(resource_fields)
     def get(self):
         return dict(scoreboard=[
