@@ -31,11 +31,13 @@ global_cache = CacheWrapper(app)
 
 def rest_cache(f_or_key):
     """Mark a function for global caching."""
-    cache_key = None
+    override_cache_key = None
     def wrap_func(f):
         @functools.wraps(f)
         def wrapped(*args, **kwargs):
-            if not cache_key:
+            if override_cache_key:
+                cache_key = override_cache_key
+            else:
                 try:
                     cache_key = '%s/%s' % (
                             f.im_class.__name__, f.__name__)
@@ -44,20 +46,20 @@ def rest_cache(f_or_key):
             return _rest_cache_caller(f, cache_key, *args, **kwargs)
         return wrapped
     if isinstance(f_or_key, basestring):
-        cache_key = f_or_key
+        override_cache_key = f_or_key
         return wrap_func
     return wrap_func(f_or_key)
 
 
 def rest_team_cache(f_or_key):
     """Mark a function for per-team caching."""
-    cache_key = None
+    override_cache_key = None
     def wrap_func(f):
         @functools.wraps(f)
         def wrapped(*args, **kwargs):
             if flask.g.team:
-                if cache_key:
-                    cache_key = cache_key % (flask.g.team.tid)
+                if override_cache_key:
+                    cache_key = override_cache_key % (flask.g.team.tid)
                 else:
                     try:
                         cache_key = '%s/%s/%s' % (
@@ -69,7 +71,7 @@ def rest_team_cache(f_or_key):
             return f(*args, **kwargs)
         return wrapped
     if isinstance(f_or_key, basestring):
-        cache_key = f_or_key
+        override_cache_key = f_or_key
         return wrap_func
     return wrap_func(f_or_key)
 
