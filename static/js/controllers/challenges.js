@@ -49,17 +49,15 @@ challengeCtrls.controller('CategoryMenuCtrl', [
         $scope.$on('correctAnswer', updateCategories);
     }]);
 
-challengeCtrls.controller('ChallengeCtrl', [
+challengeCtrls.controller('CategoryCtrl', [
     '$scope',
-    '$resource',
     '$routeParams',
-    'answerService',
     'categoryService',
     'errorService',
     'sessionService',
     'loadingService',
-    function($scope, $resource, $routeParams, answerService,
-      categoryService, errorService, sessionService, loadingService) {
+    function($scope, $routeParams, categoryService, errorService, sessionService,
+      loadingService) {
       errorService.clearErrors();
 
       var refresh = function(cid) {
@@ -78,49 +76,6 @@ challengeCtrls.controller('ChallengeCtrl', [
 
       var slug = $routeParams.slug;
       if (slug) {
-        $scope.submitChallenge = function(chall) {
-          loadingService.start();
-          errorService.clearErrors();
-          answerService.create({cid: chall.cid, answer: chall.answer},
-            function(resp) {
-              chall.answered = true;
-              errorService.error(
-                'Congratulations, ' + resp.points + ' points awarded!',
-                'success');
-              refresh($scope.cid);
-            },
-            function(resp) {
-              errorService.error(resp);
-              loadingService.stop();
-            });
-        };
-
-        $scope.invalidForm = function(idx) {
-            var form = $(document.getElementsByName('submitForm['+idx+']'));
-            return form.hasClass('ng-invalid');
-        };
-
-        $scope.unlockHintDialog = function(hint) {
-          errorService.clearErrors();
-          $scope.hint = hint;
-          $('#hint-modal').modal('show');
-        };
-
-        $scope.unlockHint = function(hint) {
-          $resource('/api/unlock_hint').save({hid: hint.hid},
-              function(data) {
-                hint.hint = data.hint;
-                errorService.error(
-                  'Unlocked hint for ' + hint.cost + ' points.',
-                  'success');
-                $('#hint-modal').modal('hide');
-              },
-              function(data) {
-                errorService.error(data);
-                $('#hint-modal').modal('hide');
-              });
-        };
-
         // Load challenges
         sessionService.requireLogin(function() {
           var found = false;
@@ -152,14 +107,16 @@ challengeCtrls.controller('ChallengeGridCtrl', [
     'sessionService',
     function($scope, $location, categoryService, loadingService, sessionService) {
       $scope.categories = {};
+      $scope.currChall = null;
       var refresh = function() {
           categoryService.getList(function(data) {
               $scope.categories = data.categories;
           });
       };
 
-      $scope.goChallenge = function(cat, chall) {
-        $location.url('/challenges/' + cat.slug + '#' + chall.cid);
+      $scope.goChallenge = function(chall) {
+        $scope.currChall = chall;
+        $('#challenge-modal').modal('show');
       };
 
       $scope.flipSide = function(chall) {

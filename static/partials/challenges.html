@@ -1,55 +1,9 @@
 <div class='ng-hide' ng-show='!!category'>
   <h2>{{category.name}}</h2>
   <div class='well' ng-bind-html='category.description|linky'></div>
-  <div class='panel panel-primary challenge'
-    ng-repeat='chall in challenges|filter:filterUnlocked'>
-    <div class='panel-heading' id='{{chall.cid}}'>
-      <h3 class='panel-title'>{{chall.name}}</h3>
-      <span class='right points'>{{chall.points}}</span>
-    </div>
-    <div class='panel-body' ng-hide='chall.teaser'>
-      <p ng-bind-html='chall.description|markdown' class='markdown'></p>
-      <ul ng-show='chall.attachments' class='attachments'>
-        <li ng-repeat='attachment in chall.attachments'>
-          <a href='/attachment/{{attachment.aid}}' target='_self'>{{attachment.filename}}</a>
-        </li>
-      </ul>
-      <div ng-hide='isAdmin()'>
-        <!-- if solved -->
-        <span class='alert alert-success solved ng-hide'
-          ng-show='chall.answered'>Solved</span>
-        <!-- if hints -->
-        <div class='hints' ng-show='!!chall.hints.length && !chall.answered'>
-          <ul>
-            <li ng-repeat='hint in chall.hints' ng-show='!!hint.hint'>{{hint.hint}}</li>
-          </ul>
-          <ul class='list-inline'>
-            <li><a class='btn btn-info ng-hide'
-              ng-show='!hint.hint'
-              ng-repeat='hint in chall.hints'
-              ng-click='unlockHintDialog(hint)'>Hint {{$index + 1}}</a></li>
-          </ul>
-        </div> <!-- end hints -->
-        <!-- if not solved -->
-        <div ng-hide='chall.answered'>
-            <form ng-submit='submitChallenge(chall)' name='submitForm[{{$index}}]'>
-            <input type='hidden' name='cid' value='{{chall.cid}}'>
-            <div class='form-group'>
-              <label for='answer-{{chall.cid}}'>Answer</label>
-              <input name='answer' class='form-control'
-                id='answer-{{chall.cid}}' ng-model='chall.answer'
-                required>
-            </div>
-            <input type='submit' value='Submit' class='btn btn-primary'
-              ng-disabled='invalidForm($index)'>
-          </form>
-        </div> <!-- end submission -->
-      </div> <!-- admin hide -->
-    </div> <!-- panel body -->
-    <div class='panel-body' ng-show='chall.teaser'>
-      Prerequisites not met.
-    </div>
-  </div> <!-- repeat panel -->
+  <div ng-repeat='chall in challenges|filter:filterUnlocked'>
+    <div challenge-box challenge="chall" />
+  </div> <!-- repeat outer -->
 </div><!-- category -->
 
 <span class='alert alert-info ng-hide' ng-show='!!category && !challenges.length'>There are no open challenges in this

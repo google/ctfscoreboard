@@ -59,7 +59,7 @@ scoreboardApp.config([
         }).
         when('/challenges/:slug', {
           templateUrl: '/partials/challenges.html',
-          controller: 'ChallengeCtrl'
+          controller: 'CategoryCtrl'
         }).
         when('/challenges/', {
           templateUrl: '/partials/challenge_grid.html',

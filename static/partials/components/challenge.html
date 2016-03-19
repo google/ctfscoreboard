@@ -1,0 +1,79 @@
+<div class='panel panel-primary challenge'>
+  <div class='panel-heading' id='{{chall.cid}}'>
+    <h3 class='panel-title'>{{chall.name}}</h3>
+    <span class='right'>
+      <span class='points'>{{chall.points}}</span>
+      <span class='btn btn-sm' data-dismiss='modal' ng-show='isModal'>&times;</span>
+    </span>
+  </div>
+  <div class='panel-body' ng-hide='chall.teaser'>
+    <p ng-bind-html='chall.description|markdown' class='markdown'></p>
+    <ul ng-show='chall.attachments' class='attachments'>
+      <li ng-repeat='attachment in chall.attachments'>
+        <a href='/attachment/{{attachment.aid}}' target='_self'>{{attachment.filename}}</a>
+      </li>
+    </ul>
+    <div ng-hide='isAdmin()'>
+      <!-- if solved -->
+      <span class='alert alert-success solved ng-hide'
+        ng-show='chall.answered'>Solved</span>
+      <!-- if hints -->
+      <div class='hints' ng-show='!!chall.hints.length && !chall.answered'>
+        <ul>
+          <li ng-repeat='hint in chall.hints' ng-show='!!hint.hint'>{{hint.hint}}</li>
+        </ul>
+        <ul class='list-inline'>
+          <li><a class='btn btn-info ng-hide'
+            ng-show='!hint.hint'
+            ng-repeat='hint in chall.hints'
+            ng-click='unlockHintDialog(hint)'>Hint {{$index + 1}}</a></li>
+        </ul>
+        <div ng-show='hint && isModal' class='unlock-hint well'>
+          <p>Unlocking this hint will reduce the point value by {{hint.cost}}.</p>
+          <button type='button' class='btn btn-default'
+            ng-click='cancelUnlockHint()'>Cancel</button>
+          <button type='button' class='btn btn-primary'
+            ng-click='unlockHint(hint)'>Unlock Hint</button>
+        </div>
+      </div> <!-- end hints -->
+      <!-- if not solved -->
+      <div ng-hide='chall.answered'>
+        <form ng-submit='submitChallenge()' class='submitForm'>
+          <input type='hidden' name='cid' value='{{chall.cid}}'>
+          <div class='form-group'>
+            <label for='answer-{{chall.cid}}'>Answer</label>
+            <input name='answer' class='form-control'
+              id='answer-{{chall.cid}}' ng-model='chall.answer'
+              required>
+          </div>
+          <input type='submit' value='Submit' class='btn btn-primary'
+            ng-disabled='invalidForm()'>
+        </form>
+      </div> <!-- end submission -->
+    </div> <!-- admin hide -->
+  </div> <!-- panel body -->
+  <div class='panel-body' ng-show='chall.teaser'>
+    Prerequisites not met.
+  </div>
+</div> <!-- panel container -->
+
+<!-- Confirm modal div -->
+<div class='hint-modal modal fade'>
+  <div class='modal-dialog'>
+    <div class='modal-content'>
+      <div class='modal-header'>
+        <button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>
+        <h4 class='modal-title'>Unlock Hint?</h4>
+      </div>
+      <div class='modal-body'>
+        <p>Unlocking this hint will reduce the point value by {{hint.cost}}.</p>
+      </div>
+      <div class='modal-footer'>
+        <button type='button' class='btn btn-default'
+          data-dismiss='modal'>Cancel</button>
+        <button type='button' class='btn btn-primary'
+          ng-click='unlockHint(hint)'>Unlock Hint</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -4,10 +4,18 @@
     <div class='jeopardy-cat jeopardy-box'
       ng-href='"/challenges/" + cat.slug'><p ng-bind='cat.name'></p></div>
     <div class='jeopardy-chall jeopardy-box' ng-repeat='chall in cat.challenges'
-      ng-click='goChallenge(cat, chall)' ng-class='{solved: chall.answered}'
+      ng-click='goChallenge(chall)' ng-class='{solved: chall.answered}'
       ><div class='flipper'>
         <div class='card front'><p ng-bind='chall.name'></p></div>
         <div class='card back'><p ng-bind='flipSide(chall)'></p></div>
       </div>
+  </div>
+</div>
+
+<div class='challenge-modal modal fade' id='challenge-modal'>
+  <div class='modal-dialog'>
+    <div class='modal-content'>
+      <div challenge-box challenge='currChall' />
+    </div>
   </div>
 </div>

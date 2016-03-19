@@ -28,8 +28,11 @@ body {
 .right {
   float: right;
 }
-.points {
-  margin-top: -19px;
+.panel-heading .right {
+  margin-top: -2em;
+}
+.panel-heading .btn {
+  font-size: 150%;
 }
 .challenge .solved {
   padding-top: 8px;
