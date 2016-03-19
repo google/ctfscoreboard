@@ -91,7 +91,8 @@ def output_json(data, code, headers=None):
         settings['sort_keys'] = True
 
     dumped = json.dumps(data, **settings)
-    dumped = ")]}',\n" + dumped + "\n"
+    if not (headers and headers.pop('X-No-XSSI', None)):
+        dumped = ")]}',\n" + dumped + "\n"
 
     resp = flask.make_response(dumped, code)
     resp.headers.extend(headers or {})
@@ -809,3 +810,19 @@ class BackupRestore(restful.Resource):
                 (len(cats), challs)}
 
 api.add_resource(BackupRestore, '/api/backup')
+
+
+class CTFTimeScoreFeed(restful.Resource):
+    """Provide a JSON feed to CTFTime.
+
+    At this time, it is only intended to cover the manditory fields in the
+    feed: https://ctftime.org/json-scoreboard-feed
+    """
+    
+    def get(self):
+        standings = [{'pos': i, 'team': v.name, 'score': v.score}
+                for i, v in models.Team.enumerate()]
+        data = {'standings': standings} 
+        return data, 200, {'X-No-XSSI': 1}
+
+api.add_resource(CTFTimeScoreFeed, '/api/ctftime/scoreboard')
