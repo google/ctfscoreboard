@@ -25,5 +25,9 @@ modules_for_views = (rest, views)
 if __name__ == '__main__':
     if 'createdb' in sys.argv:
         models.db.create_all()
+    elif 'createdata' in sys.argv:
+        from scoreboard.tests import data
+        models.db.create_all()
+        data.create_all()
     else:
         app.run(host='0.0.0.0', debug=True, port=app.config.get('PORT', 9999))
