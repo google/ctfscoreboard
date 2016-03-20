@@ -746,6 +746,7 @@ class BackupRestore(restful.Resource):
                         'content_type': a.content_type,
                     })
                 challenges.append({
+                    'cid': q.cid,
                     'category': cat.cid,
                     'name': q.name,
                     'description': q.description,
@@ -753,6 +754,7 @@ class BackupRestore(restful.Resource):
                     'answer_hash': q.answer_hash,
                     'hints': hints,
                     'attachments': attachments,
+                    'prerequisite': q.prerequisite,
                 })
             categories[cat.cid] = {
                 'name': cat.name,
@@ -787,8 +789,8 @@ class BackupRestore(restful.Resource):
 
             for challenge in cat['challenges']:
                 newchall = models.Challenge()
-                for f in ('name', 'description', 'points', 'answer_hash'):
-                    setattr(newchall, f, challenge[f])
+                for f in ('cid', 'name', 'description', 'points', 'answer_hash', 'prerequisite'):
+                    setattr(newchall, f, challenge.get(f, None))
                 newchall.category = newcat
                 models.db.session.add(newchall)
                 challs += 1
