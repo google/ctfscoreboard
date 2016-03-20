@@ -269,8 +269,8 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
         errorService.clearErrors();
         // TODO: Check attachments
 
-        if ($scope.challenge.prerequisite == null || $scope.challenge.prerequisite.type == 'None') {
-          delete $scope.challenge.prerequisite;
+        if ($scope.challenge.prerequisite.type == 'None') {
+          $scope.challenge.prerequisite = null;
         };
 
         var save_func;
@@ -364,6 +364,7 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
             function(data) {
                 $scope.challenge = data;
                 goEdit();
+                $scope.updatePrerequisite();
                 loadingService.stop();
             },
             function(data) {
