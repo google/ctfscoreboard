@@ -430,6 +430,9 @@ class Challenge(db.Model):
                 a.delete()
 
     def set_prerequisite(self, prerequisite):
+        if not prerequisite:
+            self.prerequisite = ''
+            return
         if 'type' in prerequisite and prerequisite['type'] == 'None':
             self.prerequisite = ''
         else:

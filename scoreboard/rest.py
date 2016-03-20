@@ -390,6 +390,8 @@ class Challenge(restful.Resource):
             challenge.set_attachments(data['attachments'])
         if 'prerequisite' in data:
             challenge.set_prerequisite(data['prerequisite'])
+        else:
+            challenge.prerequisite = ''
         if challenge.unlocked and not old_unlocked:
             news = 'Challenge "%s" unlocked!' % challenge.name
             models.News.game_broadcast(message=news)
