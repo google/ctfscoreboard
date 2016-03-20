@@ -323,27 +323,34 @@ sbDirectives.directive('challengeBox', [
           chall: '=challenge'
         },
         link: function(scope, iElement, iAttrs) {
-          var chall = scope.chall;
           var hintModal = angular.element(iElement[0].querySelector('.hint-modal'));
           var isModal = iElement.parents('.modal').length > 0;
 
           scope.isModal = isModal;
 
+          var closeModal = function() {
+            if (!isModal)
+              return;
+            iElement.parents('.modal').modal('hide');
+          };
+
           // Setup submit handler
           scope.submitChallenge = function() {
             loadingService.start();
             errorService.clearErrors();
-            answerService.create({cid: chall.cid, answer: chall.answer},
+            answerService.create({cid: scope.chall.cid, answer: scope.chall.answer},
                 function(resp) {
-                  chall.answered = true;
+                  scope.chall.answered = true;
                   errorService.error(
                       'Congratulations, ' + resp.points + ' points awarded!',
                       'success');
                   loadingService.stop();
+                  closeModal();
                 },
                 function(resp){
                   errorService.error(resp);
                   loadingService.stop();
+                  closeModal();
                 });
           };
 
