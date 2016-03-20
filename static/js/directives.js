@@ -385,12 +385,6 @@ sbDirectives.directive('challengeBox', [
 									scope.hint = null;
 								});
 					};
-
-					scope.invalidForm = function(idx) {
-						var form = angular.element(iElement[0].querySelector('.submitForm'));
-						return form.hasClass('ng-invalid');
-					};
- 
-        }
+        } // Link function
       }
     }]);

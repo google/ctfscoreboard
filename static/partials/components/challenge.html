@@ -38,7 +38,7 @@
       </div> <!-- end hints -->
       <!-- if not solved -->
       <div ng-hide='chall.answered'>
-        <form ng-submit='submitChallenge()' class='submitForm'>
+        <form name='challengeForm' ng-submit='submitChallenge()' class='submitForm'>
           <input type='hidden' name='cid' value='{{chall.cid}}'>
           <div class='form-group'>
             <label for='answer-{{chall.cid}}'>Answer</label>
@@ -47,7 +47,7 @@
               required>
           </div>
           <input type='submit' value='Submit' class='btn btn-primary'
-            ng-disabled='invalidForm()'>
+            ng-disabled='challengeForm.$invalid'>
         </form>
       </div> <!-- end submission -->
     </div> <!-- admin hide -->
