@@ -43,8 +43,10 @@ class Team(db.Model):
     score = db.Column(db.Integer, default=0)  # Denormalized
     players = db.relationship(
         'User', backref=db.backref('team', lazy='joined'), lazy='dynamic')
-    answers = db.relationship('Answer', backref='team', lazy='select')
-    score_history = db.relationship('ScoreHistory', backref='team')
+    answers = db.relationship('Answer', backref='team', lazy='select',
+            cascade='delete')
+    score_history = db.relationship('ScoreHistory', backref='team',
+            cascade='delete')
 
     def __repr__(self):
         return '<Team: %s>' % self.name
