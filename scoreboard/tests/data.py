@@ -112,3 +112,4 @@ def create_all():
 
     # Submitted answers
     make_answers(teams, challs)
+    models.commit()
