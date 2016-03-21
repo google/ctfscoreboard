@@ -45,6 +45,8 @@ def register(flask_request):
     data = flask_request.get_json()
     user = controllers.register_user(gae_user.email(), data['nick'], '',
             data.get('team_id'), data.get('team_name'), data.get('team_code'))
+    if users.is_current_user_admin():
+        user.promote()
     return user
 
 
