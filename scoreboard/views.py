@@ -81,5 +81,9 @@ def createdb():
     Should be safe to be exposed, as operation is idempotent and does not
     clear any data.
     """
-    models.db.create_all()
-    return 'Tables created.'
+    try:
+        models.db.create_all()
+        return 'Tables created.'
+    except Exception as ex:
+        app.logger.exception('Failed creating tables: %s', str(ex))
+        return 'Failed creating tables: see log.'
