@@ -41,7 +41,9 @@ globalServices.service('errorService',
 
       this.error = function(msg, severity) {
         severity = severity || 'danger';
-        msg = (msg.data && msg.data.message) || msg.message || msg.data || msg;
+        if (typeof msg == "object") {
+          msg = (msg.data && msg.data.message) || msg.message || "Request Error";
+        }
         this.errors.push({severity: severity, msg: msg});
       };
 
