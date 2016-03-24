@@ -4,7 +4,6 @@
 import flask
 
 from google.appengine.api import users
-from google.appengine.api import logging
 
 from scoreboard.app import app
 from scoreboard import controllers
@@ -53,10 +52,10 @@ def gae_login_handler():
     user = login_user(None)
     gae_user = users.get_current_user()
     if gae_user and not user:
-        logging.error('No user found for user %s' % gae_user.email())
+        app.logger.error('No user found for user %s' % gae_user.email())
         return flask.redirect('/register')
     elif not user:
-        logging.error('No user found and not logged in.')
+        app.logger.error('No user found and not logged in.')
         return flask.redirect(get_register_uri())
     flask.session['user'] = user.uid
     return flask.redirect('/')
