@@ -17,7 +17,7 @@ def login_user(_):
     if not gae_user:
         return None
     user = models.User.get_by_email(gae_user.email())
-    if flask.request:
+    if user and flask.request:
         user.last_login_ip = flask.request.remote_addr
         models.db.session.commit()
     return user
