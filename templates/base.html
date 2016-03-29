@@ -117,7 +117,6 @@ should be in {% raw %} blocks.  DFIU! -#}
     {% if minify -%}
     <script src="/js/app.min.js"></script>
     {% else -%}
-    <script src="/js/app.js"></script>
     <script src="/js/directives.js"></script>
     <script src="/js/filters.js"></script>
     <script src="/js/services/admin.js"></script>
@@ -138,6 +137,7 @@ should be in {% raw %} blocks.  DFIU! -#}
     <script src="/js/controllers/admin/news.js"></script>
     <script src="/js/controllers/admin/page.js"></script>
     <script src="/js/controllers/admin/teams.js"></script>
+    <script src="/js/app.js"></script>
     {%- endif %}
   </body>
 </html>
