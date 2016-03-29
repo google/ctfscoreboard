@@ -292,7 +292,7 @@ class Session(restful.Resource):
         """Login a user."""
         user = auth.login_user(flask.request)
         if not user:
-            redir = auth.get_login_url()
+            redir = auth.get_login_uri()
             if redir:
                 return dict(redirect=redir)
             return {}
