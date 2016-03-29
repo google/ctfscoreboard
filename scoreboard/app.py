@@ -76,7 +76,10 @@ def api_error_handler(ex):
         status_code = 500
     if flask.request.path.startswith('/api/'):
         app.logger.error(str(ex))
-        resp = flask.jsonify(message=str(ex))
+        if app.config.get('DEBUG', False):
+            resp = flask.jsonify(message=str(ex))
+        else:
+            resp = flask.jsonify(message='Internal Server Error')
         resp.status_code = status_code
         return resp
     return flask.make_response(
