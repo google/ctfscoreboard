@@ -31,7 +31,7 @@ def handle_404(ex):
     path = flask.request.path[1:]
     try:
         return app.send_static_file(path)
-    except exceptions.NotFound:
+    except (exceptions.NotFound, UnicodeEncodeError):
         if '.' not in path and not path.startswith('api/'):
             app.logger.info('%s -> index.html', path)
             return render_index()
