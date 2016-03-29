@@ -55,7 +55,7 @@ def gae_login_handler():
     user = login_user(None)
     gae_user = users.get_current_user()
     if gae_user and not user:
-        app.logger.error('No user found for user %s' % gae_user.email())
+        app.logger.info('No user found for user %s' % gae_user.email())
         return flask.redirect('/register')
     elif not user:
         app.logger.error('No user found and not logged in.')
