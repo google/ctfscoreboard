@@ -175,6 +175,7 @@ class User(db.Model):
         if pbkdf2.crypt(password, user.pwhash) == user.pwhash:
             if flask.has_request_context():
                 user.last_login_ip = flask.request.remote_addr
+                db.session.commit()
             return user
         return None
 
