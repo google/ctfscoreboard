@@ -109,6 +109,8 @@ class User(db.Model):
     pwhash = db.Column(db.String(48))  # pbkdf2.crypt == 48 bytes
     admin = db.Column(db.Boolean, default=False)
     team_tid = db.Column(db.Integer, db.ForeignKey('team.tid'))
+    create_ip = db.Column(db.String(45))     # max 45 bytes for IPv6
+    last_login_ip = db.Column(db.String(45))  
 
     def set_password(self, password):
         self.pwhash = pbkdf2.crypt(password)
@@ -171,6 +173,8 @@ class User(db.Model):
         except exc.InvalidRequestError:
             return None
         if pbkdf2.crypt(password, user.pwhash) == user.pwhash:
+            if flask.has_request_context():
+                user.last_login_ip = flask.request.remote_addr
             return user
         return None
 
@@ -186,6 +190,8 @@ class User(db.Model):
             user.team = team
         else:
             user.promote()
+        if flask.has_request_context():
+            user.create_ip = flask.request.remote_addr
         return user
 
 
@@ -474,7 +480,10 @@ class Hint(db.Model):
         unlocked.hint = self
         unlocked.team = team
         unlocked.timestamp = datetime.datetime.utcnow()
+        if flask.request:
+            unlocked.src_ip = flask.request.remote_addr
         db.session.add(unlocked)
+        return unlocked
 
     def is_unlocked(self, team=None, unlocked_hints=None):
         if team is None:
@@ -504,6 +513,7 @@ class UnlockedHint(db.Model):
         db.Integer, db.ForeignKey('team.tid'), primary_key=True)
     team = db.relationship('Team', backref='hints')
     timestamp = db.Column(db.DateTime)
+    src_ip = db.Column(db.String(45))   # IP Where unlocked
 
 
 class Answer(db.Model):
@@ -515,6 +525,7 @@ class Answer(db.Model):
         db.Integer, db.ForeignKey('team.tid'), primary_key=True)
     timestamp = db.Column(db.DateTime)
     answer_hash = db.Column(db.String(48))  # Store hash of team+answer
+    submit_ip = db.Column(db.String(45))    # Source IP for submission
 
     @classmethod
     def create(cls, challenge, team, answer_text):
@@ -523,6 +534,8 @@ class Answer(db.Model):
         answer.team = team
         answer.timestamp = datetime.datetime.utcnow()
         answer.answer_hash = pbkdf2.crypt(team.name + answer_text)
+        if flask.request:
+            answer.submit_ip = flask.request.remote_addr
         db.session.add(answer)
         return answer
 
