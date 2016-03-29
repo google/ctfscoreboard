@@ -56,7 +56,7 @@ class Team(db.Model):
 
     @property
     def code(self):
-        return hmac.new(app.config['SECRET_KEY'], self.name).hexdigest()[:12]
+        return hmac.new(app.config['SECRET_KEY'], self.name.encode('utf-8')).hexdigest()[:12]
 
     @property
     def solves(self):
