@@ -178,7 +178,8 @@ class UserList(restful.Resource):
         data = flask.request.get_json()
         if not data.get('nick', ''):
             raise errors.ValidationError('Need a player nick.')
-        if app.config.get('TEAMS') and not data.get('team_name', ''):
+        if (app.config.get('TEAMS') and not data.get('team_name', '') and not
+            data.get('team_id', 0)):
             raise errors.ValidationError('Need a team name.')
         user = auth.register(flask.request)
         flask.session['user'] = user.uid
