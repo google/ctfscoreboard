@@ -176,8 +176,6 @@ class UserList(restful.Resource):
         if flask.g.user:
             raise errors.ValidationError('Cannot register while logged in.')
         data = flask.request.get_json()
-        if not data.get('email', ''):
-            raise errors.ValidationError('Need an email address.')
         if not data.get('nick', ''):
             raise errors.ValidationError('Need a player nick.')
         if app.config.get('TEAMS') and not data.get('team_name', ''):
