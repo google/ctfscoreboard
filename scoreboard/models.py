@@ -458,6 +458,12 @@ class Attachment(db.Model):
     content_type = db.Column(db.String(100))
     storage_path = db.Column(db.String(256))
 
+    def __str__(self):
+        return repr(self)
+
+    def __repr__(self):
+        return '<Attachment %s>' % self.aid
+
     def delete(self, from_disk=True):
         if from_disk:
             try:
@@ -475,6 +481,9 @@ class Hint(db.Model):
             nullable=False)
     hint = db.Column(db.Text, nullable=False)
     cost = db.Column(db.Integer)
+
+    def __repr__(self):
+        return '<Hint: %d -> %d>' % (hint.hid, hint.challenge_cid)
 
     def unlock(self, team):
         unlocked = UnlockedHint()

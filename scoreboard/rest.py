@@ -252,6 +252,7 @@ class Team(restful.Resource):
         if not utils.access_team(team_id):
             raise errors.AccessDeniedError('No access to that team.')
         team = models.Team.query.get_or_404(team_id)
+        app.logger.info('Update of team %r by %r.', team, flask.g.user)
         data = flask.request.get_json()
         # Writable fields
         for field in ('name', 'score'):
@@ -302,6 +303,7 @@ class Session(restful.Resource):
             if redir:
                 return dict(redirect=redir)
             return {}
+        app.logger.info('%r logged in.', user)
         flask.session['user'] = user.uid
         return dict(user=user, team=user.team)
 
@@ -309,6 +311,7 @@ class Session(restful.Resource):
         auth.logout()
         if flask.session.get('user', None):
             del flask.session['user']
+            app.logger.info('%r logging out.', flask.g.user)
         flask.g.user = None
         flask.g.team = None
         return {'message': 'OK'}
@@ -323,6 +326,7 @@ class PasswordReset(restful.Resource):
         if not user:
             flask.abort(404)
         controllers.offer_password_reset(user)
+        app.logger.info('Request password reset for %r.', user)
         return {'message': 'Reset email sent.'}
 
     def post(self, email):
@@ -337,6 +341,7 @@ class PasswordReset(restful.Resource):
         if data['password'] != data['password2']:
             raise errors.ValidationError("Passwords don't match.")
         user.set_password(data['password'])
+        app.logger.info('Password reset for %r.', user)
         models.commit()
         controllers.user_login(email, data['password'])
         return {'message': 'Password reset.'}
@@ -403,6 +408,8 @@ class Challenge(restful.Resource):
             news = 'Challenge "%s" unlocked!' % challenge.name
             models.News.game_broadcast(message=news)
 
+        app.logger.info('Challenge %s updated by %r.', challenge, flask.g.user)
+
         models.commit()
         cache.clear()
         return challenge
@@ -448,7 +455,9 @@ class ChallengeList(restful.Resource):
         if unlocked:
             news = 'New challenge created: "%s"' % chall.name
             models.News.game_broadcast(message=news)
+
         models.commit()
+        app.logger.info('Challenge %s created by %r.', challenge, flask.g.user)
         return chall
 
 
@@ -480,6 +489,8 @@ class Category(restful.Resource):
         category = models.Category.query.get_or_404(category_id)
         category.name = get_field('name')
         category.description = get_field('description', '')
+
+        app.logger.info('Category %s updated by %r.', category, flask.g.user)
         models.commit()
         cache.clear()
         return self.get_challenges(category)
@@ -538,6 +549,7 @@ class CategoryList(restful.Resource):
             get_field('name'),
             get_field('description', ''))
         models.commit()
+        app.logger.info('Category %s created by %r.', cat, flask.g.user)
         cache.clear()
         return cat
 
@@ -559,6 +571,7 @@ class Hint(restful.Resource):
         """Unlock a hint."""
         data = flask.request.get_json()
         hint = controllers.unlock_hint(data['hid'])
+        app.logger.info('Hint %s unlocked by %r.', hint, flask.g.user)
         models.commit()
         cache.delete_team('cats/%d')
         return hint

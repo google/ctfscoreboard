@@ -108,8 +108,7 @@ def submit_answer(cid, answer):
             raise errors.InvalidAnswerError('Really?  Haha no....')
     finally:
         app.challenge_log.info(
-            '[%s] Player %s <%s>(%d)/Team %s(%d) submitted "%s" for Challenge '
-            '%s<%d>: %s', flask.request.access_route[0],
+            'Player %s <%s>(%d)/Team %s(%d) submitted "%s" for Challenge %s<%d>: %s',
             flask.g.user.nick, flask.g.user.email, flask.g.user.uid,
             flask.g.team.name, flask.g.team.tid, answer, challenge.name,
             challenge.cid, correct)

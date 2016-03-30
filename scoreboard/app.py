@@ -17,6 +17,7 @@ import logging
 import os
 from werkzeug import exceptions
 
+from scoreboard import logger
 
 app = flask.Flask(
         'scoreboard',
@@ -37,6 +38,8 @@ def on_appengine():
             runtime.startswith('Google App Engine/'))
 
 
+log_formatter = logger.Formatter(
+        '%(asctime)s %(levelname)8s [%(filename)s:%(lineno)d] %(client)s %(message)s')
 # log to files unless on AppEngine
 if not on_appengine():
     # Main logger
@@ -44,20 +47,21 @@ if not on_appengine():
         handler = logging.FileHandler(
             app.config.get('LOGFILE', '/tmp/scoreboard.wsgi.log'))
         handler.setLevel(logging.INFO)
-        handler.setFormatter(logging.Formatter(
-            '%(asctime)s %(levelname)8s [%(filename)s:%(lineno)d] %(message)s'))
+        handler.setFormatter(log_formatter)
         app.logger.addHandler(handler)
 
     # Challenge logger
     handler = logging.FileHandler(
         app.config.get('CHALLENGELOG', '/tmp/scoreboard.challenge.log'))
     handler.setLevel(logging.INFO)
-    handler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
+    handler.setFormatter(logger.Formatter('%(asctime)s %(client)s %(message)s'))
     logger = logging.getLogger('scoreboard')
     logger.addHandler(handler)
     app.challenge_log = logger
 else:
     app.challenge_log = app.logger
+    app.logger.handlers[0].setFormatter(log_formatter)
+    logging.getLogger().handlers[0].setFormatter(log_formatter)
 
 
 # Install a default error handler
