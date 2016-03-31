@@ -49,6 +49,8 @@ if not on_appengine():
         handler.setLevel(logging.INFO)
         handler.setFormatter(log_formatter)
         app.logger.addHandler(handler)
+    else:
+        app.logger.handlers[0].setFormatter(log_formatter)
 
     # Challenge logger
     handler = logging.FileHandler(
