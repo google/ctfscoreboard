@@ -49,7 +49,7 @@ class Team(db.Model):
             cascade='delete')
 
     def __repr__(self):
-        return '<Team: %s>' % self.name
+        return '<Team: %s>' % self.name.encode('utf-8')
 
     def __str__(self):
         return self.name
@@ -116,7 +116,7 @@ class User(db.Model):
         self.pwhash = pbkdf2.crypt(password)
 
     def __repr__(self):
-        return '<User: %s <%s>>' % (self.nick, self.email)
+        return '<User: %s <%s>>' % (self.nick.encode('utf-8'), self.email)
 
     def __str__(self):
         return self.nick
