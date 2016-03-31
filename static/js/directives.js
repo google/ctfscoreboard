@@ -315,7 +315,8 @@ sbDirectives.directive('challengeBox', [
     'answerService',
     'errorService',
     'loadingService',
-    function($resource, answerService, errorService, loadingService) {
+    'sessionService',
+    function($resource, answerService, errorService, loadingService, sessionService) {
       return {
         restrict: 'AE',
         templateUrl: '/partials/components/challenge.html',
@@ -385,6 +386,12 @@ sbDirectives.directive('challengeBox', [
 									scope.hint = null;
 								});
 					};
+
+					// isAdmin, similar to global controller
+					scope.isAdmin = function() {
+					  return (!!sessionService.session.user &&
+					      sessionService.session.user.admin);
+          };
         } // Link function
       }
     }]);
