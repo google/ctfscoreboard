@@ -122,7 +122,9 @@ sbDirectives.directive('scoreChart', [
         restrict: 'AE',
         replace: false,
         scope: {
-          chartData: '='
+          chartData: '=',
+          startDate: '@',
+          endDate: '@'
         },
         link: function(scope, element, attrs) {
           if (!Chart || Chart === undefined) {
@@ -146,6 +148,14 @@ sbDirectives.directive('scoreChart', [
             '#b15928'];
           var withLegend = (attrs.withLegend !== undefined);
 
+          var getDate = function(d) {
+            if (d === undefined)
+              return null;
+            return new Date(d);
+          };
+          var startDate = getDate(scope.startDate);
+          var endDate = getDate(scope.endDate);
+
           scope.$watch('chartData', function() {
             if (scope.chartData === undefined)
               return;
@@ -162,21 +172,49 @@ sbDirectives.directive('scoreChart', [
                 strokeColor: color,
                 data: []
               };
+              var rawData = [];
               angular.forEach(series, function(point) {
-                set.data.push({x: new Date(point.when), y: point.score});
+                rawData.push({x: new Date(point.when), y: point.score});
               });
-              if (set.data.length == 0)
+              if (rawData.length == 0)
                 return;
-              set.data.sort(function(a, b) {
+              rawData.sort(function(a, b) {
                 if (a.x < b.x)
                   return -1;
                 if (a.x > b.x)
                   return 1;
                 return 0;
               });
-              var last = set.data[set.data.length - 1];
+              // Trim for start and end date
+              if (startDate != null || endDate != null) {
+                var startValue = null;
+                var endValue = null;
+                angular.forEach(rawData, function(point) {
+                  if (startDate !== null && point.x < startDate) {
+                    console.log('point.x < startDate' + point.x + ' ' + startDate)
+                    startValue = point.y;
+                  } else if (endDate !== null && point.x > endDate) {
+                    console.log('point.x > endDate' + point.x + ' ' + endDate)
+                    if (endValue !== null) {
+                      set.data.push({x: endDate, y: endValue});
+                      endValue = null;
+                    }
+                  } else {
+                    if (startValue !== null) {
+                      set.data.push({x: startDate, y: startValue});
+                      startValue = null;
+                    }
+                    set.data.push(point);
+                  }
+                });
+              } else {
+                set.data = rawData;
+              } // end pruning data
               // Extend to present
-              set.data.push({x: new Date(), y: last.score});
+              var endPointDate = endDate || (new Date());
+              var last = set.data[set.data.length - 1];
+              if (last.x < endPointDate)
+                set.data.push({x: endPointDate, y: last.score});
               datasets.push(set);
             });
             
