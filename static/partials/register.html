@@ -47,7 +47,8 @@
         </select>
       </div>
       <div class='form-group' id='div-team-code' ng-hide='team == "new"'>
-        <label for='team-code'>Team Code</label>
+        <label for='team-code'>Team Code<br>(This is located on the
+          "Profile" page of any existing team member.)</label>
         <input id='team-code' name='team_code' class='form-control'
           placeholder='10ab03cf' ng-model='team_code'
           ng-required='config.teams && (team != "new")'>
