@@ -457,7 +457,7 @@ class ChallengeList(restful.Resource):
             models.News.game_broadcast(message=news)
 
         models.commit()
-        app.logger.info('Challenge %s created by %r.', challenge, flask.g.user)
+        app.logger.info('Challenge %s created by %r.', chall, flask.g.user)
         return chall
 
 
