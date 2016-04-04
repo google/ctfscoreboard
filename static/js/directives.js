@@ -153,8 +153,6 @@ sbDirectives.directive('scoreChart', [
               return null;
             return new Date(d);
           };
-          var startDate = getDate(scope.startDate);
-          var endDate = getDate(scope.endDate);
 
           scope.$watch('chartData', function() {
             if (scope.chartData === undefined)
@@ -162,6 +160,9 @@ sbDirectives.directive('scoreChart', [
             element.empty();
 
             var legendWidth = Math.min(100, Math.floor(element.width() * 0.2));
+
+            var startDate = getDate(scope.startDate);
+            var endDate = getDate(scope.endDate);
 
             // Transform data
             var datasets = [];
@@ -191,10 +192,8 @@ sbDirectives.directive('scoreChart', [
                 var endValue = null;
                 angular.forEach(rawData, function(point) {
                   if (startDate !== null && point.x < startDate) {
-                    console.log('point.x < startDate' + point.x + ' ' + startDate)
                     startValue = point.y;
                   } else if (endDate !== null && point.x > endDate) {
-                    console.log('point.x > endDate' + point.x + ' ' + endDate)
                     if (endValue !== null) {
                       set.data.push({x: endDate, y: endValue});
                       endValue = null;
@@ -210,6 +209,14 @@ sbDirectives.directive('scoreChart', [
               } else {
                 set.data = rawData;
               } // end pruning data
+              // Nothing after pruning
+              if (set.data.length == 0) {
+                if (startValue != null) {
+                  set.data.push({x: startDate, y: startValue});
+                } else {
+                  return;
+                }
+              }
               // Extend to present
               var endPointDate = endDate || (new Date());
               var last = set.data[set.data.length - 1];

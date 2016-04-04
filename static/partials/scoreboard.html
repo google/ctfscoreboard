@@ -1,5 +1,6 @@
 <h2>Scoreboard</h2>
-<div score-chart chart-data='scoreHistory' with-legend class='sbchart'></div>
+<div score-chart chart-data='scoreHistory' with-legend
+  start-date='{{config.game_start}}' end-date='{{config.game_end}}' class='sbchart'></div>
 <table class='table table-striped table-responsive' id='scoreboard'>
   <thead>
     <tr><th>Position</th>
