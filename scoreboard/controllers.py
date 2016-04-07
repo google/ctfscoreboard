@@ -92,17 +92,12 @@ def submit_answer(cid, answer):
         if not challenge.unlocked_for_team(flask.g.team):
             raise errors.AccessDeniedError('Challenge is locked!')
         if challenge.verify_answer(answer):
-            # Deductions for hints
-            hints = models.UnlockedHint.query.filter(
-                models.UnlockedHint.team == flask.g.team).all()
-            deduction = sum(
-                h.hint.cost for h in hints if h.hint.challenge_cid == cid)
-            points = challenge.points - deduction
-            flask.g.team.score += points
-            models.Answer.create(challenge, flask.g.team, answer)
+            ans = models.Answer.create(challenge, flask.g.team, answer)
+            flask.g.team.score += ans.current_points
             models.ScoreHistory.add_entry(flask.g.team)
+            challenge.update_answers(exclude_team=flask.g.team)
             correct = 'CORRECT'
-            return points
+            return ans.current_points
         else:
             correct = 'WRONG'
             raise errors.InvalidAnswerError('Really?  Haha no....')

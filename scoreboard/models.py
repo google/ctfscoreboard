@@ -26,6 +26,7 @@ import sqlalchemy as sqlalchemy_base
 import time
 import utils
 from sqlalchemy import exc
+from sqlalchemy import func
 from sqlalchemy import orm
 from sqlalchemy.orm import exc as orm_exc
 
@@ -61,6 +62,9 @@ class Team(db.Model):
     @property
     def solves(self):
         return len(self.answers)
+
+    def update_score(self):
+        self.score = sum(a.current_points for a in self.answers)
 
     @classmethod
     def create(cls, name):
@@ -302,7 +306,8 @@ class Challenge(db.Model):
     weight = db.Column(db.Integer, nullable=False)  # Order for display
     prerequisite = db.Column(db.Text, nullable=False)  # Prerequisite Metadata
     cat_cid = db.Column(db.Integer, db.ForeignKey('category.cid'))
-    answers = db.relationship('Answer', backref='challenge', lazy='select')
+    answers = db.relationship('Answer', backref=db.backref('challenge',
+        lazy='joined'), lazy='select')
     hints = db.relationship('Hint', backref='challenge', lazy='joined')
     attachments = db.relationship('Attachment', backref='challenge',
                                   lazy='joined')
@@ -447,6 +452,18 @@ class Challenge(db.Model):
         else:
             self.prerequisite = json.dumps(prerequisite)
 
+    def update_answers(self, exclude_team=None):
+        """Update answers for variable scoring."""
+        mode = app.config.get('SCORING', 'plain')
+        if mode == 'plain':
+            return
+        if mode == 'progressive':
+            for a in self.answers:
+                if a.team == exclude_team:
+                    continue
+                a.team.update_score()
+                ScoreHistory.add_entry(a.team)
+
 
 class Attachment(db.Model):
     """Attachment to a challenge."""
@@ -536,6 +553,19 @@ class Answer(db.Model):
     timestamp = db.Column(db.DateTime)
     answer_hash = db.Column(db.String(48))  # Store hash of team+answer
     submit_ip = db.Column(db.String(45))    # Source IP for submission
+
+    @property
+    def current_points(self):
+        mode = app.config.get('SCORING', 'plain')
+        hints = UnlockedHint.query.filter(UnlockedHint.team == self.team)
+        deduction = sum(
+                h.hint.cost for h in hints if h.hint.challenge_cid == cid)
+        value = self.challenge.points - deduction
+        if mode == 'plain':
+            return value
+        if mode == 'progressive':
+            return value / self.challenge.solves
+
 
     @classmethod
     def create(cls, challenge, team, answer_text):

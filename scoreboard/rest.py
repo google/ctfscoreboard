@@ -229,7 +229,7 @@ class Team(restful.Resource):
             for answer in team.answers:
                 challenges.append({
                     'solved': answer.timestamp,
-                    'points': answer.challenge.points,
+                    'points': answer.current_points,
                     'name': answer.challenge.name,
                     'cid': answer.challenge_cid,
                     'cat_id': answer.challenge.category.cid,
@@ -645,6 +645,7 @@ class Config(restful.Resource):
             login_url=auth.get_login_uri(),
             register_url=auth.get_register_uri(),
             login_method=app.config.get('LOGIN_METHOD', 'local'),
+            scoring=app.config.get('SCORING', 'plain'),
             )
 
 api.add_resource(Config, '/api/config')

@@ -39,6 +39,22 @@ Author: David Tomaschik <david@systemoverlord.com>
 
 8. Have fun!  Maybe set up some challenges.  Players might like that more.
 
+### Options ###
+
+**SCORING**: Set to 'progressive' to enable a scoring system where the total
+points for each challenge are divided amongst all the teams that solve that
+challenge.  This rewards teams that solve infrequently solved (hard or obscure)
+challenges.
+
+**TITLE**: Scoreboard page titles.
+
+**TEAMS**: True if teams should be used, False for each player on their own
+team.
+
+**SQLALCHEMY_DATABASE_URI**: A SQLAlchemy database URI string.
+
+**LOGIN_METHOD**: Supports 'local' or 'appengine'.  'appengine' uses AppEngine
+users API.
 
 ### Development ###
 
