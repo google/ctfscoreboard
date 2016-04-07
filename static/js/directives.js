@@ -358,12 +358,12 @@ sbDirectives.directive('donutChart', [
 sbDirectives.directive('challengeBox', [
     '$resource',
     'answerService',
-    'configService',
     'errorService',
     'loadingService',
+    'scoreService',
     'sessionService',
-    function($resource, answerService, configService, errorService,
-      loadingService, sessionService) {
+    function($resource, answerService, errorService,
+      loadingService, scoreService, sessionService) {
       return {
         restrict: 'AE',
         templateUrl: '/partials/components/challenge.html',
@@ -384,15 +384,7 @@ sbDirectives.directive('challengeBox', [
 
           scope.$watch('chall', function() {
             // Current points
-            scope.currentPoints = (scope.chall && scope.chall.points) || 0;
-            if (!scope.chall)
-              return;
-            configService.get(function(cfg) {
-              if (cfg.scoring == 'progressive') {
-                scope.currentPoints = Math.floor(scope.chall.points /
-                    Math.max(scope.chall.solves, 1));
-              }
-            });
+            scope.currentPoints = scoreService.getCurrentPoints(scope.chall);
           });
 
           // Setup submit handler

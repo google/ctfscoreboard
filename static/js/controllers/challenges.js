@@ -104,8 +104,10 @@ challengeCtrls.controller('ChallengeGridCtrl', [
     '$location',
     'categoryService',
     'loadingService',
+    'scoreService',
     'sessionService',
-    function($scope, $location, categoryService, loadingService, sessionService) {
+    function($scope, $location, categoryService, loadingService, scoreService,
+      sessionService) {
       $scope.categories = {};
       $scope.currChall = null;
       var refresh = function() {
@@ -121,9 +123,9 @@ challengeCtrls.controller('ChallengeGridCtrl', [
 
       $scope.flipSide = function(chall) {
         if (chall.answered)
-          return "Solved!";
+          return "Solved! (" + scoreService.getCurrentPoints(chall) + " points)";
         else
-          return chall.points + " points";
+          return scoreService.getCurrentPoints(chall) + " points";
       };
 
       sessionService.requireLogin(function() {

@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-var challengeServices = angular.module('challengeServices', ['ngResource']);
+var challengeServices = angular.module('challengeServices', [
+    'ngResource',
+    'globalServices']);
 
 challengeServices.service('challengeService', ['$resource',
     function($resource) {
@@ -86,3 +88,20 @@ challengeServices.service('answerService', [
             failure);
       };
     }]);
+
+challengeServices.service('scoreService', [
+    'configService',
+    function(configService) {
+      this.scoring = 'plain';
+      configService.get(angular.bind(this, function(cfg) {
+        this.scoring = cfg.scoring;
+      }));
+      this.getCurrentPoints = function(challenge) {
+        if (!challenge)
+          return 0;
+        if (this.scoring === 'plain')
+          return challenge.points;
+        if (this.scoring === 'progressive')
+          return Math.floor(challenge.points / Math.max(challenge.solves, 1));
+      };
+    }])
