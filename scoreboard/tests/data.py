@@ -85,10 +85,11 @@ def make_challenges(cats):
 
 def make_answers(teams, challs):
     for team in teams:
+        times = sorted([random.randint(0, 24*60) for _ in xrange(8)],
+                reverse=True)
         for ch in random.sample(challs, random.randint(1, 8)):
             a = models.Answer.create(ch, team, '')
-            ago = datetime.timedelta(hours=random.randint(0, 12),
-                    minutes=random.randint(0, 59))
+            ago = datetime.timedelta(minutes=times.pop(0))
             a.timestamp = datetime.datetime.utcnow() - ago
             team.score += ch.points
             h = models.ScoreHistory()
