@@ -48,7 +48,7 @@ class HintField(fields.Raw):
             'challenge_cid': value.challenge_cid,
             'cost': value.cost,
         }
-        if value.is_unlocked() or (flask.g.user and flask.g.user.admin):
+        if value.is_unlocked() or (models.User.current() and models.User.current().admin):
             res['hint'] = value.hint
         return res
 
@@ -125,13 +125,13 @@ class User(restful.Resource):
 
     @restful.marshal_with(resource_fields)
     def get(self, user_id):
-        if not flask.g.user.uid == user_id and not flask.g.user.admin:
+        if not models.User.current().uid == user_id and not models.User.current().admin:
             raise errors.AccessDeniedError('No access to that user.')
         return models.User.query.get_or_404(user_id)
 
     @restful.marshal_with(resource_fields)
     def put(self, user_id):
-        if not flask.g.user.uid == user_id and not flask.g.user.admin:
+        if not models.User.current().uid == user_id and not models.User.current().admin:
             raise errors.AccessDeniedError('No access to that user.')
         user = models.User.query.get_or_404(user_id)
         data = flask.request.get_json()
@@ -173,7 +173,7 @@ class UserList(restful.Resource):
     @restful.marshal_with(User.resource_fields)
     def post(self):
         """Register a new user."""
-        if flask.g.user:
+        if models.User.current():
             raise errors.ValidationError('Cannot register while logged in.')
         data = flask.request.get_json()
         if not data.get('nick', ''):
@@ -240,7 +240,7 @@ class Team(restful.Resource):
         else:
             result['solved_challenges'] = []
             result['score_history'] = []
-        if utils.access_team(team.tid):
+        if team.can_access():
             result['players'] = list(team.players.all())
         else:
             result['players'] = []
@@ -249,10 +249,8 @@ class Team(restful.Resource):
     @utils.admin_required
     @restful.marshal_with(resource_fields)
     def put(self, team_id):
-        if not utils.access_team(team_id):
-            raise errors.AccessDeniedError('No access to that team.')
         team = models.Team.query.get_or_404(team_id)
-        app.logger.info('Update of team %r by %r.', team, flask.g.user)
+        app.logger.info('Update of team %r by %r.', team, models.User.current())
         data = flask.request.get_json()
         # Writable fields
         for field in ('name', 'score'):
@@ -291,8 +289,8 @@ class Session(restful.Resource):
     def get(self):
         """Get the current session."""
         return dict(
-                user=getattr(flask.g, 'user', None),
-                team=getattr(flask.g, 'team', None))
+                user=models.User.current(),
+                team=models.Team.current())
 
     @restful.marshal_with(resource_fields)
     def post(self):
@@ -305,15 +303,25 @@ class Session(restful.Resource):
             return {}
         app.logger.info('%r logged in.', user)
         flask.session['user'] = user.uid
+        if user.team:
+            flask.session['team'] = user.team.tid
+        if user.admin:
+            flask.session['admin'] = True
         return dict(user=user, team=user.team)
 
     def delete(self):
         auth.logout()
         if flask.session.get('user', None):
-            del flask.session['user']
-            app.logger.info('%r logging out.', flask.g.user)
-        flask.g.user = None
-        flask.g.team = None
+            flask.session.clear()
+            app.logger.info('%r logging out.', models.User.current())
+        try:
+            del flask.g.user
+        except:
+            pass
+        try:
+            del flask.g.team
+        except:
+            pass
         return {'message': 'OK'}
 
 
@@ -408,7 +416,7 @@ class Challenge(restful.Resource):
             news = 'Challenge "%s" unlocked!' % challenge.name
             models.News.game_broadcast(message=news)
 
-        app.logger.info('Challenge %s updated by %r.', challenge, flask.g.user)
+        app.logger.info('Challenge %s updated by %r.', challenge, models.User.current())
 
         models.commit()
         cache.clear()
@@ -457,7 +465,7 @@ class ChallengeList(restful.Resource):
             models.News.game_broadcast(message=news)
 
         models.commit()
-        app.logger.info('Challenge %s created by %r.', chall, flask.g.user)
+        app.logger.info('Challenge %s created by %r.', chall, models.User.current())
         return chall
 
 
@@ -490,20 +498,20 @@ class Category(restful.Resource):
         category.name = get_field('name')
         category.description = get_field('description', '')
 
-        app.logger.info('Category %s updated by %r.', category, flask.g.user)
+        app.logger.info('Category %s updated by %r.', category, models.User.current())
         models.commit()
         cache.clear()
         return self.get_challenges(category)
 
     @classmethod
     def get_challenges(cls, category):
-        if flask.g.user and flask.g.user.admin:
+        if models.User.current() and models.User.current().admin:
             challenges = category.challenges
         else:
             raw = category.get_challenges()
             challenges = []
             for ch in raw:
-                if ch.unlocked_for_team(flask.g.team):
+                if ch.unlocked_for_team(models.Team.current()):
                     challenges.append(ch)
                 elif ch.teaser:
                     challenges.append(cls._tease_challenge(ch))
@@ -549,7 +557,7 @@ class CategoryList(restful.Resource):
             get_field('name'),
             get_field('description', ''))
         models.commit()
-        app.logger.info('Category %s created by %r.', cat, flask.g.user)
+        app.logger.info('Category %s created by %r.', cat, models.User.current())
         cache.clear()
         return cat
 
@@ -571,7 +579,7 @@ class Hint(restful.Resource):
         """Unlock a hint."""
         data = flask.request.get_json()
         hint = controllers.unlock_hint(data['hid'])
-        app.logger.info('Hint %s unlocked by %r.', hint, flask.g.user)
+        app.logger.info('Hint %s unlocked by %r.', hint, models.User.current())
         models.commit()
         cache.delete_team('cats/%d')
         return hint
@@ -664,8 +672,8 @@ class News(restful.Resource):
 
     @restful.marshal_with(resource_fields)
     def get(self):
-        if flask.g.team:
-            news = models.News.for_team(flask.g.team)
+        if models.Team.current():
+            news = models.News.for_team(models.Team.current())
         else:
             news = models.News.for_public()
         return list(news)
@@ -680,7 +688,7 @@ class News(restful.Resource):
                 tid = int(data['tid'])
             except ValueError:
                 pass
-        author = flask.g.user.nick
+        author = models.User.current().nick
         if tid:
             item = models.News.unicast(tid, author, data['message'])
         else:

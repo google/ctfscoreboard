@@ -27,7 +27,7 @@ class Formatter(logging.Formatter):
 
     def format(self, record):
         if flask.request:
-            user = repr(flask.g.user) if getattr(flask.g, 'user', None) else "-"
+            user = ('UID<%d>' % flask.g.uid) if flask.g.uid else '-'
             record.client = "[{}/{}]".format(flask.request.remote_addr, user)
         else:
             record.client = ""

@@ -36,7 +36,7 @@ def login_required(f):
 
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
-        if not flask.g.user:
+        if not flask.g.uid:
             raise errors.AccessDeniedError('You must be logged in.')
         return f(*args, **kwargs)
     return wrapper
@@ -48,7 +48,7 @@ def admin_required(f):
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         try:
-            if not flask.g.user.admin:
+            if not flask.g.admin:
                 flask.abort(403)
         except AttributeError:
             flask.abort(403)
@@ -61,7 +61,7 @@ def team_required(f):
 
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
-        if not flask.g.team:
+        if not flask.g.tid:
             app.logger.warning(
                 'Team request received for player without team.')
             flask.abort(400)
@@ -72,7 +72,7 @@ def team_required(f):
 def is_admin():
     """Check if current user is an admin."""
     try:
-        return flask.g.user.admin
+        return flask.g.admin
     except:
         return False
 
@@ -90,20 +90,6 @@ def get_required_field(name, verbose_name=None):
 def parse_bool(b):
     b = b.lower()
     return b in ('true', '1')
-
-
-def access_team(team):
-    """Check permission to team."""
-
-    if flask.g.user and flask.g.user.admin:
-        return True
-    try:
-        team = team.tid
-    except AttributeError:
-        pass
-    if flask.g.team and flask.g.team.tid == team:
-        return True
-    return False
 
 
 def compare_digest(a, b):
@@ -161,7 +147,7 @@ class GameTime(object):
         @functools.wraps(f)
         def wrapper(*args, **kwargs):
             if (cls.open(after_end) or
-                    (or_admin and flask.g.user and flask.g.user.admin)):
+                    (or_admin and flask.g.admin)):
                 return f(*args, **kwargs)
             raise errors.AccessDeniedError(cls.message())
         return wrapper

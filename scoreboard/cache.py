@@ -57,16 +57,16 @@ def rest_team_cache(f_or_key):
     def wrap_func(f):
         @functools.wraps(f)
         def wrapped(*args, **kwargs):
-            if flask.g.team:
+            if flask.g.tid:
                 if override_cache_key:
-                    cache_key = override_cache_key % (flask.g.team.tid)
+                    cache_key = override_cache_key % (flask.g.tid)
                 else:
                     try:
                         cache_key = '%s/%s/%s' % (
-                                f.im_class.__name__, f.__name__, flask.g.team.tid)
+                                f.im_class.__name__, f.__name__, flask.g.tid)
                     except AttributeError:
                         cache_key = '%s/%s' % (
-                                f.__name__, flask.g.team.tid)
+                                f.__name__, flask.g.tid)
                 return _rest_cache_caller(f, cache_key, *args, **kwargs)
             return f(*args, **kwargs)
         return wrapped
@@ -88,9 +88,9 @@ def clear():
 
 def delete_team(base_key):
     """Delete team-based cache entry."""
-    if not flask.g.team:
+    if not flask.g.tid:
         return
-    global_cache.delete(base_key % flask.g.team.tid)
+    global_cache.delete(base_key % flask.g.tid)
 
 
 def _rest_cache_caller(f, cache_key, *args, **kwargs):

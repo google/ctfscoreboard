@@ -87,25 +87,28 @@ def submit_answer(cid, answer):
     Returns:
       Number of points awarded for answer.
     """
+    correct = 'WRONG'
+    team = models.Team.current()
+    if not team:
+        raise errors.AccessDeniedError('No team!')
     try:
         challenge = models.Challenge.query.get(cid)
-        if not challenge.unlocked_for_team(flask.g.team):
+        if not challenge.unlocked_for_team(team):
             raise errors.AccessDeniedError('Challenge is locked!')
         if challenge.verify_answer(answer):
-            ans = models.Answer.create(challenge, flask.g.team, answer)
-            flask.g.team.score += ans.current_points
-            models.ScoreHistory.add_entry(flask.g.team)
-            challenge.update_answers(exclude_team=flask.g.team)
+            ans = models.Answer.create(challenge, team, answer)
+            team.score += ans.current_points
+            models.ScoreHistory.add_entry(team)
+            challenge.update_answers(exclude_team=team)
             correct = 'CORRECT'
             return ans.current_points
         else:
-            correct = 'WRONG'
             raise errors.InvalidAnswerError('Really?  Haha no....')
     finally:
+        user = models.User.current()
         app.challenge_log.info(
             'Player %s <%s>(%d)/Team %s(%d) submitted "%s" for Challenge %s<%d>: %s',
-            flask.g.user.nick, flask.g.user.email, flask.g.user.uid,
-            flask.g.team.name, flask.g.team.tid, answer, challenge.name,
+            user.nick, user.email, user.uid, team.name, team.tid, answer, challenge.name,
             challenge.cid, correct)
 
 
@@ -115,11 +118,12 @@ def unlock_hint(hid):
     hint = models.Hint.query.get(int(hid))
     if not hint:
         flask.abort(404)
-    hint.unlock(flask.g.team)
+    team = models.Team.current()
+    user = models.User.current()
+    hint.unlock(team)
     logstr = ('Player %s/%s<%d>/Team %s<%d> unlocked hint %d for '
               'Challenge %s<%d>')
-    logstr %= (flask.g.user.nick, flask.g.user.email, flask.g.user.uid,
-               flask.g.team.name, flask.g.team.tid, hint.hid,
+    logstr %= (user.nick, user.email, user.uid, team.name, team.tid, hint.hid,
                hint.challenge.name, hint.challenge.cid)
     app.challenge_log.info(logstr)
     return hint

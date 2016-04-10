@@ -75,17 +75,10 @@ def get_csp_policy():
 # Setup flask.g
 @app.before_request
 def load_globals():
-    """Prepopulate flask.g.* with user and team."""
-    uid = flask.session.get('user')
-    if uid:
-        # TODO: perform some kind of caching here
-        user = models.User.query.get(uid)
-        if user:
-            flask.g.user = user
-            flask.g.team = user.team
-            return
-    flask.g.user = None
-    flask.g.team = None
+    """Prepopulate flask.g.* with properties."""
+    flask.g.uid = flask.session.get('user')
+    flask.g.tid = flask.session.get('team')
+    flask.g.admin = flask.session.get('admin') or False
 
 
 # Add headers to responses

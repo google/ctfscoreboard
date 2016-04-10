@@ -66,6 +66,13 @@ class Team(db.Model):
     def update_score(self):
         self.score = sum(a.current_points for a in self.answers)
 
+    def can_access(self, user=None):
+        """Check if player can access team."""
+        user = user or User.current()
+        if user.admin:
+            return True
+        return user.team == self
+
     @classmethod
     def create(cls, name):
         team = cls()
@@ -88,6 +95,16 @@ class Team(db.Model):
                 orm.joinedload(cls.score_history)).order_by(cls.score.desc())
         return enumerate(qry.all(), 1)
 
+    @classmethod
+    def current(cls):
+        try:
+            return flask.g.team
+        except AttributeError:
+            tid = flask.session.get('team')
+            if tid:
+                team = cls.query.get(tid)
+                flask.g.team = team
+                return team
 
 class ScoreHistory(db.Model):
     team_tid = db.Column(db.Integer, db.ForeignKey('team.tid'), nullable=False,
@@ -201,6 +218,17 @@ class User(db.Model):
         if flask.has_request_context():
             user.create_ip = flask.request.remote_addr
         return user
+
+    @classmethod
+    def current(cls):
+        try:
+            return flask.g.user
+        except AttributeError:
+            uid = flask.session.get('user')
+            if uid:
+                user = cls.query.get(uid)
+                flask.g.user = user
+                return user
 
 
 class Category(db.Model):
@@ -320,7 +348,7 @@ class Challenge(db.Model):
 
     def is_answered(self, team=None, answers=None):
         if team is None:
-            team = flask.g.team
+            team = Team.current()
         if not team:
             return False
         if answers:
@@ -344,17 +372,17 @@ class Challenge(db.Model):
 
     @property
     def answered(self):
-        if not flask.g.team:
+        if not Team.current():
             return False
-        return self.is_answered(answers=flask.g.team.answers)
+        return self.is_answered(answers=Team.current().answers)
 
     @property
     def teaser(self):
         if not app.config.get('TEASE_HIDDEN', True):
             return False
-        if not flask.g.team:
+        if not Team.current():
             return False
-        return not self.unlocked_for_team(flask.g.team) 
+        return not self.unlocked_for_team(Team.current()) 
 
     def unlocked_for_team(self, team):
         """Checks if prerequisites are met for this team."""
@@ -517,9 +545,9 @@ class Hint(db.Model):
 
     def is_unlocked(self, team=None, unlocked_hints=None):
         if team is None:
-            team = flask.g.team
+            team = Team.current()
         if not team:
-            return flask.g.user and flask.g.user.admin
+            return User.current() and User.current().admin
         if unlocked_hints:
             for h in unlocked_hints:
                 if h.hint_hid == self.hid and h.team_tid == team.tid:

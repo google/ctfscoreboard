@@ -69,7 +69,7 @@ def download(filename):
     attachment = models.Attachment.query.get_or_404(filename)
     if not attachment.challenge.unlocked:
         flask.abort(404)
-    app.logger.info('Download of %s by %r.', attachment, flask.g.user)
+    app.logger.info('Download of %s by %r.', attachment, models.User.current())
 
     return attachments.send(attachment)
 
