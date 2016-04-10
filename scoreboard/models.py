@@ -147,7 +147,10 @@ class User(db.Model):
     def verify_token(self, token, token_type='pwreset'):
         """Verify a user-specific token."""
         token = str(token)
-        decoded = base64.urlsafe_b64decode(token)
+        try:
+            decoded = base64.urlsafe_b64decode(token)
+        except ValueError:
+            raise errors.ValidationError('Invalid token.')
         expires, mac = decoded.split(':')
         if float(expires) > time.time():
             raise errors.ValidationError('Expired token.')
