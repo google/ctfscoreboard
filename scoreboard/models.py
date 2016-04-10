@@ -562,7 +562,8 @@ class Answer(db.Model):
         mode = app.config.get('SCORING', 'plain')
         hints = UnlockedHint.query.filter(UnlockedHint.team == self.team)
         deduction = sum(
-                h.hint.cost for h in hints if h.hint.challenge_cid == cid)
+                h.hint.cost for h in hints if h.hint.challenge_cid ==
+                self.challenge_cid)
         value = self.challenge.points - deduction
         if mode == 'plain':
             return value
