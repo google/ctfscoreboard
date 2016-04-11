@@ -77,6 +77,18 @@ def is_admin():
         return False
 
 
+def session_for_user(user):
+    """Construct session for current user."""
+    flask.g.user = user
+    flask.g.team = user.team
+    flask.g.uid = user.uid
+    flask.g.tid = user.team.tid if user.team else None
+    flask.g.admin = user.admin
+    flask.session['user'] = user.uid
+    flask.session['team'] = user.team.tid if user.team else None
+    flask.session['admin'] = user.admin
+
+
 def get_required_field(name, verbose_name=None):
     """Retrieve a field or raise an error."""
 

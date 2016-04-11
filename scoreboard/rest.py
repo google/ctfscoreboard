@@ -182,7 +182,7 @@ class UserList(restful.Resource):
             data.get('team_id', 0)):
             raise errors.ValidationError('Need a team name.')
         user = auth.register(flask.request)
-        flask.session['user'] = user.uid
+        utils.session_for_user(user)
         return user
 
 
@@ -302,18 +302,14 @@ class Session(restful.Resource):
                 return dict(redirect=redir)
             return {}
         app.logger.info('%r logged in.', user)
-        flask.session['user'] = user.uid
-        if user.team:
-            flask.session['team'] = user.team.tid
-        if user.admin:
-            flask.session['admin'] = True
+        utils.session_for_user(user)
         return dict(user=user, team=user.team)
 
     def delete(self):
         auth.logout()
         if flask.session.get('user', None):
-            flask.session.clear()
             app.logger.info('%r logging out.', models.User.current())
+            flask.session.clear()
         try:
             del flask.g.user
         except:
