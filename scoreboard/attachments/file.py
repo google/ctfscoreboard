@@ -11,15 +11,15 @@ import urlparse
 import flask
 
 from scoreboard.app import app
+from scoreboard import config
 
 
 def attachment_dir(create=False):
     """Return path and optionally create attachment directory."""
-    components = urlparse.urlparse(app.config.get('ATTACHMENT_BACKEND',
-        'file://attachments'))
+    components = urlparse.urlparse(config.get('ATTACHMENT_BACKEND'))
     config_dir = components.path or components.netloc
-    if app.config.get('CWD'):
-        target_dir = os.path.normpath(os.path.join(app.config.get('CWD'),
+    if config.get('CWD'):
+        target_dir = os.path.normpath(os.path.join(config.get('CWD'),
             config_dir))
     else:
         target_dir = os.path.abspath(config_dir)

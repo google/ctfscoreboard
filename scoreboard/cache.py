@@ -6,14 +6,15 @@ import flask
 from werkzeug.contrib import cache
 
 from scoreboard import app
+from scoreboard import config
 
 
 class CacheWrapper(object):
 
     def __init__(self, app):
-        cache_type = app.config.get('CACHE_TYPE')
+        cache_type = config.get('CACHE_TYPE')
         if cache_type == 'memcached':
-            host = app.config['MEMCACHE_HOST']
+            host = config.get('MEMCACHE_HOST')
             self._cache = cache.MemcachedCache([host])
         elif cache_type == 'appengine':
             self._cache = cache.MemcachedCache()

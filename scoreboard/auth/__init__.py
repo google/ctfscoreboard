@@ -10,9 +10,10 @@ The required API includes:
 """
 
 
-from scoreboard.app import app
+from scoreboard import config
 
-_login_method = app.config.get('LOGIN_METHOD', 'local')
+
+_login_method = config.get('LOGIN_METHOD')
 if _login_method == 'local':
     from scoreboard.auth.local import *
 elif _login_method == 'appengine':

@@ -22,6 +22,7 @@ import struct
 import time
 
 from scoreboard.app import app
+from scoreboard import config
 
 
 def _get_csrf_token(user=None, expires=None):
@@ -29,7 +30,7 @@ def _get_csrf_token(user=None, expires=None):
     expires = expires or time.time() + 60 * 60 * 24
     expires_bytes = struct.pack('<I', expires)
     msg = '%s:%s' % (user, expires_bytes)
-    sig = hmac.new(app.config['SECRET_KEY'], msg, hashlib.sha256).digest()
+    sig = hmac.new(config.get('SECRET_KEY'), msg, hashlib.sha256).digest()
     return expires_bytes + sig
 
 

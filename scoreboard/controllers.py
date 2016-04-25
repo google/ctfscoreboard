@@ -19,6 +19,7 @@ from sqlalchemy import exc
 import urllib
 
 from scoreboard.app import app
+from scoreboard import config
 from scoreboard import errors
 from scoreboard import mail
 from scoreboard import models
@@ -42,7 +43,7 @@ def register_user(email, nick, password, team_id=None,
         raise errors.ValidationError('Invalid email address.')
     # TODO: Sanitize other fields
     first = models.User.query.count() == 0
-    if not first and app.config.get('TEAMS'):
+    if not first and config.get('TEAMS'):
         if team_id == 'new':
             try:
                 app.logger.info('Creating new team %s for user %s',
@@ -136,7 +137,7 @@ def offer_password_reset(user):
             (urllib.quote(user.email), token))
     message = flask.render_template('pwreset.eml', token_url=token_url,
             user=user, ip=flask.request.remote_addr, config=app.config)
-    subject = '%s Password Reset' % app.config.get('TITLE', 'CTF')
+    subject = '%s Password Reset' % config.get('TITLE')
     try:
         mail.send(message, subject, user.email, to_name=user.nick)
     except mail.MailFailure:
