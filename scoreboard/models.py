@@ -587,6 +587,7 @@ class Answer(db.Model):
     timestamp = db.Column(db.DateTime)
     answer_hash = db.Column(db.String(48))  # Store hash of team+answer
     submit_ip = db.Column(db.String(45))    # Source IP for submission
+    first_blood = db.Column(db.Integer, default=0, nullable=False)
 
     @property
     def current_points(self):
@@ -597,14 +598,16 @@ class Answer(db.Model):
                 self.challenge_cid)
         value = self.challenge.points - deduction
         if mode == 'plain':
-            return value
+            return value + self.first_blood
         if mode == 'progressive':
-            return value / self.challenge.solves
+            return max((value / self.challenge.solves) + self.first_blood, 1)
 
 
     @classmethod
     def create(cls, challenge, team, answer_text):
         answer = cls()
+        answer.first_blood = (config.get('FIRST_BLOOD')
+                if not challenge.solves else 0)
         answer.challenge = challenge
         answer.team = team
         answer.timestamp = datetime.datetime.utcnow()
