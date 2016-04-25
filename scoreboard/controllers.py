@@ -98,6 +98,7 @@ def submit_answer(cid, answer):
         if challenge.verify_answer(answer):
             ans = models.Answer.create(challenge, team, answer)
             team.score += ans.current_points
+            team.last_solve = datetime.datetime.utcnow()
             models.ScoreHistory.add_entry(team)
             challenge.update_answers(exclude_team=team)
             correct = 'CORRECT'

@@ -42,6 +42,7 @@ class Team(db.Model):
     tid = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), unique=True, nullable=False, index=True)
     score = db.Column(db.Integer, default=0)  # Denormalized
+    last_solve = db.Column(db.DateTime, nullable=True)
     players = db.relationship(
         'User', backref=db.backref('team', lazy='joined'), lazy='dynamic')
     answers = db.relationship('Answer', backref='team', lazy='select',
@@ -105,6 +106,7 @@ class Team(db.Model):
                 team = cls.query.get(tid)
                 flask.g.team = team
                 return team
+
 
 class ScoreHistory(db.Model):
     team_tid = db.Column(db.Integer, db.ForeignKey('team.tid'), nullable=False,
