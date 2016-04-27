@@ -857,3 +857,14 @@ class CTFTimeScoreFeed(restful.Resource):
         return data, 200, {'X-No-XSSI': 1}
 
 api.add_resource(CTFTimeScoreFeed, '/api/ctftime/scoreboard')
+
+
+class Configz(restful.Resource):
+    """Dump the config."""
+
+    decorators = [utils.admin_required]
+
+    def get(self):
+        return repr(app.config)
+
+api.add_resource(Configz, '/api/configz')
