@@ -24,11 +24,8 @@ app = flask.Flask(
         static_folder='../static',
         template_folder='../templates',
         )
+app.config.from_object('scoreboard.config_defaults.Defaults')
 app.config.from_object('config')  # Load from config.py
-
-# Set defaults
-app.config.setdefault('CWD', os.path.dirname(os.path.realpath(__file__)))
-app.config.setdefault('ERROR_404_HELP', False)
 
 
 def on_appengine():
