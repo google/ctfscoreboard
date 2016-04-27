@@ -1,5 +1,5 @@
 *.pyc
-config.py
+/config.py
 *.swp
 *.db
 /attachments
