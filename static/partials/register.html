@@ -41,7 +41,7 @@
             <option value='new'>New</option>
           </optgroup>
           <optgroup label='Join Team'>
-            <option ng-repeat='team in teams'
+            <option ng-repeat='team in teams | orderBy:"name"'
               value='{{team.tid}}'>{{team.name}}</option>
           </optgroup>
         </select>
