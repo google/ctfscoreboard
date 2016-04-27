@@ -139,7 +139,8 @@ ul.step-legend li {
   margin-top: 20px;
 }
 
-table.team-challenges {
+table.team-challenges,
+table.team-players{
   font-size: 100%;
 }
 
