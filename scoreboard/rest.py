@@ -456,7 +456,7 @@ class ChallengeList(restful.Resource):
         if 'prerequisite' in data:
             chall.set_prerequisite(data['prerequisite'])
 
-        if unlocked:
+        if unlocked and utils.GameTime.open():
             news = 'New challenge created: "%s"' % chall.name
             models.News.game_broadcast(message=news)
 
