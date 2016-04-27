@@ -17,7 +17,6 @@ import email.utils
 import smtplib
 
 from scoreboard.app import app
-from scoreboard import config
 
 
 class MailFailure(Exception):
@@ -26,9 +25,9 @@ class MailFailure(Exception):
 
 
 def send(message, subject, to, to_name=None, sender=None, sender_name=None):
-    sender = sender or config.get('MAIL_FROM')
-    sender_name = sender_name or config.get('MAIL_FROM_NAME')
-    host = config.get('MAIL_HOST')
+    sender = sender or app.config.get('MAIL_FROM')
+    sender_name = sender_name or app.config.get('MAIL_FROM_NAME')
+    host = app.config.get('MAIL_HOST')
 
     try:
         server = smtplib.SMTP(host)

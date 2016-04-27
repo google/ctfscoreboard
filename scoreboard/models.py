@@ -32,7 +32,6 @@ from sqlalchemy.orm import exc as orm_exc
 
 from scoreboard.app import app
 from scoreboard import attachments
-from scoreboard import config
 from scoreboard import errors
 
 db = sqlalchemy.SQLAlchemy(app)
@@ -59,7 +58,7 @@ class Team(db.Model):
 
     @property
     def code(self):
-        return hmac.new(config.get('SECRET_KEY'), self.name.encode('utf-8')).hexdigest()[:12]
+        return hmac.new(app.config.get('SECRET_KEY'), self.name.encode('utf-8')).hexdigest()[:12]
 
     @property
     def solves(self):
@@ -160,7 +159,7 @@ class User(db.Model):
         token_plain = '%d:%d:%s:%s' % (
                 self.uid, expires, token_type, self.pwhash)
         mac = hmac.new(
-                config.get('SECRET_KEY'), token_plain, hashlib.sha1).digest()
+                app.config.get('SECRET_KEY'), token_plain, hashlib.sha1).digest()
         token = '%d:%s' % (expires, mac)
         return base64.urlsafe_b64encode(token)
 
@@ -381,7 +380,7 @@ class Challenge(db.Model):
 
     @property
     def teaser(self):
-        if not config.get('TEASE_HIDDEN'):
+        if not app.config.get('TEASE_HIDDEN'):
             return False
         if not Team.current():
             return False
@@ -488,7 +487,7 @@ class Challenge(db.Model):
 
     def update_answers(self, exclude_team=None):
         """Update answers for variable scoring."""
-        mode = config.get('SCORING')
+        mode = app.config.get('SCORING')
         if mode == 'plain':
             return
         if mode == 'progressive':
@@ -591,7 +590,7 @@ class Answer(db.Model):
 
     @property
     def current_points(self):
-        mode = config.get('SCORING')
+        mode = app.config.get('SCORING')
         hints = UnlockedHint.query.filter(UnlockedHint.team == self.team)
         deduction = sum(
                 h.hint.cost for h in hints if h.hint.challenge_cid ==
@@ -606,7 +605,7 @@ class Answer(db.Model):
     @classmethod
     def create(cls, challenge, team, answer_text):
         answer = cls()
-        answer.first_blood = (config.get('FIRST_BLOOD')
+        answer.first_blood = (app.config.get('FIRST_BLOOD')
                 if not challenge.solves else 0)
         answer.challenge = challenge
         answer.team = team
@@ -647,7 +646,7 @@ class News(db.Model):
     def game_broadcast(cls, author=None, message=None):
         if message is None:
             raise ValueError('Missing message.')
-        author = author or config.get('SYSTEM_NAME')
+        author = author or app.config.get('SYSTEM_NAME')
         if not utils.GameTime.open():
             return
         return cls.broadcast(author, message)

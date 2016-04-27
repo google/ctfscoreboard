@@ -12,11 +12,10 @@ import flask
 import cloudstorage as gcs
 
 from scoreboard.app import app
-from scoreboard import config
 
 
 def get_bucket(path=None):
-    path = path or config.get('ATTACHMENT_BACKEND')
+    path = path or app.config.get('ATTACHMENT_BACKEND')
     url = urlparse.urlparse(path)
     return url.netloc
 

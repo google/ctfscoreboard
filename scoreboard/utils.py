@@ -23,7 +23,6 @@ import pytz
 import urlparse
 
 from scoreboard.app import app
-from scoreboard import config
 
 
 # Use dateutil if available
@@ -124,7 +123,7 @@ class GameTime(object):
     @classmethod
     def setup(cls):
         """Get start and end time."""
-        cls.start, cls.end = config.get('GAME_TIME')
+        cls.start, cls.end = app.config.get('GAME_TIME')
         if isinstance(cls.start, basestring):
             cls.start = cls._parsedate(cls.start)
         if isinstance(cls.end, basestring):

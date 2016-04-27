@@ -10,12 +10,12 @@ Required API:
 
 import urlparse
 
-from scoreboard import config
+from scoreboard import app
 
 
 def get_backend_path():
     """Get backend path for attachments."""
-    return config.get('ATTACHMENT_BACKEND')
+    return app.config.get('ATTACHMENT_BACKEND')
 
 
 def get_backend_type():

@@ -19,7 +19,6 @@ import flask
 from sqlalchemy import event
 
 from scoreboard.app import app
-from scoreboard import config
 from scoreboard import models
 from scoreboard import utils
 
@@ -55,13 +54,13 @@ def get_csp_policy():
     global _CSP_POLICY_STRING
     if _CSP_POLICY_STRING is not None:
         return _CSP_POLICY_STRING
-    if config.get('CSP_POLICY'):
-        policy = config.get('CSP_POLICY')
-    elif config.get('EXTEND_CSP_POLICY'):
+    if app.config.get('CSP_POLICY'):
+        policy = app.config.get('CSP_POLICY')
+    elif app.config.get('EXTEND_CSP_POLICY'):
         policy = collections.defaultdict(list)
         for k, v in DEFAULT_CSP_POLICY.iteritems():
             policy[k] = v
-        for k, v in config.get('EXTEND_CSP_POLICY').iteritems():
+        for k, v in app.config.get('EXTEND_CSP_POLICY').iteritems():
             policy[k].extend(v)
     else:
         policy = DEFAULT_CSP_POLICY
@@ -101,7 +100,7 @@ def util_contexts():
 _query_count = 0
 
 
-if config.get('COUNT_QUERIES'):
+if app.config.get('COUNT_QUERIES'):
     @event.listens_for(models.db.engine, 'before_cursor_execute')
     def receive_before_cursor_execute(
             conn, cursor, statement, parameters, context, executemany):

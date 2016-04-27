@@ -25,7 +25,6 @@ from scoreboard.app import app
 from scoreboard import attachments
 from scoreboard import auth
 from scoreboard import cache
-from scoreboard import config
 from scoreboard import controllers
 from scoreboard import context
 from scoreboard import csrfutil
@@ -147,7 +146,7 @@ class User(restful.Resource):
             user.set_password(data['password'])
         if utils.is_admin():
             user.nick = data['nick']
-            if not config.get('TEAMS'):
+            if not app.config.get('TEAMS'):
                 user.team.name = data['nick']
         try:
             models.commit()
@@ -179,7 +178,7 @@ class UserList(restful.Resource):
         data = flask.request.get_json()
         if not data.get('nick', ''):
             raise errors.ValidationError('Need a player nick.')
-        if (config.get('TEAMS') and not data.get('team_name', '') and not
+        if (app.config.get('TEAMS') and not data.get('team_name', '') and not
             data.get('team_id', 0)):
             raise errors.ValidationError('Need a team name.')
         user = auth.register(flask.request)
@@ -631,7 +630,7 @@ api.add_resource(APIScoreboard, '/api/scoreboard')
 
 
 class Config(restful.Resource):
-    """Get basic config for the scoreboard.
+    """Get basic app.config for the scoreboard.
 
     This should not change often as it is highly-cached on the client.
     """
@@ -639,18 +638,18 @@ class Config(restful.Resource):
     def get(self):
         datefmt = ISO8601DateTime()
         return dict(
-            teams=config.get('TEAMS'),
-            sbname=config.get('TITLE'),
+            teams=app.config.get('TEAMS'),
+            sbname=app.config.get('TITLE'),
             news_mechanism='poll',
-            news_poll_interval=config.get('NEWS_POLL_INTERVAL'),
+            news_poll_interval=app.config.get('NEWS_POLL_INTERVAL'),
             csrf_token=csrfutil.get_csrf_token(),
-            rules=config.get('RULES'),
+            rules=app.config.get('RULES'),
             game_start=datefmt.format(utils.GameTime.start),
             game_end=datefmt.format(utils.GameTime.end),
             login_url=auth.get_login_uri(),
             register_url=auth.get_register_uri(),
-            login_method=config.get('LOGIN_METHOD'),
-            scoring=config.get('SCORING'),
+            login_method=app.config.get('LOGIN_METHOD'),
+            scoring=app.config.get('SCORING'),
             )
 
 api.add_resource(Config, '/api/config')
