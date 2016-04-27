@@ -50,8 +50,10 @@ def admin_required(f):
     def wrapper(*args, **kwargs):
         try:
             if not flask.g.admin:
+                app.logger.error('Attempt by non-admin to access @admin_required resource.')
                 flask.abort(403)
         except AttributeError:
+            app.logger.error('AttributeError by non-admin to access @admin_required resource.')
             flask.abort(403)
         return f(*args, **kwargs)
     return login_required(wrapper)
