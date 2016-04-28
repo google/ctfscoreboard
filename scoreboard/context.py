@@ -79,6 +79,14 @@ def load_globals():
     flask.g.uid = flask.session.get('user')
     flask.g.tid = flask.session.get('team')
     flask.g.admin = flask.session.get('admin') or False
+    try:
+        del flask.g.user
+    except AttributeError:
+        pass
+    try:
+        del flask.g.team
+    except AttributeError:
+        pass
 
 
 # Add headers to responses
