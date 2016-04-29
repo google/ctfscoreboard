@@ -25,11 +25,12 @@ regCtrls.controller('LoginCtrl', [
     '$scope',
     '$location',
     '$window',
+    'configService',
     'errorService',
     'sessionService',
     'passwordResetService',
     'loadingService',
-    function($scope, $location, $window, errorService, sessionService,
+    function($scope, $location, $window, configService, errorService, sessionService,
         passwordResetService, loadingService) {
       if ($location.path().indexOf('/logout') == 0) {
         sessionService.logout(function() {
@@ -37,6 +38,14 @@ regCtrls.controller('LoginCtrl', [
         });
         return;
       }
+
+      // Check if we should redirect
+      configService.get(function(c) {
+        if (c.login_method == "local")
+          return;
+        $window.location.href = c.login_url;
+      });
+
       $scope.email = '';
       $scope.password = '';
       
