@@ -33,7 +33,8 @@ class Defaults(object):
         RULES = '/rules'
         SCOREBOARD_ZEROS = True
         SCORING = 'plain'
+        SECRET_KEY = None
         SYSTEM_NAME = 'root'
-        TEAMS = False
+        TEAMS = True
         TEASE_HIDDEN = True
         TITLE = 'Scoreboard'
