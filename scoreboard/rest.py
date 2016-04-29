@@ -621,10 +621,14 @@ class APIScoreboard(restful.Resource):
     @cache.rest_cache('scoreboard')
     @restful.marshal_with(resource_fields)
     def get(self):
+        opts = {
+            'with_history': True,
+            'above_zero': not app.config.get('SCOREBOARD_ZEROS'),
+        }
         return dict(scoreboard=[
             {'position': i, 'name': v.name, 'tid': v.tid,
              'score': v.score, 'history': v.score_history}
-            for i, v in models.Team.enumerate(with_history=True)])
+            for i, v in models.Team.enumerate(**opts)])
 
 api.add_resource(APIScoreboard, '/api/scoreboard')
 

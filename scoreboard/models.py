@@ -89,12 +89,15 @@ class Team(db.Model):
             return None
 
     @classmethod
-    def enumerate(cls, with_history=False):
-        if not with_history:
-            return enumerate(cls.query.order_by(cls.score.desc()).all(), 1)
-        qry = cls.query.options(
-                orm.joinedload(cls.score_history)).order_by(cls.score.desc())
-        return enumerate(qry.all(), 1)
+    def enumerate(cls, with_history=False, above_zero=False):
+        if with_history:
+            base = cls.query.options(orm.joinedload(cls.score_history))
+        else:
+            base = cls.query
+        if above_zero:
+            base = base.filter(cls.score >= 0)
+        sorting = base.order_by(cls.score.desc())
+        return enumerate(sorting.all(), 1)
 
     @classmethod
     def current(cls):

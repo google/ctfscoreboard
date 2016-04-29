@@ -31,6 +31,7 @@ class Defaults(object):
         MAIL_HOST = 'localhost'
         NEWS_POLL_INTERVAL = 60000
         RULES = '/rules'
+        SCOREBOARD_ZEROS = True
         SCORING = 'plain'
         SYSTEM_NAME = 'root'
         TEAMS = False
