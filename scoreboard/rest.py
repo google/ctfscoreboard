@@ -214,7 +214,6 @@ class Team(restful.Resource):
     resource_fields['score_history'] = fields.Nested(history_fields)
     resource_fields['solved_challenges'] = fields.Nested(solved_challenges)
 
-    @cache.rest_team_cache('team/%d')
     @restful.marshal_with(resource_fields)
     def get(self, team_id):
         team = models.Team.query.get_or_404(team_id)
