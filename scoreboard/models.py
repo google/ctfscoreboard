@@ -95,7 +95,7 @@ class Team(db.Model):
         else:
             base = cls.query
         if above_zero:
-            base = base.filter(cls.score >= 0)
+            base = base.filter(cls.score > 0)
         sorting = base.order_by(cls.score.desc())
         return enumerate(sorting.all(), 1)
 
