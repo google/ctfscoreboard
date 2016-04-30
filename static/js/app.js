@@ -21,6 +21,7 @@ var scoreboardApp = angular.module('scoreboardApp', [
   'adminNewsCtrls',
   'adminPageCtrls',
   'adminTeamCtrls',
+  'adminToolCtrls',
   'challengeCtrls',
   'globalCtrls',
   'pageCtrls',
@@ -108,6 +109,10 @@ scoreboardApp.config([
         when('/admin/page/:path', {
           templateUrl: '/partials/admin/page.html',
           controller: 'AdminPageCtrl'
+        }).
+        when('/admin/tools', {
+          templateUrl: '/partials/admin/tools.html',
+          controller: 'AdminToolCtrl'
         }).
         otherwise({
           templateUrl: '/partials/page.html',

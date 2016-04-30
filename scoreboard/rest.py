@@ -871,3 +871,21 @@ class Configz(restful.Resource):
         return repr(app.config)
 
 api.add_resource(Configz, '/api/configz')
+
+
+class ToolsRecalculate(restful.Resource):
+    """Recalculate the scores."""
+
+    decorators = [utils.admin_required]
+
+    def post(self):
+        changed = 0
+        for team in models.Team.query.all():
+            old = team.score
+            team.update_score()
+            changed += 1 if team.score != old else 0
+        models.commit()
+        cache.clear()
+        return {'message': ('Recalculated, %d changed.' % changed)}
+
+api.add_resource(ToolsRecalculate, '/api/tools/recalculate')

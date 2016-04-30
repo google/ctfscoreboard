@@ -14,24 +14,21 @@
  * limitations under the License.
  */
 
-/* Admin-only services */
-var adminServices = angular.module('adminServices', ['ngResource']);
+var adminToolCtrls = angular.module('adminToolCtrls', [
+    'adminServices',
+    'sessionServices',
+    ]);
 
-adminServices.service('adminStateService', [
-    function() {
-      this.cid = null;
+adminToolCtrls.controller('AdminToolCtrl', [
+    '$scope',
+    'adminToolsService',
+    'errorService',
+    'sessionService',
+    'loadingService',
+    function($scope, adminToolsService, errorService, sessionService, loadingService) {
+        if (!sessionService.requireAdmin()) return;
 
-      this.saveCategory = function(cat) {
-        this.cid = (cat && cat.cid) || cat;
-      };
+        $scope.recalculateScores = adminToolsService.recalculateScores;
 
-      this.getCategory = function() {
-        return this.cid;
-      };
-    }]);
-
-adminServices.service('adminToolsService', [
-    '$resource',
-    function($resource) {
-      this.recalculateScores = $resource('/api/tools/recalculate').save;
+        loadingService.stop();
     }]);
