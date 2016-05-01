@@ -467,7 +467,7 @@ class ChallengeList(restful.Resource):
 class Category(restful.Resource):
     """Single category of challenges."""
 
-    decorators = [utils.login_required, utils.require_gametime]
+    decorators = [utils.login_required, utils.require_started]
 
     category_fields = {
         'cid': fields.Integer,
@@ -532,7 +532,7 @@ class Category(restful.Resource):
 class CategoryList(restful.Resource):
     """List of all categories."""
 
-    decorators = [utils.login_required, utils.require_gametime]
+    decorators = [utils.login_required, utils.require_started]
 
     resource_fields = {
         'categories': fields.Nested(Category.resource_fields)
@@ -583,7 +583,8 @@ class Hint(restful.Resource):
 class Answer(restful.Resource):
     """Submit an answer."""
 
-    decorators = [utils.login_required, utils.team_required]
+    decorators = [utils.login_required, utils.team_required,
+            utils.require_gametime]
 
     # TODO: get answers for admin?
 

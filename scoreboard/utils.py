@@ -168,6 +168,10 @@ class GameTime(object):
         return wrapper
 
     @classmethod
+    def require_started(cls, f):
+        return cls.require_open(f, after_end=True)
+
+    @classmethod
     def message(cls):
         state = cls.state()
         if state == 'BEFORE':
@@ -189,3 +193,4 @@ class GameTime(object):
 
 GameTime.setup()
 require_gametime = GameTime.require_open
+require_started = GameTime.require_started
