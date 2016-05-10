@@ -691,4 +691,5 @@ class Page(db.Model):
 
 
 # Shortcut for commiting
-commit = db.session.commit
+def commit():
+    db.session.commit()
