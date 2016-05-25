@@ -3,7 +3,10 @@
 This is a basic CTF Scoreboard, with support for hints, teams or individual
 competitors, and a handful of other features.
 
-Author: David Tomaschik <david@systemoverlord.com>
+Copyright 2016 Google, Inc.
+This is not an official Google product.
+
+Author: David Tomaschik <dwt@google.com>
 
 ### Installation ###
 1. Install Python with PIP and setuptools.  If you'd like to use a virtualenv,
