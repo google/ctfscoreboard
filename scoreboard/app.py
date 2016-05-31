@@ -58,9 +58,9 @@ def create_app(config=None):
             app.config.get('CHALLENGELOG', '/tmp/scoreboard.challenge.log'))
         handler.setLevel(logging.INFO)
         handler.setFormatter(logger.Formatter('%(asctime)s %(client)s %(message)s'))
-        logger = logging.getLogger('scoreboard')
-        logger.addHandler(handler)
-        app.challenge_log = logger
+        local_logger = logging.getLogger('scoreboard')
+        local_logger.addHandler(handler)
+        app.challenge_log = local_logger
     else:
         app.challenge_log = app.logger
         app.logger.handlers[0].setFormatter(log_formatter)
@@ -73,6 +73,8 @@ def create_app(config=None):
         403: 'Forbidden',
         500: 'Internal Error',
     }
+
+    return app
 
 
 # Global app instance
