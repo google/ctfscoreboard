@@ -19,6 +19,7 @@ import functools
 import hashlib
 import hmac
 import os
+import re
 import pytz
 import urlparse
 
@@ -118,6 +119,18 @@ def absolute_url(path):
     """Build an absolute URL.  Not safe for untrusted input."""
     return urlparse.urljoin(flask.request.host_url, path)
 
+def normalize_input(answer):
+    """"Take a string and normalize it to a standard format."""
+
+    """Strip leading and trailing whitespace characters"""
+    match = re.match("^\\s*(.*\\S)\\s*$", answer)
+    if match == None or len(match.groups()) == 0:
+        return answer
+    else:
+        answer = match.group(1)
+
+    answer = answer.lower()
+    return answer
 
 class GameTime(object):
     """Manage start/end times for the game."""

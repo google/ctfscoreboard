@@ -29,5 +29,9 @@ if __name__ == '__main__':
         from scoreboard.tests import data
         models.db.create_all()
         data.create_all()
+    elif 'runtests' in sys.argv:
+        from scoreboard.tests.unit import test_all
+        test_all()
+        print "All Tests Pass"
     else:
         app.run(host='0.0.0.0', debug=True, port=app.config.get('PORT', 9999))

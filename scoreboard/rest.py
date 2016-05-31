@@ -398,7 +398,8 @@ class Challenge(restful.Resource):
             setattr(
                 challenge, field, data.get(field, getattr(challenge, field)))
         if 'answer' in data and data['answer']:
-            challenge.change_answer(data['answer'])
+            normal = utils.normalize_input(data['answer'])
+            challenge.change_answer(normal)
         if 'hints' in data:
             challenge.set_hints(data['hints'])
         if 'attachments' in data:
@@ -441,11 +442,12 @@ class ChallengeList(restful.Resource):
     def post(self):
         data = flask.request.get_json()
         unlocked = data.get('unlocked', False)
+        normal = utils.normalize_input(data['answer'])
         chall = models.Challenge.create(
             data['name'],
             data['description'],
             data['points'],
-            data['answer'],
+            normal,
             data['cat_cid'],
             unlocked)
         if 'hints' in data:
@@ -590,7 +592,8 @@ class Answer(restful.Resource):
 
     def post(self):
         data = flask.request.get_json()
-        points = controllers.submit_answer(data['cid'], data['answer'])
+        normal = utils.normalize_input(data['answer'])
+        points = controllers.submit_answer(data['cid'], normal)
         models.commit()
         cache.delete_team('cats/%d')
         cache.delete('scoreboard')
