@@ -123,14 +123,7 @@ def normalize_input(answer):
     """"Take a string and normalize it to a standard format."""
 
     """Strip leading and trailing whitespace characters"""
-    match = re.match("^\\s*(.*\\S)\\s*$", answer)
-    if match == None or len(match.groups()) == 0:
-        return answer
-    else:
-        answer = match.group(1)
-
-    answer = answer.lower()
-    return answer
+    return answer.strip().lower()
 
 class GameTime(object):
     """Manage start/end times for the game."""
