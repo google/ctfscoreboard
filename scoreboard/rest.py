@@ -584,7 +584,7 @@ class Answer(restful.Resource):
     """Submit an answer."""
 
     decorators = [utils.login_required, utils.team_required,
-            utils.require_gametime]
+            utils.require_submittable]
 
     # TODO: get answers for admin?
 

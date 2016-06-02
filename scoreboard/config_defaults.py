@@ -40,3 +40,4 @@ class Defaults(object):
         TEAMS = True
         TEASE_HIDDEN = True
         TITLE = 'Scoreboard'
+        SUBMIT_AFTER_END = True
