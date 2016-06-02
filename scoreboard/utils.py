@@ -161,9 +161,7 @@ class GameTime(object):
     def over(cls):
         """Has the game ended?"""
         state = cls.state()
-        if state == 'AFTER':
-            return True
-        return False
+        return state == 'AFTER':
 
     @classmethod
     def require_open(cls, f, after_end=False, or_admin=True):

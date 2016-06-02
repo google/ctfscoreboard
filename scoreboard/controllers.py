@@ -99,20 +99,20 @@ def submit_answer(cid, answer):
         if challenge.verify_answer(answer):
             ans = models.Answer.create(challenge, team, answer)
 
-            if not utils.GameTime.over():
+            if utils.GameTime.over():
+                correct = 'CORRECT (Game Over)'
+            else:
                 team.score += ans.current_points
                 correct = 'CORRECT'
-            else:
-                correct = 'CORRECT (Game Over)'
 
             team.last_solve = datetime.datetime.utcnow()
             models.ScoreHistory.add_entry(team)
             challenge.update_answers(exclude_team=team)
 
             if not utils.GameTime.over():
-                return ans.current_points
-            else:
                 return 0
+            else:
+                return ans.current_points
         else:
             raise errors.InvalidAnswerError('Really?  Haha no....')
     finally:

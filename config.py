@@ -21,6 +21,3 @@ TITLE = 'CTF Scoreboard Dev'
 TEAMS = True
 ATTACHMENT_BACKEND = 'file:///tmp/attachments'
 LOGIN_METHOD = 'local'
-SESSION_COOKIE_SECURE = False
-GAME_TIME = ("2012-01-19 17:21:00", "2016-06-01 17:00:00")
-SUBMIT_AFTER_END = True
