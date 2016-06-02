@@ -109,7 +109,7 @@ def submit_answer(cid, answer):
             models.ScoreHistory.add_entry(team)
             challenge.update_answers(exclude_team=team)
 
-            if not utils.GameTime.over():
+            if utils.GameTime.over():
                 return 0
             else:
                 return ans.current_points
