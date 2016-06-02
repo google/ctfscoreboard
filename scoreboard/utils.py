@@ -153,8 +153,9 @@ class GameTime(object):
         return until - datetime.datetime.utcnow()
 
     @classmethod
-    def state(cls):
-        now = datetime.datetime.utcnow()
+    def state(cls, now=None):
+        if not now:
+            now = datetime.datetime.utcnow()
         if cls.start and cls.start > now:
             return 'BEFORE'
         if cls.end and cls.end < now:
@@ -170,6 +171,12 @@ class GameTime(object):
         return False
 
     @classmethod
+    def over(cls):
+        """Has the game ended?"""
+        state = cls.state()
+        return state == 'AFTER'
+
+    @classmethod
     def require_open(cls, f, after_end=False, or_admin=True):
         """Decorator for requiring the game is open."""
         @functools.wraps(f)
@@ -182,7 +189,13 @@ class GameTime(object):
 
     @classmethod
     def require_started(cls, f):
+        """Decorator for requiring the game has started."""
         return cls.require_open(f, after_end=True)
+
+    @classmethod
+    def require_submittable(cls, f):
+        """Decorator for requiring that the game may be submitted to."""
+        return cls.require_open(f, after_end=app.config.get('SUBMIT_AFTER_END'))
 
     @classmethod
     def message(cls):
@@ -207,3 +220,4 @@ class GameTime(object):
 GameTime.setup()
 require_gametime = GameTime.require_open
 require_started = GameTime.require_started
+require_submittable = GameTime.require_submittable

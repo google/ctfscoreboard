@@ -81,7 +81,7 @@ def register_user(email, nick, password, team_id=None,
     return user
 
 
-@utils.require_gametime
+@utils.require_submittable
 def submit_answer(cid, answer):
     """Submits an answer.
 
@@ -98,12 +98,21 @@ def submit_answer(cid, answer):
             raise errors.AccessDeniedError('Challenge is locked!')
         if challenge.verify_answer(answer):
             ans = models.Answer.create(challenge, team, answer)
-            team.score += ans.current_points
+
+            if utils.GameTime.over():
+                correct = 'CORRECT (Game Over)'
+            else:
+                team.score += ans.current_points
+                correct = 'CORRECT'
+
             team.last_solve = datetime.datetime.utcnow()
             models.ScoreHistory.add_entry(team)
             challenge.update_answers(exclude_team=team)
-            correct = 'CORRECT'
-            return ans.current_points
+
+            if utils.GameTime.over():
+                return 0
+            else:
+                return ans.current_points
         else:
             raise errors.InvalidAnswerError('Really?  Haha no....')
     finally:
@@ -114,7 +123,7 @@ def submit_answer(cid, answer):
             challenge.cid, correct)
 
 
-@utils.require_gametime
+@utils.require_submittable
 def unlock_hint(hid):
     """Perform steps for hint unlocking."""
     hint = models.Hint.query.get(int(hid))
