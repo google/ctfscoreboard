@@ -593,6 +593,9 @@ class Answer(db.Model):
 
     @property
     def current_points(self):
+        if utils.GameTime.state(self.timestamp) == "AFTER":
+            return 0
+
         mode = app.config.get('SCORING')
         hints = UnlockedHint.query.filter(UnlockedHint.team == self.team)
         deduction = sum(
