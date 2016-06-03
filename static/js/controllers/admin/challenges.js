@@ -37,7 +37,7 @@ adminChallengeCtrls.controller('AdminCategoryCtrl', [
 
       $scope.updateCategory = function(cat) {
         errorService.clearErrors();
-        categoryService.save({cid: cat.cid}, cat,
+        categoryService.save({slug: cat.slug}, cat,
           function(data) {
             errorService.error(cat.name + ' updated.', 'success');
           },
@@ -49,7 +49,7 @@ adminChallengeCtrls.controller('AdminCategoryCtrl', [
       $scope.deleteCategory = function(cat) {
         errorService.clearErrors();
         var name = cat.name;
-        categoryService.delete({cid: cat.cid},
+        categoryService.delete({slug: cat.slug},
           function(data) {
             // remove from scope
             var idx = $scope.categories.indexOf(cat);
@@ -113,7 +113,7 @@ adminChallengeCtrls.controller('AdminChallengesCtrl', [
           return challenges;
         var filtered = [];
         angular.forEach(challenges, function(ch) {
-          if (ch.cat_cid == $routeParams.cid)
+          if (ch.cat_slug == $routeParams.cid)
             filtered.push(ch);
         });
         return filtered;
@@ -379,9 +379,9 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
                   'type': 'None'
                 }
             };
-            var cid = adminStateService.getCategory();
-            if (typeof cid === "number") {
-              $scope.challenge.cat_cid = cid;
+            var slug = adminStateService.getCategory();
+            if (typeof slug === "string") {
+              $scope.challenge.cat_slug = slug;
             }
         }
         categoryService.get(function(data) {

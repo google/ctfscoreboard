@@ -239,9 +239,8 @@ class User(db.Model):
 class Category(db.Model):
     """A Category of Challenges."""
 
-    cid = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
-    slug = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    slug = db.Column(db.String(100), primary_key=True, unique=True, nullable=False, index=True)
     description = db.Column(db.Text)
     unlocked = db.Column(db.Boolean, default=True)
     challenges = db.relationship(
@@ -249,7 +248,7 @@ class Category(db.Model):
         lazy='select')
 
     def __repr__(self):
-        return '<Category: %d/%s>' % (self.cid, self.name)
+        return '<Category: %d/%s>' % (self.slug, self.name)
 
     @property
     def challenge_count(self):
@@ -333,7 +332,7 @@ class Category(db.Model):
 class Challenge(db.Model):
     """A single challenge to be played."""
 
-    cid = db.Column(db.Integer, primary_key=True)
+    cid = db.Column(db.BigInteger, primary_key=True, autoincrement=False)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
     points = db.Column(db.Integer, nullable=False)
@@ -341,7 +340,7 @@ class Challenge(db.Model):
     unlocked = db.Column(db.Boolean, default=False)
     weight = db.Column(db.Integer, nullable=False)  # Order for display
     prerequisite = db.Column(db.Text, nullable=False)  # Prerequisite Metadata
-    cat_cid = db.Column(db.Integer, db.ForeignKey('category.cid'))
+    cat_slug = db.Column(db.String(100), db.ForeignKey('category.slug'))
     answers = db.relationship('Answer', backref=db.backref('challenge',
         lazy='joined'), lazy='select')
     hints = db.relationship('Hint', backref='challenge', lazy='joined')
@@ -423,13 +422,14 @@ class Challenge(db.Model):
         return chall.is_answered(team=team)
 
     @classmethod
-    def create(cls, name, description, points, answer, cid, unlocked=False):
+    def create(cls, name, description, points, answer, slug, unlocked=False):
         challenge = cls()
         challenge.name = name
         challenge.description = description
+        challenge.cid = utils.generate_id()
         challenge.points = points
         challenge.answer_hash = pbkdf2.crypt(answer)
-        challenge.cat_cid = cid
+        challenge.cat_slug = slug
         challenge.unlocked = unlocked
         weight = db.session.query(db.func.max(Challenge.weight)).scalar()
         challenge.weight = (weight + 1) if weight else 1
@@ -449,9 +449,8 @@ class Challenge(db.Model):
                 hint = Hint.query.get(h['hid'])
                 hid_set.add(h['hid'])
             else:
-                hint = Hint()
-                db.session.add(hint)
-                hint.challenge = self
+                hint = Hint.create(self)
+
             hint.hint = h['hint']
             hint.cost = h['cost']
 
@@ -468,12 +467,7 @@ class Challenge(db.Model):
             aid_set.add(a['aid'])
             attachment = Attachment.query.get(a['aid'])
             if not attachment:
-                attachment = Attachment()
-                attachment.aid = a['aid']
-                attachment.filename = a['filename']
-                attachment.content_type = a['content_type']
-                attachment.challenge = self
-                db.session.add(attachment)
+                Attachment.create(a['aid'], a['filename'], a['content_type'], self)
 
         for a in old_attachments:
             if a.aid not in aid_set:
@@ -505,7 +499,7 @@ class Attachment(db.Model):
     """Attachment to a challenge."""
 
     aid = db.Column(db.String(64), primary_key=True)
-    challenge_cid = db.Column(db.Integer, db.ForeignKey('challenge.cid'),
+    challenge_cid = db.Column(db.BigInteger, db.ForeignKey('challenge.cid'),
             nullable=False)
     filename = db.Column(db.String(100), nullable=False)
     content_type = db.Column(db.String(100))
@@ -525,12 +519,22 @@ class Attachment(db.Model):
                 app.logger.exception("Couldn't delete: %s", str(ex))
         db.session.delete(self)
 
+    @classmethod
+    def create(cls, aid, filename, content_type, challenge):
+        attachment = cls()
+        attachment.aid = aid
+        attachment.filename = filename
+        attachment.content_type = content_type
+        attachment.challenge = challenge
+        db.session.add(attachment)
+        return attachment
+
 
 class Hint(db.Model):
     """Hint for a challenge."""
 
-    hid = db.Column(db.Integer, primary_key=True)
-    challenge_cid = db.Column(db.Integer, db.ForeignKey('challenge.cid'),
+    hid = db.Column(db.BigInteger, primary_key=True, autoincrement=False)
+    challenge_cid = db.Column(db.BigInteger, db.ForeignKey('challenge.cid'),
             nullable=False)
     hint = db.Column(db.Text, nullable=False)
     cost = db.Column(db.Integer)
@@ -565,12 +569,21 @@ class Hint(db.Model):
         except orm_exc.NoResultFound:
             return False
 
+    @classmethod
+    def create(cls, challenge):
+        hint = cls()
+        hint.challenge_cid = challenge.cid
+        hint.hid = utils.generate_id()
+        db.session.add(hint)
+        return hint
+
+
 
 class UnlockedHint(db.Model):
     """Record that a team has unlocked a hint."""
 
     hint_hid = db.Column(
-        db.Integer, db.ForeignKey('hint.hid'), primary_key=True)
+        db.BigInteger, db.ForeignKey('hint.hid'), primary_key=True)
     hint = db.relationship('Hint', backref='unlocked_by', lazy='joined')
     team_tid = db.Column(
         db.Integer, db.ForeignKey('team.tid'), primary_key=True)
@@ -582,7 +595,7 @@ class UnlockedHint(db.Model):
 class Answer(db.Model):
     """Log a successfully submitted answer."""
 
-    challenge_cid = db.Column(db.Integer, db.ForeignKey('challenge.cid'),
+    challenge_cid = db.Column(db.BigInteger, db.ForeignKey('challenge.cid'),
                               primary_key=True)
     team_tid = db.Column(
         db.Integer, db.ForeignKey('team.tid'), primary_key=True)

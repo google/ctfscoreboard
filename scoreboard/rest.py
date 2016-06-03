@@ -204,7 +204,7 @@ class Team(restful.Resource):
     solved_challenges = {
         'cid': fields.Integer,
         'name': fields.String,
-        'cat_id': fields.Integer,
+        'cat_slug': fields.String,
         'cat_name': fields.String,
         'solved': ISO8601DateTime(),
         'points': fields.Integer,
@@ -231,7 +231,7 @@ class Team(restful.Resource):
                     'points': answer.current_points,
                     'name': answer.challenge.name,
                     'cid': answer.challenge_cid,
-                    'cat_id': answer.challenge.category.cid,
+                    'cat_slug': answer.challenge.category.slug,
                     'cat_name': answer.challenge.category.name,
                     })
             result['solved_challenges'] = challenges
@@ -369,7 +369,7 @@ class Challenge(restful.Resource):
         'description': fields.String,
         'unlocked': fields.Boolean,
         'hints': HintField,
-        'cat_cid': fields.Integer,
+        'cat_slug': fields.String,
         'answered': fields.Boolean,
         'solves': fields.Integer,
         'weight': fields.Integer,
@@ -394,7 +394,7 @@ class Challenge(restful.Resource):
         data = flask.request.get_json()
         old_unlocked = challenge.unlocked
         for field in (
-                'name', 'description', 'points', 'cat_cid', 'unlocked', 'weight'):
+                'name', 'description', 'points', 'cat_slug', 'unlocked', 'weight'):
             setattr(
                 challenge, field, data.get(field, getattr(challenge, field)))
         if 'answer' in data and data['answer']:
@@ -446,7 +446,7 @@ class ChallengeList(restful.Resource):
             data['description'],
             data['points'],
             data['answer'],
-            data['cat_cid'],
+            data['cat_slug'],
             unlocked)
         if 'hints' in data:
             chall.set_hints(data['hints'])
@@ -470,7 +470,6 @@ class Category(restful.Resource):
     decorators = [utils.login_required, utils.require_started]
 
     category_fields = {
-        'cid': fields.Integer,
         'name': fields.String,
         'slug': fields.String,
         'unlocked': fields.Boolean,
@@ -590,13 +589,14 @@ class Answer(restful.Resource):
 
     def post(self):
         data = flask.request.get_json()
+        print data
         points = controllers.submit_answer(data['cid'], data['answer'])
         models.commit()
         cache.delete_team('cats/%d')
         cache.delete('scoreboard')
         return dict(points=points)
 
-api.add_resource(Category, '/api/categories/<int:category_id>')
+api.add_resource(Category, '/api/categories/<string:category_id>')
 api.add_resource(CategoryList, '/api/categories')
 api.add_resource(ChallengeList, '/api/challenges')
 api.add_resource(Challenge, '/api/challenges/<int:challenge_id>')
@@ -776,7 +776,7 @@ class BackupRestore(restful.Resource):
                     })
                 challenges.append({
                     'cid': q.cid,
-                    'category': cat.cid,
+                    'category': cat.slug,
                     'name': q.name,
                     'description': q.description,
                     'points': q.points,
@@ -786,7 +786,7 @@ class BackupRestore(restful.Resource):
                     'prerequisite': q.prerequisite,
                     'weight': q.weight,
                 })
-            categories[cat.cid] = {
+            categories[cat.slug] = {
                 'name': cat.name,
                 'description': cat.description,
                 'challenges': challenges,
@@ -810,12 +810,12 @@ class BackupRestore(restful.Resource):
 
         cats = {}
         challs = 0
-        for catid, cat in categories.iteritems():
+        for catslug, cat in categories.iteritems():
             newcat = models.Category()
             for f in ('name', 'description', 'slug'):
                 setattr(newcat, f, cat[f])
             models.db.session.add(newcat)
-            cats[int(catid)] = newcat
+            cats[catslug] = newcat
 
             for challenge in cat['challenges']:
                 newchall = models.Challenge()

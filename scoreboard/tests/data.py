@@ -67,7 +67,7 @@ def make_challenges(cats):
         cat = random.choice(cats)
         points = random.randint(1, 20) * 100
         desc = 'Flag: ' + flag
-        ch = models.Challenge.create(title, desc, points, flag, cat.cid,
+        ch = models.Challenge.create(title, desc, points, flag, cat.slug,
                 unlocked=True)
         hints = []
         for _ in xrange(random.randint(0, 3)):

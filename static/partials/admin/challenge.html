@@ -12,8 +12,8 @@
         <div class='form-group'>
             <label for='category'>Category</label>
             <select id='category' name='category' class='form-control'
-              ng-options='cat.cid as cat.name for cat in categories'
-              ng-model='challenge.cat_cid' required>
+              ng-options='cat.slug as cat.name for cat in categories'
+              ng-model='challenge.cat_slug' required>
             <option disabled>-- Select Category --</option>
             </select>
         </div>
