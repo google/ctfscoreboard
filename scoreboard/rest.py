@@ -589,7 +589,6 @@ class Answer(restful.Resource):
 
     def post(self):
         data = flask.request.get_json()
-        print data
         points = controllers.submit_answer(data['cid'], data['answer'])
         models.commit()
         cache.delete_team('cats/%d')
