@@ -82,8 +82,8 @@ challengeCtrls.controller('CategoryCtrl', [
           categoryService.getList(function(data) {
             angular.forEach(data.categories, function(c) {
               if (c.slug == slug){
-                $scope.cid = c.cid;
-                refresh(c.cid);
+                $scope.slug = c.slug;
+                refresh(c.slug);
                 found = true;
               }
             });

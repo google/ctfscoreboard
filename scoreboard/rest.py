@@ -204,7 +204,7 @@ class Team(flask_restful.Resource):
     solved_challenges = {
         'cid': fields.Integer,
         'name': fields.String,
-        'cat_id': fields.Integer,
+        'cat_slug': fields.String,
         'cat_name': fields.String,
         'solved': ISO8601DateTime(),
         'points': fields.Integer,
@@ -231,7 +231,7 @@ class Team(flask_restful.Resource):
                     'points': answer.current_points,
                     'name': answer.challenge.name,
                     'cid': answer.challenge_cid,
-                    'cat_id': answer.challenge.category.cid,
+                    'cat_slug': answer.challenge.category.slug,
                     'cat_name': answer.challenge.category.name,
                     })
             result['solved_challenges'] = challenges
@@ -369,7 +369,7 @@ class Challenge(flask_restful.Resource):
         'description': fields.String,
         'unlocked': fields.Boolean,
         'hints': HintField,
-        'cat_cid': fields.Integer,
+        'cat_slug': fields.String,
         'answered': fields.Boolean,
         'solves': fields.Integer,
         'weight': fields.Integer,
@@ -394,7 +394,7 @@ class Challenge(flask_restful.Resource):
         data = flask.request.get_json()
         old_unlocked = challenge.unlocked
         for field in (
-                'name', 'description', 'points', 'cat_cid', 'unlocked', 'weight'):
+                'name', 'description', 'points', 'cat_slug', 'unlocked', 'weight'):
             setattr(
                 challenge, field, data.get(field, getattr(challenge, field)))
         if 'answer' in data and data['answer']:
@@ -447,8 +447,8 @@ class ChallengeList(flask_restful.Resource):
             data['name'],
             data['description'],
             data['points'],
+            data['cat_slug'],
             answer,
-            data['cat_cid'],
             unlocked)
         if 'hints' in data:
             chall.set_hints(data['hints'])
@@ -472,7 +472,6 @@ class Category(flask_restful.Resource):
     decorators = [utils.login_required, utils.require_started]
 
     category_fields = {
-        'cid': fields.Integer,
         'name': fields.String,
         'slug': fields.String,
         'unlocked': fields.Boolean,
@@ -484,14 +483,14 @@ class Category(flask_restful.Resource):
     resource_fields['challenges'] = fields.Nested(Challenge.resource_fields)
 
     @flask_restful.marshal_with(resource_fields)
-    def get(self, category_id):
-        category = models.Category.query.get_or_404(category_id)
+    def get(self, category_slug):
+        category = models.Category.query.get_or_404(category_slug)
         return self.get_challenges(category)
 
     @utils.admin_required
     @flask_restful.marshal_with(resource_fields)
-    def put(self, category_id):
-        category = models.Category.query.get_or_404(category_id)
+    def put(self, category_slug):
+        category = models.Category.query.get_or_404(category_slug)
         category.name = get_field('name')
         category.description = get_field('description', '')
 
@@ -524,8 +523,8 @@ class Category(flask_restful.Resource):
         return res
 
     @utils.admin_required
-    def delete(self, category_id):
-        category = models.Category.query.get_or_404(category_id)
+    def delete(self, category_slug):
+        category = models.Category.query.get_or_404(category_slug)
         models.db.session.delete(category)
         cache.clear()
         models.commit()
@@ -599,7 +598,7 @@ class Answer(flask_restful.Resource):
         cache.delete('scoreboard')
         return dict(points=points)
 
-api.add_resource(Category, '/api/categories/<int:category_id>')
+api.add_resource(Category, '/api/categories/<string:category_slug>')
 api.add_resource(CategoryList, '/api/categories')
 api.add_resource(ChallengeList, '/api/challenges')
 api.add_resource(Challenge, '/api/challenges/<int:challenge_id>')
@@ -779,7 +778,7 @@ class BackupRestore(flask_restful.Resource):
                     })
                 challenges.append({
                     'cid': q.cid,
-                    'category': cat.cid,
+                    'category': cat.slug,
                     'name': q.name,
                     'description': q.description,
                     'points': q.points,
@@ -789,7 +788,7 @@ class BackupRestore(flask_restful.Resource):
                     'prerequisite': q.prerequisite,
                     'weight': q.weight,
                 })
-            categories[cat.cid] = {
+            categories[cat.slug] = {
                 'name': cat.name,
                 'description': cat.description,
                 'challenges': challenges,
@@ -813,12 +812,12 @@ class BackupRestore(flask_restful.Resource):
 
         cats = {}
         challs = 0
-        for catid, cat in categories.iteritems():
+        for catslug, cat in categories.iteritems():
             newcat = models.Category()
             for f in ('name', 'description', 'slug'):
                 setattr(newcat, f, cat[f])
             models.db.session.add(newcat)
-            cats[int(catid)] = newcat
+            cats[catslug] = newcat
 
             for challenge in cat['challenges']:
                 newchall = models.Challenge()

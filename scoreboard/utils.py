@@ -22,6 +22,9 @@ import os
 import pytz
 import urlparse
 
+from random import SystemRandom
+random = SystemRandom()
+
 from scoreboard.app import app
 
 
@@ -117,6 +120,10 @@ def compare_digest(a, b):
 def absolute_url(path):
     """Build an absolute URL.  Not safe for untrusted input."""
     return urlparse.urljoin(flask.request.host_url, path)
+
+def generate_id():
+    """Generate a unique identifier for the database"""
+    return int(random.getrandbits(48))
 
 def normalize_input(answer):
     """"Take a string and normalize it to a standard format."""
