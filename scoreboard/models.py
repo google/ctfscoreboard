@@ -15,7 +15,7 @@
 import base64
 import datetime
 import flask
-from flask.ext import sqlalchemy
+import flask_sqlalchemy
 import hashlib
 import hmac
 import json
@@ -34,7 +34,7 @@ from scoreboard.app import app
 from scoreboard import attachments
 from scoreboard import errors
 
-db = sqlalchemy.SQLAlchemy(app)
+db = flask_sqlalchemy.SQLAlchemy(app)
 
 
 class Team(db.Model):
