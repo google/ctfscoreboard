@@ -30,7 +30,7 @@ if __name__ == '__main__':
         models.db.create_all()
         data.create_all()
     elif 'runtests' in sys.argv:
-        from scoreboard.tests.unit import test_all
+        from scoreboard.tests.utils_test import test_all
         test_all()
         print "All Tests Pass"
     else:

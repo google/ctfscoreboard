@@ -19,7 +19,6 @@ import functools
 import hashlib
 import hmac
 import os
-import re
 import pytz
 import urlparse
 
@@ -121,8 +120,6 @@ def absolute_url(path):
 
 def normalize_input(answer):
     """"Take a string and normalize it to a standard format."""
-
-    """Strip leading and trailing whitespace characters"""
     return answer.strip().lower()
 
 class GameTime(object):
