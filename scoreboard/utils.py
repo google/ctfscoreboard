@@ -118,6 +118,9 @@ def absolute_url(path):
     """Build an absolute URL.  Not safe for untrusted input."""
     return urlparse.urljoin(flask.request.host_url, path)
 
+def normalize_input(answer):
+    """"Take a string and normalize it to a standard format."""
+    return answer.strip().lower()
 
 class GameTime(object):
     """Manage start/end times for the game."""
