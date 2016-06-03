@@ -13,8 +13,8 @@
 # limitations under the License.
 
 
-from flask.ext import sqlalchemy
-from flask.ext import testing
+import flask_sqlalchemy
+import flask_testing
 from scoreboard import app
 from scoreboard import models
 
