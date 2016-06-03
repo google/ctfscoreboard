@@ -125,6 +125,9 @@ def generate_id():
     """Generate a unique identifier for the database"""
     return int(random.getrandbits(48))
 
+def normalize_input(answer):
+    """"Take a string and normalize it to a standard format."""
+    return answer.strip().lower()
 
 class GameTime(object):
     """Manage start/end times for the game."""
