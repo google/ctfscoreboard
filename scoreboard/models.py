@@ -248,7 +248,7 @@ class Category(db.Model):
         lazy='select')
 
     def __repr__(self):
-        return '<Category: %d/%s>' % (self.slug, self.name)
+        return '<Category: %s/%s>' % (self.slug, self.name)
 
     @property
     def challenge_count(self):

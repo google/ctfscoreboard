@@ -93,6 +93,7 @@ def submit_answer(cid, answer):
     if not team:
         raise errors.AccessDeniedError('No team!')
     try:
+        print cid
         challenge = models.Challenge.query.get(cid)
         if not challenge.unlocked_for_team(team):
             raise errors.AccessDeniedError('Challenge is locked!')

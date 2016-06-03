@@ -123,7 +123,7 @@ def absolute_url(path):
 
 def generate_id():
     """Generate a unique identifier for the database"""
-    return int(random.getrandbits(63))
+    return int(random.getrandbits(48))
 
 
 class GameTime(object):
