@@ -14,8 +14,8 @@
 
 import datetime
 import flask
-from flask.ext import restful
-from flask.ext.restful import fields
+import flask_restful
+from flask_restful import fields
 import hashlib
 import json
 import os
@@ -32,7 +32,7 @@ from scoreboard import errors
 from scoreboard import models
 from scoreboard import utils
 
-api = restful.Api(app)
+api = flask_restful.Api(app)
 context.ensure_setup()
 
 
@@ -110,7 +110,7 @@ def get_field(name, *args):
             'Required field {} not given.'.format(name))
 
 
-class User(restful.Resource):
+class User(flask_restful.Resource):
     """Wrap User model."""
 
     decorators = [utils.login_required]
@@ -123,13 +123,13 @@ class User(restful.Resource):
         'team_tid': fields.Integer,
     }
 
-    @restful.marshal_with(resource_fields)
+    @flask_restful.marshal_with(resource_fields)
     def get(self, user_id):
         if not models.User.current().uid == user_id and not models.User.current().admin:
             raise errors.AccessDeniedError('No access to that user.')
         return models.User.query.get_or_404(user_id)
 
-    @restful.marshal_with(resource_fields)
+    @flask_restful.marshal_with(resource_fields)
     def put(self, user_id):
         if not models.User.current().uid == user_id and not models.User.current().admin:
             raise errors.AccessDeniedError('No access to that user.')
@@ -158,7 +158,7 @@ class User(restful.Resource):
         return user
 
 
-class UserList(restful.Resource):
+class UserList(flask_restful.Resource):
     """Registration and listing of users."""
 
     resource_fields = {
@@ -166,11 +166,11 @@ class UserList(restful.Resource):
     }
 
     @utils.admin_required
-    @restful.marshal_with(resource_fields)
+    @flask_restful.marshal_with(resource_fields)
     def get(self):
         return dict(users=models.User.query.all())
 
-    @restful.marshal_with(User.resource_fields)
+    @flask_restful.marshal_with(User.resource_fields)
     def post(self):
         """Register a new user."""
         if models.User.current():
@@ -186,7 +186,7 @@ class UserList(restful.Resource):
         return user
 
 
-class Team(restful.Resource):
+class Team(flask_restful.Resource):
     """Manage single team."""
 
     decorators = [utils.login_required]
@@ -214,7 +214,7 @@ class Team(restful.Resource):
     resource_fields['score_history'] = fields.Nested(history_fields)
     resource_fields['solved_challenges'] = fields.Nested(solved_challenges)
 
-    @restful.marshal_with(resource_fields)
+    @flask_restful.marshal_with(resource_fields)
     def get(self, team_id):
         team = models.Team.query.get_or_404(team_id)
         return self._marshal_team(team, extended=True)
@@ -246,7 +246,7 @@ class Team(restful.Resource):
         return result
 
     @utils.admin_required
-    @restful.marshal_with(resource_fields)
+    @flask_restful.marshal_with(resource_fields)
     def put(self, team_id):
         team = models.Team.query.get_or_404(team_id)
         app.logger.info('Update of team %r by %r.', team, models.User.current())
@@ -259,19 +259,19 @@ class Team(restful.Resource):
         return self._marshal_team(team)
 
 
-class TeamList(restful.Resource):
+class TeamList(flask_restful.Resource):
     """Get a list of all teams."""
 
     resource_fields = {
         'teams': fields.Nested(Team.team_fields),
     }
 
-    @restful.marshal_with(resource_fields)
+    @flask_restful.marshal_with(resource_fields)
     def get(self):
         return dict(teams=models.Team.query.all())
 
 
-class Session(restful.Resource):
+class Session(flask_restful.Resource):
 
     """Represents a logged-in session, used for login/logout."""
 
@@ -283,7 +283,7 @@ class Session(restful.Resource):
         'redirect': fields.String,
     }
 
-    @restful.marshal_with(resource_fields)
+    @flask_restful.marshal_with(resource_fields)
     @utils.login_required
     def get(self):
         """Get the current session."""
@@ -291,7 +291,7 @@ class Session(restful.Resource):
                 user=models.User.current(),
                 team=models.Team.current())
 
-    @restful.marshal_with(resource_fields)
+    @flask_restful.marshal_with(resource_fields)
     def post(self):
         """Login a user."""
         user = auth.login_user(flask.request)
@@ -320,7 +320,7 @@ class Session(restful.Resource):
         return {'message': 'OK'}
 
 
-class PasswordReset(restful.Resource):
+class PasswordReset(flask_restful.Resource):
     """Setup for password reset."""
 
     def get(self, email):
@@ -357,7 +357,7 @@ api.add_resource(Session, '/api/session')
 api.add_resource(PasswordReset, '/api/pwreset/<email>')
 
 
-class Challenge(restful.Resource):
+class Challenge(flask_restful.Resource):
     """A single challenge."""
 
     decorators = [utils.admin_required]
@@ -384,11 +384,11 @@ class Challenge(restful.Resource):
     resource_fields['attachments'] = fields.List(
             fields.Nested(attachment_fields))
 
-    @restful.marshal_with(resource_fields)
+    @flask_restful.marshal_with(resource_fields)
     def get(self, challenge_id):
         return models.Challenge.query.get_or_404(challenge_id)
 
-    @restful.marshal_with(resource_fields)
+    @flask_restful.marshal_with(resource_fields)
     def put(self, challenge_id):
         challenge = models.Challenge.query.get_or_404(challenge_id)
         data = flask.request.get_json()
@@ -425,7 +425,7 @@ class Challenge(restful.Resource):
         cache.clear()
 
 
-class ChallengeList(restful.Resource):
+class ChallengeList(flask_restful.Resource):
     """Create & manage challenges for admins."""
 
     decorators = [utils.admin_required]
@@ -434,11 +434,11 @@ class ChallengeList(restful.Resource):
         'challenges': fields.Nested(Challenge.resource_fields)
     }
 
-    @restful.marshal_with(resource_fields)
+    @flask_restful.marshal_with(resource_fields)
     def get(self):
         return dict(challenges=list(models.Challenge.query.all()))
 
-    @restful.marshal_with(Challenge.resource_fields)
+    @flask_restful.marshal_with(Challenge.resource_fields)
     def post(self):
         data = flask.request.get_json()
         unlocked = data.get('unlocked', False)
@@ -466,7 +466,7 @@ class ChallengeList(restful.Resource):
         return chall
 
 
-class Category(restful.Resource):
+class Category(flask_restful.Resource):
     """Single category of challenges."""
 
     decorators = [utils.login_required, utils.require_started]
@@ -482,13 +482,13 @@ class Category(restful.Resource):
     resource_fields = category_fields.copy()
     resource_fields['challenges'] = fields.Nested(Challenge.resource_fields)
 
-    @restful.marshal_with(resource_fields)
+    @flask_restful.marshal_with(resource_fields)
     def get(self, category_slug):
         category = models.Category.query.get_or_404(category_slug)
         return self.get_challenges(category)
 
     @utils.admin_required
-    @restful.marshal_with(resource_fields)
+    @flask_restful.marshal_with(resource_fields)
     def put(self, category_slug):
         category = models.Category.query.get_or_404(category_slug)
         category.name = get_field('name')
@@ -530,7 +530,7 @@ class Category(restful.Resource):
         models.commit()
 
 
-class CategoryList(restful.Resource):
+class CategoryList(flask_restful.Resource):
     """List of all categories."""
 
     decorators = [utils.login_required, utils.require_started]
@@ -540,14 +540,14 @@ class CategoryList(restful.Resource):
     }
 
     @cache.rest_team_cache('cats/%d')
-    @restful.marshal_with(resource_fields)
+    @flask_restful.marshal_with(resource_fields)
     def get(self):
         q = models.Category.joined_query()
         categories = [Category.get_challenges(c) for c in q.all()]
         return dict(categories=categories)
 
     @utils.admin_required
-    @restful.marshal_with(Category.category_fields)
+    @flask_restful.marshal_with(Category.category_fields)
     def post(self):
         cat = models.Category.create(
             get_field('name'),
@@ -558,7 +558,7 @@ class CategoryList(restful.Resource):
         return cat
 
 
-class Hint(restful.Resource):
+class Hint(flask_restful.Resource):
     """Wrap hint just for unlocking."""
 
     decorators = [utils.login_required, utils.team_required]
@@ -570,7 +570,7 @@ class Hint(restful.Resource):
         'cost': fields.Integer,
     }
 
-    @restful.marshal_with(resource_fields)
+    @flask_restful.marshal_with(resource_fields)
     def post(self):
         """Unlock a hint."""
         data = flask.request.get_json()
@@ -581,7 +581,7 @@ class Hint(restful.Resource):
         return hint
 
 
-class Answer(restful.Resource):
+class Answer(flask_restful.Resource):
     """Submit an answer."""
 
     decorators = [utils.login_required, utils.team_required,
@@ -606,7 +606,7 @@ api.add_resource(Hint, '/api/unlock_hint')
 api.add_resource(Answer, '/api/answers')
 
 
-class APIScoreboard(restful.Resource):
+class APIScoreboard(flask_restful.Resource):
     """Retrieve the scoreboard."""
 
     line_fields = {
@@ -621,7 +621,7 @@ class APIScoreboard(restful.Resource):
     }
 
     @cache.rest_cache('scoreboard')
-    @restful.marshal_with(resource_fields)
+    @flask_restful.marshal_with(resource_fields)
     def get(self):
         opts = {
             'with_history': True,
@@ -635,7 +635,7 @@ class APIScoreboard(restful.Resource):
 api.add_resource(APIScoreboard, '/api/scoreboard')
 
 
-class Config(restful.Resource):
+class Config(flask_restful.Resource):
     """Get basic app.config for the scoreboard.
 
     This should not change often as it is highly-cached on the client.
@@ -661,7 +661,7 @@ class Config(restful.Resource):
 api.add_resource(Config, '/api/config')
 
 
-class News(restful.Resource):
+class News(flask_restful.Resource):
     """Display and manage news."""
 
     resource_fields = {
@@ -672,7 +672,7 @@ class News(restful.Resource):
         'message': fields.String,
     }
 
-    @restful.marshal_with(resource_fields)
+    @flask_restful.marshal_with(resource_fields)
     def get(self):
         if models.Team.current():
             news = models.News.for_team(models.Team.current())
@@ -681,7 +681,7 @@ class News(restful.Resource):
         return list(news)
 
     @utils.admin_required
-    @restful.marshal_with(resource_fields)
+    @flask_restful.marshal_with(resource_fields)
     def post(self):
         data = flask.request.get_json()
         tid = None
@@ -702,7 +702,7 @@ class News(restful.Resource):
 api.add_resource(News, '/api/news')
 
 
-class Page(restful.Resource):
+class Page(flask_restful.Resource):
     """Create and retrieve static pages."""
 
     resource_fields = {
@@ -711,13 +711,13 @@ class Page(restful.Resource):
         'contents': fields.String,
     }
 
-    @restful.marshal_with(resource_fields)
+    @flask_restful.marshal_with(resource_fields)
     def get(self, path):
         app.logger.info('Path: %s', path)
         return models.Page.query.get_or_404(path)
 
     @utils.admin_required
-    @restful.marshal_with(resource_fields)
+    @flask_restful.marshal_with(resource_fields)
     def post(self, path):
         data = flask.request.get_json()
         page = models.Page.query.get(path)
@@ -740,7 +740,7 @@ class Page(restful.Resource):
 api.add_resource(Page, '/api/page/<path:path>')
 
 
-class Upload(restful.Resource):
+class Upload(flask_restful.Resource):
     """Allow uploading of files."""
 
     decorators = [utils.admin_required]
@@ -753,7 +753,7 @@ class Upload(restful.Resource):
 api.add_resource(Upload, '/api/upload')
 
 
-class BackupRestore(restful.Resource):
+class BackupRestore(flask_restful.Resource):
     """Control for backup and restore."""
     decorators = [utils.admin_required]
 
@@ -849,7 +849,7 @@ class BackupRestore(restful.Resource):
 api.add_resource(BackupRestore, '/api/backup')
 
 
-class CTFTimeScoreFeed(restful.Resource):
+class CTFTimeScoreFeed(flask_restful.Resource):
     """Provide a JSON feed to CTFTime.
 
     At this time, it is only intended to cover the manditory fields in the
@@ -865,7 +865,7 @@ class CTFTimeScoreFeed(restful.Resource):
 api.add_resource(CTFTimeScoreFeed, '/api/ctftime/scoreboard')
 
 
-class Configz(restful.Resource):
+class Configz(flask_restful.Resource):
     """Dump the config."""
 
     decorators = [utils.admin_required]
@@ -876,7 +876,7 @@ class Configz(restful.Resource):
 api.add_resource(Configz, '/api/configz')
 
 
-class ToolsRecalculate(restful.Resource):
+class ToolsRecalculate(flask_restful.Resource):
     """Recalculate the scores."""
 
     decorators = [utils.admin_required]
