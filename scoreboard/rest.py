@@ -481,14 +481,14 @@ class Category(restful.Resource):
     resource_fields['challenges'] = fields.Nested(Challenge.resource_fields)
 
     @restful.marshal_with(resource_fields)
-    def get(self, category_id):
-        category = models.Category.query.get_or_404(category_id)
+    def get(self, category_slug):
+        category = models.Category.query.get_or_404(category_slug)
         return self.get_challenges(category)
 
     @utils.admin_required
     @restful.marshal_with(resource_fields)
-    def put(self, category_id):
-        category = models.Category.query.get_or_404(category_id)
+    def put(self, category_slug):
+        category = models.Category.query.get_or_404(category_slug)
         category.name = get_field('name')
         category.description = get_field('description', '')
 
@@ -521,8 +521,8 @@ class Category(restful.Resource):
         return res
 
     @utils.admin_required
-    def delete(self, category_id):
-        category = models.Category.query.get_or_404(category_id)
+    def delete(self, category_slug):
+        category = models.Category.query.get_or_404(category_slug)
         models.db.session.delete(category)
         cache.clear()
         models.commit()
@@ -596,7 +596,7 @@ class Answer(restful.Resource):
         cache.delete('scoreboard')
         return dict(points=points)
 
-api.add_resource(Category, '/api/categories/<string:category_id>')
+api.add_resource(Category, '/api/categories/<string:category_slug>')
 api.add_resource(CategoryList, '/api/categories')
 api.add_resource(ChallengeList, '/api/challenges')
 api.add_resource(Challenge, '/api/challenges/<int:challenge_id>')
