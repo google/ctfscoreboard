@@ -290,7 +290,6 @@ class Tag(db.Model):
 
 
 
-
 class Category(db.Model):
     """A Category of Challenges."""
 
@@ -540,6 +539,21 @@ class Challenge(db.Model):
             self.prerequisite = ''
         else:
             self.prerequisite = json.dumps(prerequisite)
+
+    def set_tags(self, tags):
+        tag_set = set()
+        old_tags = list(self.tags)
+
+        for t in tags:
+            tag_set.add(t['tagslug'])
+            tag = Tag.query.get(t['tagslug'])
+            if tag:
+                self.tags.append(tag)
+
+        for t in old_tags:
+            if t.tagslug not in tag_set:
+                self.tags.remove(t)
+
 
     def update_answers(self, exclude_team=None):
         """Update answers for variable scoring."""

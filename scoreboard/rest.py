@@ -375,6 +375,7 @@ class Challenge(flask_restful.Resource):
         'weight': fields.Integer,
         'prerequisite': PrerequisiteField,
         'teaser': fields.Boolean,
+        #TODO: Change to other format (like attachment)
         'tags': fields.List(fields.Nested({
             'tagslug': fields.String,
             'name':    fields.String
@@ -413,6 +414,8 @@ class Challenge(flask_restful.Resource):
             challenge.set_prerequisite(data['prerequisite'])
         else:
             challenge.prerequisite = ''
+        if 'tags' in data:
+            challenge.set_tags(data['tags'])
         if challenge.unlocked and not old_unlocked:
             news = 'Challenge "%s" unlocked!' % challenge.name
             models.News.game_broadcast(message=news)
@@ -461,6 +464,8 @@ class ChallengeList(flask_restful.Resource):
             chall.set_attachments(data['attachments'])
         if 'prerequisite' in data:
             chall.set_prerequisite(data['prerequisite'])
+        if 'tags' in data:
+            chall.set_tags(data['tags'])
 
         if unlocked and utils.GameTime.open():
             news = 'New challenge created: "%s"' % chall.name
@@ -488,6 +493,26 @@ class Tag(flask_restful.Resource):
         tag = models.Tag.query.get_or_404(tag_slug)
         return self.get_challenges(tag)
 
+
+    @utils.admin_required
+    @flask_restful.marshal_with(resource_fields)
+    def put(self, tag_slug):
+        tag = models.Tag.query.get_or_404(tag_slug)
+        tag.name = get_field('name')
+        tag.description = get_field('description', tag.description)
+
+        app.logger.info('Tag %s updated by %r', tag, models.User.current())
+        models.commit()
+        cache.clear()
+        return self.get_challenges(tag)
+
+    @utils.admin_required
+    def delete(self, tag_slug):
+        tag = models.Tag.query.get_or_404(tag_slug)
+        models.db.session.delete(tag)
+        cache.clear()
+        models.commit()
+
     @classmethod
     def get_challenges(cls, tag):
         if models.User.current() and models.User.current().admin:
@@ -503,6 +528,33 @@ class Tag(flask_restful.Resource):
         res = {k: getattr(tag, k) for k in cls.tag_fields}
         res['challenges'] = list(challenges)
         return res
+
+class TagList(flask_restful.Resource):
+    """List of all tags"""
+
+    decorators = [utils.login_required, utils.require_started]
+
+    resource_fields = {
+        'tags': fields.Nested(Tag.tag_fields)
+    }
+
+    @cache.rest_team_cache('tags/%d')
+    @flask_restful.marshal_with(resource_fields)
+    def get(self):
+        q = models.Tag.query.all()
+        return dict(tags=q)
+
+    @utils.admin_required
+    @flask_restful.marshal_with(Tag.tag_fields)
+    def post(self):
+        tag = models.Tag.create(
+            get_field('name'),
+            get_field('description', ''))
+        models.commit()
+        app.logger.info('Tag %s created by %r.', tag, models.User.current())
+        cache.clear()
+        return tag
+
 
 
 class Category(flask_restful.Resource):
@@ -638,6 +690,7 @@ class Answer(flask_restful.Resource):
         return dict(points=points)
 
 api.add_resource(Tag, '/api/tags/<string:tag_slug>')
+api.add_resource(TagList, '/api/tags')
 api.add_resource(Category, '/api/categories/<string:category_slug>')
 api.add_resource(CategoryList, '/api/categories')
 api.add_resource(ChallengeList, '/api/challenges')
