@@ -375,24 +375,24 @@ class Challenge(flask_restful.Resource):
         'weight': fields.Integer,
         'prerequisite': PrerequisiteField,
         'teaser': fields.Boolean,
-        #TODO: Change to other format (like attachment)
-        'tags': fields.List(fields.Nested({
-            'tagslug': fields.String,
-            'name':    fields.String
-        })),
     }
     attachment_fields = {
         'aid': fields.String,
         'filename': fields.String,
     }
+    tags_fields = {
+        'tagslug': fields.String,
+        'name':    fields.String,
+    }
     resource_fields = challenge_fields.copy()
     resource_fields['attachments'] = fields.List(
             fields.Nested(attachment_fields))
+    resource_fields['tags'] = fields.List(
+            fields.Nested(tags_fields))
 
     @flask_restful.marshal_with(resource_fields)
     def get(self, challenge_id):
-        out = models.Challenge.query.get_or_404(challenge_id)
-        return out
+        return models.Challenge.query.get_or_404(challenge_id)
 
     @flask_restful.marshal_with(resource_fields)
     def put(self, challenge_id):

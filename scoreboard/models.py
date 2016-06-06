@@ -549,6 +549,8 @@ class Challenge(db.Model):
             tag = Tag.query.get(t['tagslug'])
             if tag:
                 self.tags.append(tag)
+            else:
+                app.logger.warning("Skipping tag %s which does not exist" % t['tagslug'])
 
         for t in old_tags:
             if t.tagslug not in tag_set:
