@@ -244,8 +244,9 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
     'uploadService',
     'loadingService',
     'adminStateService',
+    'tagService',
     function($scope, $location, $routeParams, categoryService, challengeService,
-      errorService, sessionService, uploadService, loadingService, adminStateService) {
+      errorService, sessionService, uploadService, loadingService, adminStateService, tagService) {
       if (!sessionService.requireAdmin()) return;
 
       $scope.cid = $routeParams.cid;
@@ -357,6 +358,18 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
         }
       };
 
+      $scope.hasTag = function(tag) {
+        if (!$scope.challenge) {
+          return false;
+        }
+        for (var i = 0; i < $scope.challenge.tags.length; i++) {
+          if (tag == $scope.challenge.tags[i].tagslug) {
+            return true;
+          }
+        }
+        return false;
+      }
+
       /* Setup on load */
       sessionService.requireLogin(function() {
         if ($routeParams.cid) {
@@ -374,6 +387,7 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
         } else {
             $scope.challenge = {
                 'hints': [],
+                'tags': [],
                 'attachments': [],
                 'prerequisite': {
                   'type': 'None'
@@ -384,6 +398,9 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
               $scope.challenge.cat_slug = slug;
             }
         }
+        tagService.getList(function(data) {
+          $scope.tags = data.tags;
+        })
         categoryService.get(function(data) {
           $scope.categories = data.categories;
           if (!$routeParams.cid)

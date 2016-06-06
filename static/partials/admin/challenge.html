@@ -36,7 +36,7 @@
     <div class='form-group'>
         <label for='answer'>Answer</label>
         <input id='answer' name='answer' class='form-control'
-          placeholder='{{answerPlaceholder}}' ng-model='challenge.answer' 
+          placeholder='{{answerPlaceholder}}' ng-model='challenge.answer'
           ng-required='!editing'>
     </div>
     <div class='form-group'>
@@ -67,6 +67,24 @@
                 class='btn btn-sm btn-info'
                 ng-click='addHint()'>&#x271B;</a></td></tr>
         </tfoot>
+    </table>
+  </div>
+  <div class='well'>
+    <h4>Tags</h4>
+    <table class='table' id='tag-table'>
+      <thead>
+        <tr><th class='col-md-2'>Tag Name</th>
+            <th class='col-md-6'>Tag Description</th>
+            <th class='col-md-1'></th></tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat='tag in tags'>
+          <td>{{tag.name}}</td><td>{{tag.description}}</td>
+          <td><a ng-if='hasTag(tag.tagslug)' class='btn btn-sm btn-success'>&#x2713;</a>
+              <a ng-if='!hasTag(tag.tagslug)' class='btn btn-sm btn-danger'>&#x2715;</a>
+          </td>
+        </tr>
+      </tbody>
     </table>
   </div>
   <div class='well'>

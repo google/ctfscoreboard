@@ -26,6 +26,49 @@ challengeServices.service('challengeService', ['$resource',
       });
     }]);
 
+challengeServices.service('tagService', [
+    '$resource',
+    '$rootScope',
+    '$cacheFactory',
+    '$timeout',
+    function($resource, $rootScope, $cacheFactory, $timeout) {
+        var tagCache = $cacheFactory('tagCache');
+
+        this.res = $resource('/api/tags/:tagslug', {}, {
+            'get': {method: 'GET', tagCache},
+            'save': {method: 'PUT'},
+            'create': {method: 'POST'},
+        })
+
+        this.get = this.res.get;
+        this.create = this.res.create;
+        this.save = this.res.save;
+        this.delete = this.res.delete;
+
+        this.getList = function(callback) {
+            if (this.taglist) {
+                callback(this.taglist);
+                return;
+            }
+            this.res.get(angular.bind(this, function(data) {
+                this.taglist = data;
+                $timeout(
+                    angular.bind(this, function() {
+                        this.taglist = null;
+                        tagCache.removeAll();
+                    }),
+                //What's the rationale for nuking the cache every 30 seconds?
+                30000, false);
+                callback(data);
+            }))
+            $rootScope.$on('$locationChangeSuccess', function() {
+                this.taglist = null;
+                tagCache.removeAll();
+            });
+        }
+
+    }
+])
 challengeServices.service('categoryService', [
     '$resource',
     '$rootScope',
