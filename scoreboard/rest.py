@@ -375,6 +375,10 @@ class Challenge(flask_restful.Resource):
         'weight': fields.Integer,
         'prerequisite': PrerequisiteField,
         'teaser': fields.Boolean,
+        'tags': fields.List(fields.Nested({
+            'tagslug': fields.String,
+            'name':    fields.String
+        })),
     }
     attachment_fields = {
         'aid': fields.String,
@@ -386,7 +390,8 @@ class Challenge(flask_restful.Resource):
 
     @flask_restful.marshal_with(resource_fields)
     def get(self, challenge_id):
-        return models.Challenge.query.get_or_404(challenge_id)
+        out = models.Challenge.query.get_or_404(challenge_id)
+        return out
 
     @flask_restful.marshal_with(resource_fields)
     def put(self, challenge_id):
@@ -464,6 +469,40 @@ class ChallengeList(flask_restful.Resource):
         models.commit()
         app.logger.info('Challenge %s created by %r.', chall, models.User.current())
         return chall
+
+class Tag(flask_restful.Resource):
+    """Single tag for challenges."""
+
+    decorators = [utils.login_required, utils.require_started]
+
+    tag_fields = {
+        'name': fields.String,
+        'tagslug': fields.String,
+        'description': fields.String
+    }
+    resource_fields = tag_fields.copy()
+    resource_fields['challenges'] = fields.Nested(Challenge.resource_fields)
+
+    @flask_restful.marshal_with(resource_fields)
+    def get(self, tag_slug):
+        tag = models.Tag.query.get_or_404(tag_slug)
+        return self.get_challenges(tag)
+
+    @classmethod
+    def get_challenges(cls, tag):
+        if models.User.current() and models.User.current().admin:
+            challenges = tag.challenges
+        else:
+            raw = tag.get_challenges()
+            challenges = []
+            for ch in raw:
+                if ch.unlocked_for_team(models.Team.current()):
+                    challenges.append(ch)
+                elif ch.teaser:
+                    challenges.append(cls._tease_challenge(ch))
+        res = {k: getattr(tag, k) for k in cls.tag_fields}
+        res['challenges'] = list(challenges)
+        return res
 
 
 class Category(flask_restful.Resource):
@@ -598,6 +637,7 @@ class Answer(flask_restful.Resource):
         cache.delete('scoreboard')
         return dict(points=points)
 
+api.add_resource(Tag, '/api/tags/<string:tag_slug>')
 api.add_resource(Category, '/api/categories/<string:category_slug>')
 api.add_resource(CategoryList, '/api/categories')
 api.add_resource(ChallengeList, '/api/challenges')

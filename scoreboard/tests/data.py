@@ -35,7 +35,7 @@ def make_teams():
 def make_players(teams):
     players = []
     for name in ('Ritam', 'Dr34dc0d3', 'alpha', 'beta', 'gamma', 'delta',
-                 'Dade', 'Kate'):
+                 'Dade', 'Kate', 'zwad3'):
         team = random.choice(teams)
         players.append(models.User.create(
             name.lower() + '@example.com', name, 'password', team=team))
@@ -48,8 +48,14 @@ def make_categories():
         categories.append(models.Category.create(name, name + ' Category'))
     return categories
 
+def make_tags():
+    tags = []
+    for name in ('x86','x64','MIPS','RISC','Fun'):
+        tags.append(models.Tag.create(name, 'Problems involving '+name))
+    return tags
 
-def make_challenges(cats):
+
+def make_challenges(cats, tags):
     challs = []
     chall_words = (
             'Magic', 'Grand', 'Fast', 'Hash', 'Table', 'Password',
@@ -65,10 +71,17 @@ def make_challenges(cats):
         title = ' '.join(title)
         flag = '_'.join(random.sample(chall_words, 4)).lower()
         cat = random.choice(cats)
+        #Choose a random subset of tags
+        numtags = random.randint(0, len(tags)-1)
+        if not numtags == 0:
+            local_tags = random.sample(tags, numtags)
+        else:
+            local_tags = []
         points = random.randint(1, 20) * 100
         desc = 'Flag: ' + flag
         ch = models.Challenge.create(title, desc, points, flag, cat.slug,
                 unlocked=True)
+        ch.add_tags(local_tags)
         hints = []
         for _ in xrange(random.randint(0, 3)):
             hints.append({'hint': 'Some hint', 'cost': points/4})
@@ -107,8 +120,9 @@ def create_all():
 
     # Categories and challenges
     cats = make_categories()
+    tags = make_tags()
     models.commit()  # Need IDs allocated
-    challs = make_challenges(cats)
+    challs = make_challenges(cats, tags)
 
     # Submitted answers
     make_answers(teams, challs)
