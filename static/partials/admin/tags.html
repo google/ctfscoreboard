@@ -1,0 +1,36 @@
+<h2>Tags</h2>
+<div class='well' ng-repeat='t in tags'>
+  <form ng-submit='updateTag(t)' name='adminTagForm[$index]'>
+    <div class='form-group'>
+      <label for='name-{{t.tagslug}}'>Title</label>
+      <input name='name' id='name-{{t.tagslug}}' class='form-control'
+        ng-model='t.name' required>
+    </div>
+    <div class='form-group'>
+      <label for='description-{{t.tagslug}}'>Description</label>
+      <textarea id='description-{{t.tagslug}}' name='description'
+        class='form-control' ng-model='t.description'></textarea>
+    </div>
+    <input type='submit' value='Edit' class='btn btn-primary'>
+    <div>
+      <input type='button' value='Delete' class='btn btn-danger btn-delete'
+        ng-click='deleteTag(t)' ng-disabled='invalidForm($index)'>
+    </div>
+  </form>
+</div>
+<div class='well'>
+  <form ng-submit='addTag()' name='adminTagForm'>
+    <div class='form-group'>
+      <label for='new-name'>Title</label>
+      <input name='name' id='new-name' class='form-control'
+        ng-model='newTag.name' required>
+    </div>
+    <div class='form-group'>
+      <label for='new-description'>Description</label>
+      <textarea id='new-description' name='description'
+        class='form-control' ng-model='newTag.description'></textarea>
+    </div>
+    <input type='submit' value='Add New' class='btn btn-primary'
+      ng-disabled='adminTagForm.$invalid'>
+  </form>
+</div>

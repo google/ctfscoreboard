@@ -172,7 +172,7 @@ table.team-players{
 }
 
 .jeopardy-box {
-  height: 80px;
+  height: 120px;
   text-align: center;
   margin: 10px 8px;
   position: relative;
@@ -221,8 +221,35 @@ table.team-players{
 .jeopardy-chall .front {
   z-index: 2;
   transform: rotateY(0deg);
+  display: flex;
 }
 
 .jeopardy-chall .back {
   transform: rotateY(180deg);
+}
+
+.chall-tags {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.chall-tag:not(:last-child) {
+  border-right: 2px solid #42A5F5;
+}
+
+.chall-tag:first-child {
+  border-bottom-left-radius: 6px;
+}
+
+.chall-tag:last-child {
+  border-bottom-right-radius: 6px;
+}
+
+.chall-tag {
+  flex-grow: 1;
+  font-size: 16px;
+  border-top: 2px solid #42A5F5;
+  background-color: #1E88E5;
 }
