@@ -73,10 +73,7 @@ def make_challenges(cats, tags):
         cat = random.choice(cats)
         #Choose a random subset of tags
         numtags = random.randint(0, len(tags)-1)
-        if not numtags == 0:
-            local_tags = random.sample(tags, numtags)
-        else:
-            local_tags = []
+        local_tags = random.sample(tags, numtags)
         points = random.randint(1, 20) * 100
         desc = 'Flag: ' + flag
         ch = models.Challenge.create(title, desc, points, flag, cat.slug,
