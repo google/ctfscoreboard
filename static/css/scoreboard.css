@@ -193,7 +193,7 @@ table.team-players{
 
 .jeopardy-chall {
   font-size: 1.4em;
-  perspective: 1000;
+  perspective: 1000px;
 }
 
 .jeopardy-chall:hover .flipper,
