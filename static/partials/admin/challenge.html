@@ -80,8 +80,10 @@
       <tbody>
         <tr ng-repeat='tag in tags'>
           <td>{{tag.name}}</td><td>{{tag.description}}</td>
-          <td><a ng-if='hasTag(tag.tagslug)' class='btn btn-sm btn-success'>&#x2713;</a>
-              <a ng-if='!hasTag(tag.tagslug)' class='btn btn-sm btn-danger'>&#x2715;</a>
+          <td><a class='btn btn-sm {{hasTag(tag.tagslug) ? "btn-success" : "btn-danger"}}' ng-click='toggleTag(tag.tagslug)'>
+                <span ng-if= 'hasTag(tag.tagslug)'>&#x2713;</span>
+                <span ng-if='!hasTag(tag.tagslug)'>&#x2715;</span>
+              </a>
           </td>
         </tr>
       </tbody>

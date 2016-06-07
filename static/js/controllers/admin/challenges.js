@@ -94,6 +94,76 @@ adminChallengeCtrls.controller('AdminCategoryCtrl', [
       });
     }]);
 
+adminChallengeCtrls.controller('AdminTagCtrl', [
+    '$scope',
+    'tagService',
+    'errorService',
+    'sessionService',
+    'loadingService',
+    function($scope, tagService, errorService, sessionService, loadingService) {
+      if (!sessionService.requireAdmin()) return;
+
+      $scope.tags = [];
+
+      $scope.updateTag = function(tag) {
+        errorService.clearErrors();
+        tagService.save({tagslug: tag.tagslug}, tag,
+          function(data) {
+            errorService.error(tag.name + ' updated.', 'success');
+          },
+          function(data) {
+            errorService.error(data);
+          });
+      };
+
+      $scope.deleteTag = function(tag) {
+        errorService.clearErrors();
+        var name = tag.name;
+        tagService.delete({tagslug: tag.tagslug},
+          function(data) {
+            var idx = $scope.tags.indexOf(tag);
+            $scope.tags.splice(idx, 1);
+            errorService.error(name + ' deleted.', 'success');
+          },
+          function(data) {
+            errorService.error(data);
+          });
+      };
+
+      $scope.addTag = function() {
+        errorService.clearErrors();
+        tagService.create({}, $scope.newTag,
+          function(data) {
+            $scope.tags.push(data);
+            $scope.newTag = {};
+          },
+          function(data) {
+            errorService.error(data);
+          });
+      };
+
+      $scope.newTag = {};
+
+      $scope.invalidForm = function(idx) {
+          var form = $(document.getElementsByName('adminTagForm[' + idx + ']'));
+          return form.hasClass('ng-invalid');
+      };
+
+      sessionService.requireLogin(function() {
+        errorService.clearErrors();
+        tagService.get(
+          function(data) {
+            $scope.tags = data.tags;
+            loadingService.stop();
+          },
+          function(data) {
+            errorService.error(data);
+            loadingService.stop();
+          });
+      });
+    }]);
+
+
 adminChallengeCtrls.controller('AdminChallengesCtrl', [
     '$scope',
     '$filter',
@@ -368,6 +438,22 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
           }
         }
         return false;
+      }
+
+      $scope.toggleTag = function(tagslug) {
+        console.log($scope.challenge.tags)
+        for (var i = 0; i < $scope.challenge.tags.length; i++) {
+          if ($scope.challenge.tags[i].tagslug == tagslug) {
+            $scope.challenge.tags.splice(i,1);
+            return;
+          }
+        }
+        for (var i = 0; i < $scope.tags.length; i++) {
+          if ($scope.tags[i].tagslug == tagslug) {
+            $scope.challenge.tags.push($scope.tags[i]);
+            return;
+          }
+        }
       }
 
       /* Setup on load */

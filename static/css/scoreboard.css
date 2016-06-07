@@ -249,6 +249,7 @@ table.team-players{
 
 .chall-tag {
   flex-grow: 1;
+  font-size: 16px;
   border-top: 2px solid #42A5F5;
   background-color: #1E88E5;
 }

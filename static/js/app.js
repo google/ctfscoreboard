@@ -82,6 +82,10 @@ scoreboardApp.config([
           templateUrl: '/partials/admin/categories.html',
           controller: 'AdminCategoryCtrl'
         }).
+        when('/admin/tags', {
+          templateUrl: '/partials/admin/tags.html',
+          controller: 'AdminTagCtrl'
+        }).
         when('/admin/challenges/:cid?', {
           templateUrl: '/partials/admin/challenges.html',
           controller: 'AdminChallengesCtrl'

@@ -57,7 +57,6 @@ challengeServices.service('tagService', [
                         this.taglist = null;
                         tagCache.removeAll();
                     }),
-                //What's the rationale for nuking the cache every 30 seconds?
                 30000, false);
                 callback(data);
             }))
