@@ -246,7 +246,8 @@ class Tag(db.Model):
     tagslug = db.Column(db.String(100), unique = True, primary_key=True, nullable=False, index=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
     description = db.Column(db.Text)
-    challenges = db.relationship('Challenge', backref='tags', secondary='tag_chall_association')
+    challenges = db.relationship('Challenge', backref=db.backref('tags', lazy='joined'),
+                                 secondary='tag_chall_association', lazy='joined')
 
     def __repr__(self):
         return '<Tag: %s/%s>' % (self.tagslug, self.name)
