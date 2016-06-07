@@ -235,6 +235,61 @@ class User(db.Model):
                 flask.g.user = user
                 return user
 
+tag_challenge_association = db.Table('tag_chall_association', db.Model.metadata,
+        db.Column('challenge_cid', db.BigInteger,  db.ForeignKey('challenge.cid')),
+        db.Column('tag_tagslug',   db.String(100), db.ForeignKey('tag.tagslug')))
+
+class Tag(db.Model):
+    """A Tag to be Applied to Challenges"""
+
+    #To differentiate from a catslug
+    tagslug = db.Column(db.String(100), unique = True, primary_key=True, nullable=False, index=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    description = db.Column(db.Text)
+    challenges = db.relationship('Challenge', backref=db.backref('tags', lazy='joined'),
+                                 secondary='tag_chall_association', lazy='joined')
+
+    def __repr__(self):
+        return '<Tag: %s/%s>' % (self.tagslug, self.name)
+
+    def slugify(self):
+        self.tagslug = '-'.join(w.lower() for w in re.split('\W+', self.name))
+
+    @classmethod
+    def create(cls, name, description):
+        tag = cls()
+        tag.name = name
+        tag.description = description
+        tag.slugify()
+        db.session.add(tag)
+        return tag
+
+    def get_challenges(self, unlocked_only=True, sort=True, force_query=False):
+        if force_query or 'challenges' in sqlalchemy_base.inspect(self).unloaded:
+            return self._get_challenges_query(
+                    unlocked_only=unlocked_only, sort=sort)
+        return self._get_challenges_cached(
+                unlocked_only=unlocked_only, sort=sort)
+
+    def _get_challenges_cached(self, unlocked_only=True, sort=True):
+        challenges = self.challenges
+        if unlocked_only:
+            challenges = [c for c in challenges if c.unlocked]
+        if sort:
+            challenges = sorted(challenges, key=lambda c: c.weight)
+        return challenges
+
+    def _get_challenges_query(self, unlocked_only=True, sort=True):
+        challenges = Challenge.query.filter(Challenge.tags.any(tagslug=self.tagslug))
+        if unlocked_only:
+            unlocked_identity = True
+            challenges = challenges.filter(
+                Challenge.unlocked == unlocked_identity)
+        if not sort:
+            return challenges
+        return challenges.order_by(Challenge.weight)
+
+
 
 class Category(db.Model):
     """A Category of Challenges."""
@@ -437,6 +492,10 @@ class Challenge(db.Model):
         db.session.add(challenge)
         return challenge
 
+    def add_tags(self, tags):
+        for tag in tags:
+            self.tags.append(tag)
+
     def delete(self):
         db.session.delete(self)
 
@@ -481,6 +540,23 @@ class Challenge(db.Model):
             self.prerequisite = ''
         else:
             self.prerequisite = json.dumps(prerequisite)
+
+    def set_tags(self, tags):
+        tag_set = set()
+        old_tags = list(self.tags)
+
+        for t in tags:
+            tag_set.add(t['tagslug'])
+            tag = Tag.query.get(t['tagslug'])
+            if tag:
+                self.tags.append(tag)
+            else:
+                app.logger.warning("Skipping tag %s which does not exist" % t['tagslug'])
+
+        for t in old_tags:
+            if t.tagslug not in tag_set:
+                self.tags.remove(t)
+
 
     def update_answers(self, exclude_team=None):
         """Update answers for variable scoring."""
