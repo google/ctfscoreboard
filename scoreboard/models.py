@@ -235,7 +235,7 @@ class User(db.Model):
                 flask.g.user = user
                 return user
 
-tag_challenge_association = db.Table('association', db.Model.metadata,
+tag_challenge_association = db.Table('tag_chall_association', db.Model.metadata,
         db.Column('challenge_cid', db.BigInteger,  db.ForeignKey('challenge.cid')),
         db.Column('tag_tagslug',   db.String(100), db.ForeignKey('tag.tagslug')))
 
@@ -246,7 +246,7 @@ class Tag(db.Model):
     tagslug = db.Column(db.String(100), unique = True, primary_key=True, nullable=False, index=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
     description = db.Column(db.Text)
-    challenges = db.relationship('Challenge', backref='tags', secondary='association')
+    challenges = db.relationship('Challenge', backref='tags', secondary='tag_chall_association')
 
     def __repr__(self):
         return '<Tag: %s/%s>' % (self.tagslug, self.name)
