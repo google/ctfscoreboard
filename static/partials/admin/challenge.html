@@ -66,26 +66,6 @@
     </table>
   </div>
   <div class='well'>
-    <h4>Tags</h4>
-    <table class='table' id='tag-table'>
-      <thead>
-        <tr><th class='col-md-2'>Tag Name</th>
-            <th class='col-md-6'>Tag Description</th>
-            <th class='col-md-1'></th></tr>
-      </thead>
-      <tbody>
-        <tr ng-repeat='tag in tags'>
-          <td>{{tag.name}}</td><td>{{tag.description}}</td>
-          <td><a class='btn btn-sm {{hasTag(tag.tagslug) ? "btn-success" : "btn-danger"}}' ng-click='toggleTag(tag.tagslug)'>
-                <span ng-if= 'hasTag(tag.tagslug)'>&#x2713;</span>
-                <span ng-if='!hasTag(tag.tagslug)'>&#x2715;</span>
-              </a>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <div class='well'>
     <h4>Attachments</h4>
     <table class='table' id='attachment-table'>
         <thead>
