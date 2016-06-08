@@ -31,7 +31,7 @@ Author: David Tomaschik <dwt@google.com>
   If you are using plaintext HTTP to run your scoreboard, you will need to add the
   following to your config.py, so that cookies will work:
 
-        SESSION_COOKIE_HTTPONLY = False
+        SESSION_COOKIE_SECURE = False
 
   If you are developing the scoreboard, the following settings may be useful for
   debugging purposes. Not useful for production usage, however.
