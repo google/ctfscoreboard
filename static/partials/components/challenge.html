@@ -51,6 +51,13 @@
         </form>
       </div> <!-- end submission -->
     </div> <!-- admin hide -->
+    <div class='solvers' ng-show='chall.solves'>
+      <h3 class='solve-head'>Solved By:</h3>
+      <div class='solver-container' ng-repeat='ans in chall.answer'>
+        <div class='solver-name'>{{ans.team.name}}</div>
+        <div class='solver-time'>{{timeFormat(ans.timestamp)}}</div> 
+      </div>
+    </div> <!-- solvers -->
   </div> <!-- panel body -->
   <div class='panel-body' ng-show='chall.teaser'>
     Prerequisites not met.
