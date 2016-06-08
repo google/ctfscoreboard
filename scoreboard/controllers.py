@@ -123,23 +123,6 @@ def submit_answer(cid, answer):
             challenge.cid, correct)
 
 
-@utils.require_submittable
-def unlock_hint(hid):
-    """Perform steps for hint unlocking."""
-    hint = models.Hint.query.get(int(hid))
-    if not hint:
-        flask.abort(404)
-    team = models.Team.current()
-    user = models.User.current()
-    hint.unlock(team)
-    logstr = ('Player %s/%s<%d>/Team %s<%d> unlocked hint %d for '
-              'Challenge %s<%d>')
-    logstr %= (user.nick, user.email, user.uid, team.name, team.tid, hint.hid,
-               hint.challenge.name, hint.challenge.cid)
-    app.challenge_log.info(logstr)
-    return hint
-
-
 def offer_password_reset(user):
     token = user.get_token()
     token_url = utils.absolute_url('/pwreset/%s/%s' %
