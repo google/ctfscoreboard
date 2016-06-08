@@ -371,7 +371,6 @@ sbDirectives.directive('challengeBox', [
           chall: '=challenge'
         },
         link: function(scope, iElement, iAttrs) {
-          var hintModal = angular.element(iElement[0].querySelector('.hint-modal'));
           var isModal = iElement.parents('.modal').length > 0;
 
           scope.isModal = isModal;
@@ -406,38 +405,6 @@ sbDirectives.directive('challengeBox', [
                   closeModal();
                 });
           };
-
-          // Setup hint handler
-          scope.unlockHintDialog = function(hint) {
-            errorService.clearErrors();
-            scope.hint = hint;
-            if (!isModal) {
-              hintModal.modal('show');
-            }
-          };
-
-          scope.cancelUnlockHint = function() {
-            hintModal.modal('hide');
-            scope.hint = null;
-          };
-
-          // Actually unlock
-					scope.unlockHint = function(hint) {
-						$resource('/api/unlock_hint').save({hid: hint.hid},
-								function(data) {
-									hint.hint = data.hint;
-									errorService.error(
-											'Unlocked hint for ' + hint.cost + ' points.',
-											'success');
-									hintModal.modal('hide');
-									scope.hint = null;
-								},
-								function(data) {
-									errorService.error(data);
-									hintModal.modal('hide');
-									scope.hint = null;
-								});
-					};
 
 					// isAdmin, similar to global controller
 					scope.isAdmin = function() {

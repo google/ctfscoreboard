@@ -362,15 +362,6 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
           });
       };
 
-      $scope.addHint = function() {
-        $scope.challenge.hints.push({});
-      };
-
-      $scope.deleteHint = function(hint) {
-        var idx = $scope.challenge.hints.indexOf(hint);
-        $scope.challenge.hints.splice(idx, 1);
-      };
-
       $scope.addAttachment = function() {
           $scope.newAttachment = {};
           $scope.addNewAttachment = true;
@@ -472,7 +463,6 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
             });
         } else {
             $scope.challenge = {
-                'hints': [],
                 'tags': [],
                 'attachments': [],
                 'prerequisite': {

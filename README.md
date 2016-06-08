@@ -1,6 +1,6 @@
 ## CTF Scoreboard ##
 
-This is a basic CTF Scoreboard, with support for hints, teams or individual
+This is a basic CTF Scoreboard, with support for teams or individual
 competitors, and a handful of other features.
 
 Copyright 2016 Google, Inc.
@@ -67,20 +67,15 @@ users API.
 - Create user, verify admin
 - Create category
 - Create challenge
-  - With, without hint
   - With, without attachment
 - Edit challenges
   - Add attachment
   - Delete attachment
-  - Add hint
-  - Delete hint
 - Download backup
 - Restore backup
 - Create 2nd user, verify not admin
   - Solve challenge
   - Download attachment
-  - Get hint
-  - Solve challenge w/hint
 
 
 ### Thanks ###
