@@ -16,6 +16,7 @@ import flask
 import logging
 import os
 from werkzeug import exceptions
+from flask_scss import Scss
 
 from scoreboard import logger
 
@@ -66,6 +67,10 @@ def create_app(config=None):
         app.logger.handlers[0].setFormatter(log_formatter)
         logging.getLogger().handlers[0].setFormatter(log_formatter)
 
+    #Scss is expecting this
+    app.debug = app.config.get('DEBUG')
+    scss_compiler = Scss(app, static_dir='static/css', asset_dir='static/scss')
+    scss_compiler.update_scss()
 
     # Install a default error handler
     error_titles = {
