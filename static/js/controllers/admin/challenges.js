@@ -463,7 +463,6 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
             });
         } else {
             $scope.challenge = {
-                'hints': [],
                 'tags': [],
                 'attachments': [],
                 'prerequisite': {

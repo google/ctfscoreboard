@@ -370,7 +370,7 @@ sbDirectives.directive('challengeBox', [
         restrict: 'AE',
         templateUrl: '/partials/components/challenge.html',
         scope: {
-          chall: '=challenge',
+          chall: '=challenge'
         },
         link: function(scope, iElement, iAttrs) {
           var isModal = iElement.parents('.modal').length > 0;
