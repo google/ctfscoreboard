@@ -32,6 +32,17 @@
         </form>
       </div> <!-- end submission -->
     </div> <!-- admin hide -->
+    <div class='solvers' ng-show='chall.solves'>
+      <h3 class='solve-head'>Solved By:</h3>
+      <div class='solver-container' ng-repeat='ans in recent()'>
+        <div class='solver-name'><a class='team-link' ng-click='closeModal("/teams/"+ans.team.tid)'>{{ans.team.name}}</a></div>
+        <div class='solver-time'>{{timeFormat(ans.date)}}</div>
+      </div>
+      <div ng-show='chall.solves>minteams' class='show-container'>
+        <div class='show-more btn btn-primary' ng-show='numteams>=0' ng-click='numteams=-1'>Show {{chall.solves-minteams}} other{{chall.solves==(minteams+1) ? '' : 's'}}</div>
+        <div class='show-more btn btn-primary' ng-show='numteams<0'  ng-click='numteams=minteams' >Show Fewer</div>
+      </div>
+    </div> <!-- solvers -->
   </div> <!-- panel body -->
   <div class='panel-body' ng-show='chall.teaser'>
     Prerequisites not met.
