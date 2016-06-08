@@ -17,25 +17,6 @@
       <!-- if solved -->
       <span class='alert alert-success solved ng-hide'
         ng-show='chall.answered'>Solved</span>
-      <!-- if hints -->
-      <div class='hints' ng-show='!!chall.hints.length && !chall.answered'>
-        <ul>
-          <li ng-repeat='hint in chall.hints' ng-show='!!hint.hint'>{{hint.hint}}</li>
-        </ul>
-        <ul class='list-inline'>
-          <li><a class='btn btn-info ng-hide'
-            ng-show='!hint.hint'
-            ng-repeat='hint in chall.hints'
-            ng-click='unlockHintDialog(hint)'>Hint {{$index + 1}}</a></li>
-        </ul>
-        <div ng-show='hint && isModal' class='unlock-hint well'>
-          <p>Unlocking this hint will reduce the point value by {{hint.cost}}.</p>
-          <button type='button' class='btn btn-default'
-            ng-click='cancelUnlockHint()'>Cancel</button>
-          <button type='button' class='btn btn-primary'
-            ng-click='unlockHint(hint)'>Unlock Hint</button>
-        </div>
-      </div> <!-- end hints -->
       <!-- if not solved -->
       <div ng-hide='chall.answered'>
         <form name='challengeForm' ng-submit='submitChallenge()' class='submitForm'>
@@ -63,24 +44,3 @@
     Prerequisites not met.
   </div>
 </div> <!-- panel container -->
-
-<!-- Confirm modal div -->
-<div class='hint-modal modal fade'>
-  <div class='modal-dialog'>
-    <div class='modal-content'>
-      <div class='modal-header'>
-        <button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>
-        <h4 class='modal-title'>Unlock Hint?</h4>
-      </div>
-      <div class='modal-body'>
-        <p>Unlocking this hint will reduce the point value by {{hint.cost}}.</p>
-      </div>
-      <div class='modal-footer'>
-        <button type='button' class='btn btn-default'
-          data-dismiss='modal'>Cancel</button>
-        <button type='button' class='btn btn-primary'
-          ng-click='unlockHint(hint)'>Unlock Hint</button>
-      </div>
-    </div>
-  </div>
-</div>

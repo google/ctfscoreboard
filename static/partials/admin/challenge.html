@@ -46,27 +46,23 @@
     </div>
   </div>
   <div class='well'>
-    <h4>Hints</h4>
-    <table class='table' id='hint-table'>
-        <thead>
-        <tr><th class='col-md-6'>Hint</th><th class='col-md-2'>Points</th><th
-            class='col-md-1'></th></tr>
-        </thead>
-        <tbody>
-        <tr id='hint-{{hint.hid}}' ng-repeat='hint in challenge.hints'>
-            <td><input name='hint-{{hint.hid}}-hint' class='form-control'
-              ng-model='hint.hint'></td>
-            <td><input name='hint-{{hint.hid}}-cost' class='form-control'
-              type='number' ng-model='hint.cost'></td>
-            <td><a class='btn btn-sm btn-warning'
-              ng-click='deleteHint(hint)'>&#x2715;</a></td>
+    <h4>Tags</h4>
+    <table class='table' id='tag-table'>
+      <thead>
+        <tr><th class='col-md-2'>Tag Name</th>
+            <th class='col-md-6'>Tag Description</th>
+            <th class='col-md-1'></th></tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat='tag in tags'>
+          <td>{{tag.name}}</td><td>{{tag.description}}</td>
+          <td><a class='btn btn-sm {{hasTag(tag.tagslug) ? "btn-success" : "btn-danger"}}' ng-click='toggleTag(tag.tagslug)'>
+                <span ng-if= 'hasTag(tag.tagslug)'>&#x2713;</span>
+                <span ng-if='!hasTag(tag.tagslug)'>&#x2715;</span>
+              </a>
+          </td>
         </tr>
-        </tbody>
-        <tfoot>
-        <tr><td></td><td></td><td><a 
-                class='btn btn-sm btn-info'
-                ng-click='addHint()'>&#x271B;</a></td></tr>
-        </tfoot>
+      </tbody>
     </table>
   </div>
   <div class='well'>
@@ -101,7 +97,7 @@
             <td>{{attachment.filename}}</td>
             <td>{{attachment.aid}}</td>
             <td><a class='btn btn-sm btn-warning'
-              ng-click='deleteAttachment(hint)'>&#x2715;</a></td>
+              ng-click='deleteAttachment(attachment)'>&#x2715;</a></td>
         </tr>
         </tbody>
         <tfoot>

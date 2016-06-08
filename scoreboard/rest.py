@@ -37,22 +37,6 @@ context.ensure_setup()
 
 
 # Custom fields
-class HintField(fields.Raw):
-    """Custom to show hint only if unlocked or admin."""
-
-    def format(self, value):
-        if getattr(value, '__iter__', None):
-            return [self.format(v) for v in value]
-        res = {
-            'hid': value.hid,
-            'challenge_cid': value.challenge_cid,
-            'cost': value.cost,
-        }
-        if value.is_unlocked() or (models.User.current() and models.User.current().admin):
-            res['hint'] = value.hint
-        return res
-
-
 class ISO8601DateTime(fields.Raw):
     """Show datetimes as ISO8601."""
 
@@ -368,7 +352,6 @@ class Challenge(flask_restful.Resource):
         'points': fields.Integer,
         'description': fields.String,
         'unlocked': fields.Boolean,
-        'hints': HintField,
         'cat_slug': fields.String,
         'answered': fields.Boolean,
         'solves': fields.Integer,
@@ -416,8 +399,6 @@ class Challenge(flask_restful.Resource):
         if 'answer' in data and data['answer']:
             answer = utils.normalize_input(data['answer'])
             challenge.change_answer(answer)
-        if 'hints' in data:
-            challenge.set_hints(data['hints'])
         if 'attachments' in data:
             challenge.set_attachments(data['attachments'])
         if 'prerequisite' in data:
@@ -468,8 +449,6 @@ class ChallengeList(flask_restful.Resource):
             data['cat_slug'],
             answer,
             unlocked)
-        if 'hints' in data:
-            chall.set_hints(data['hints'])
         if 'attachments' in data:
             chall.set_attachments(data['attachments'])
         if 'prerequisite' in data:
@@ -619,7 +598,7 @@ class Category(flask_restful.Resource):
     @staticmethod
     def _tease_challenge(chall):
         res = {k: getattr(chall, k) for k in Challenge.resource_fields}
-        for f in ('description', 'hints', 'attachments'):
+        for f in ('description', 'attachments'):
             del res[f]
         return res
 
@@ -659,29 +638,6 @@ class CategoryList(flask_restful.Resource):
         return cat
 
 
-class Hint(flask_restful.Resource):
-    """Wrap hint just for unlocking."""
-
-    decorators = [utils.login_required, utils.team_required]
-
-    resource_fields = {
-        'hid': fields.Integer,
-        'challenge_cid': fields.Integer,
-        'hint': fields.String,
-        'cost': fields.Integer,
-    }
-
-    @flask_restful.marshal_with(resource_fields)
-    def post(self):
-        """Unlock a hint."""
-        data = flask.request.get_json()
-        hint = controllers.unlock_hint(data['hid'])
-        app.logger.info('Hint %s unlocked by %r.', hint, models.User.current())
-        models.commit()
-        cache.delete_team('cats/%d')
-        return hint
-
-
 class Answer(flask_restful.Resource):
     """Submit an answer."""
 
@@ -705,7 +661,6 @@ api.add_resource(Category, '/api/categories/<string:category_slug>')
 api.add_resource(CategoryList, '/api/categories')
 api.add_resource(ChallengeList, '/api/challenges')
 api.add_resource(Challenge, '/api/challenges/<int:challenge_id>')
-api.add_resource(Hint, '/api/unlock_hint')
 api.add_resource(Answer, '/api/answers')
 
 
@@ -866,12 +821,6 @@ class BackupRestore(flask_restful.Resource):
         for cat in models.Category.query.all():
             challenges = []
             for q in cat.challenges:
-                hints = []
-                for h in q.hints:
-                    hints.append({
-                        'hint': h.hint,
-                        'cost': h.cost,
-                    })
                 attachments = []
                 for a in q.attachments:
                     attachments.append({
@@ -886,7 +835,6 @@ class BackupRestore(flask_restful.Resource):
                     'description': q.description,
                     'points': q.points,
                     'answer_hash': q.answer_hash,
-                    'hints': hints,
                     'attachments': attachments,
                     'prerequisite': q.prerequisite,
                     'weight': q.weight,
@@ -909,7 +857,6 @@ class BackupRestore(flask_restful.Resource):
 
         if data.get('replace', False):
             models.Attachment.query.delete()
-            models.Hint.query.delete()
             models.Challenge.query.delete()
             models.Category.query.delete()
 
@@ -930,12 +877,6 @@ class BackupRestore(flask_restful.Resource):
                 newchall.category = newcat
                 models.db.session.add(newchall)
                 challs += 1
-                for h in challenge.get('hints', []):
-                    hint = models.Hint()
-                    hint.challenge = newchall
-                    hint.hint = h['hint']
-                    hint.cost = int(h['cost'])
-                    models.db.session.add(hint)
                 for a in challenge.get('attachments', []):
                     attachment = models.Attachment()
                     attachment.challenge = newchall

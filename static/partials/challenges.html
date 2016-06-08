@@ -8,24 +8,3 @@
 
 <span class='alert alert-info ng-hide' ng-show='!!category && !challenges.length'>There are no open challenges in this
   category.</span>
-
-<!-- Confirm modal div -->
-<div id='hint-modal' class='modal fade'>
-  <div class='modal-dialog'>
-    <div class='modal-content'>
-      <div class='modal-header'>
-        <button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>
-        <h4 class='modal-title'>Unlock Hint?</h4>
-      </div>
-      <div class='modal-body'>
-        <p>Unlocking this hint will reduce the point value by {{hint.cost}}.</p>
-      </div>
-      <div class='modal-footer'>
-        <button type='button' class='btn btn-default'
-          data-dismiss='modal'>Cancel</button>
-        <button type='button' class='btn btn-primary'
-          ng-click='unlockHint(hint)'>Unlock Hint</button>
-      </div>
-    </div>
-  </div>
-</div>
