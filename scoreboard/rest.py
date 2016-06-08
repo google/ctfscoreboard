@@ -367,11 +367,22 @@ class Challenge(flask_restful.Resource):
         'tagslug': fields.String,
         'name':    fields.String,
     }
+    team_fields = {
+        'name': fields.String,
+        'tid': fields.Integer,
+    }
+    answers_fields = {
+        'timestamp': fields.DateTime,
+    }
+    answers_fields['team'] = fields.Nested(team_fields)
+
     resource_fields = challenge_fields.copy()
     resource_fields['attachments'] = fields.List(
             fields.Nested(attachment_fields))
     resource_fields['tags'] = fields.List(
             fields.Nested(tags_fields))
+    resource_fields['answers'] = fields.List(
+            fields.Nested(answers_fields))
 
     @flask_restful.marshal_with(resource_fields)
     def get(self, challenge_id):

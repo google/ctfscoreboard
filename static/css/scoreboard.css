@@ -222,6 +222,8 @@ table.team-players{
   z-index: 2;
   transform: rotateY(0deg);
   display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .jeopardy-chall .back {
@@ -233,23 +235,77 @@ table.team-players{
   justify-content: space-around;
   align-items: flex-end;
   width: 100%;
+  height: 30px;
 }
 
 .chall-tag:not(:last-child) {
   border-right: 2px solid #42A5F5;
 }
 
-.chall-tag:first-child {
+.chall-tag:nth-child(2), .chall-dummy:first-child:last-child {
   border-bottom-left-radius: 6px;
 }
 
-.chall-tag:last-child {
+.chall-tag:last-child, .chall-dummy:first-child:last-child {
   border-bottom-right-radius: 6px;
 }
 
-.chall-tag {
+.chall-tag, .chall-dummy:first-child:last-child {
   flex-grow: 1;
   font-size: 16px;
   border-top: 2px solid #42A5F5;
   background-color: #1E88E5;
+  height: 24px
+}
+
+.chall-num {
+  display: flex;
+}
+
+.chall-num-val {
+  font-size: 16px;
+  padding-left: 10px;
+  padding-top: 4px;
+}
+
+.chall-dummy:first-child:last-child {
+  width: 100%;
+}
+
+.chall-name {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.solvers {
+  max-width: 400px;
+  margin: auto;
+}
+
+.solver-container {
+  display: flex;
+  justify-content: space-between;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 6px;
+}
+
+.solve-head {
+  text-align: center;
+  padding-bottom: 4px;
+  border-bottom: 1px solid;
+}
+
+.show-container {
+  display: flex;
+  justify-content: space-around;
+}
+
+.show-more {
+  text-align: center;
+}
+
+.team-link {
+  color: inherit;
+  cursor: pointer;
 }
