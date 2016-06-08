@@ -27,7 +27,7 @@ def make_admin():
 
 def make_teams():
     teams = []
-    for name in ('QQQ', 'Light Cats', 'Siberian Nopsled'):
+    for name in ('QQQ', 'Light Cats', 'Siberian Nopsled', 'PPP', 'Raelly', 'Toast', 'csh', 'ByTeh', 'See Sure', 'Skinniest', '213374U'):
         teams.append(models.Team.create(name))
     return teams
 
@@ -35,7 +35,7 @@ def make_teams():
 def make_players(teams):
     players = []
     for name in ('Ritam', 'Dr34dc0d3', 'alpha', 'beta', 'gamma', 'delta',
-                 'Dade', 'Kate', 'zwad3'):
+                 'Dade', 'Kate', 'zwad3', 'strikerkid', 'redpichu', 'n0pe', '0xcdb'):
         team = random.choice(teams)
         players.append(models.User.create(
             name.lower() + '@example.com', name, 'password', team=team))
@@ -90,9 +90,9 @@ def make_challenges(cats, tags):
 
 def make_answers(teams, challs):
     for team in teams:
-        times = sorted([random.randint(0, 24*60) for _ in xrange(8)],
+        times = sorted([random.randint(0, 24*60) for _ in xrange(16)],
                 reverse=True)
-        for ch in random.sample(challs, random.randint(1, 8)):
+        for ch in random.sample(challs, random.randint(4, 16)):
             a = models.Answer.create(ch, team, '')
             ago = datetime.timedelta(minutes=times.pop(0))
             a.timestamp = datetime.datetime.utcnow() - ago

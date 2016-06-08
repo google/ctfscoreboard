@@ -282,14 +282,30 @@ table.team-players{
   margin: auto;
 }
 
+.solver-container {
+  display: flex;
+  justify-content: space-between;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 6px;
+}
+
 .solve-head {
   text-align: center;
   padding-bottom: 4px;
   border-bottom: 1px solid;
 }
 
-.solver-name {
-  padding-left: 20px;
+.show-container {
+  display: flex;
+  justify-content: space-around;
 }
 
+.show-more {
+  text-align: center;
+}
 
+.team-link {
+  color: inherit;
+  cursor: pointer;
+}

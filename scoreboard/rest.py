@@ -369,9 +369,10 @@ class Challenge(flask_restful.Resource):
     }
     team_fields = {
         'name': fields.String,
+        'tid': fields.Integer,
     }
     answers_fields = {
-      'timestamp': fields.DateTime,
+        'timestamp': fields.DateTime,
     }
     answers_fields['team'] = fields.Nested(team_fields)
 
