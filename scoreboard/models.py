@@ -398,7 +398,6 @@ class Challenge(db.Model):
     cat_slug = db.Column(db.String(100), db.ForeignKey('category.slug'))
     answers = db.relationship('Answer', backref=db.backref('challenge',
         lazy='joined'), lazy='select')
-    hints = db.relationship('Hint', backref='challenge', lazy='joined')
     attachments = db.relationship('Attachment', backref='challenge',
                                   lazy='joined')
 
@@ -499,25 +498,6 @@ class Challenge(db.Model):
     def delete(self):
         db.session.delete(self)
 
-    def set_hints(self, hints):
-        hid_set = set()
-        old_hints = list(self.hints)
-
-        for h in hints:
-            if h.get('hid', None):
-                hint = Hint.query.get(h['hid'])
-                hid_set.add(h['hid'])
-            else:
-                hint = Hint.create(self)
-
-            hint.hint = h['hint']
-            hint.cost = h['cost']
-
-        # Delete removed hints
-        for h in old_hints:
-            if h.hid not in hid_set:
-                db.session.delete(h)
-
     def set_attachments(self, attachments):
         aid_set = set()
         old_attachments = list(self.attachments)
@@ -606,68 +586,6 @@ class Attachment(db.Model):
         return attachment
 
 
-class Hint(db.Model):
-    """Hint for a challenge."""
-
-    hid = db.Column(db.BigInteger, primary_key=True, autoincrement=False)
-    challenge_cid = db.Column(db.BigInteger, db.ForeignKey('challenge.cid'),
-            nullable=False)
-    hint = db.Column(db.Text, nullable=False)
-    cost = db.Column(db.Integer)
-
-    def __repr__(self):
-        return '<Hint: %d -> %d>' % (hint.hid, hint.challenge_cid)
-
-    def unlock(self, team):
-        unlocked = UnlockedHint()
-        unlocked.hint = self
-        unlocked.team = team
-        unlocked.timestamp = datetime.datetime.utcnow()
-        if flask.request:
-            unlocked.src_ip = flask.request.remote_addr
-        db.session.add(unlocked)
-        return unlocked
-
-    def is_unlocked(self, team=None, unlocked_hints=None):
-        if team is None:
-            team = Team.current()
-        if not team:
-            return User.current() and User.current().admin
-        if unlocked_hints:
-            for h in unlocked_hints:
-                if h.hint_hid == self.hid and h.team_tid == team.tid:
-                    return True
-            return False
-        try:
-            UnlockedHint.query.filter(UnlockedHint.hint_hid == self.hid,
-                                      UnlockedHint.team_tid == team.tid).one()
-            return True
-        except orm_exc.NoResultFound:
-            return False
-
-    @classmethod
-    def create(cls, challenge):
-        hint = cls()
-        hint.challenge_cid = challenge.cid
-        hint.hid = utils.generate_id()
-        db.session.add(hint)
-        return hint
-
-
-
-class UnlockedHint(db.Model):
-    """Record that a team has unlocked a hint."""
-
-    hint_hid = db.Column(
-        db.BigInteger, db.ForeignKey('hint.hid'), primary_key=True)
-    hint = db.relationship('Hint', backref='unlocked_by', lazy='joined')
-    team_tid = db.Column(
-        db.Integer, db.ForeignKey('team.tid'), primary_key=True)
-    team = db.relationship('Team', backref='hints')
-    timestamp = db.Column(db.DateTime)
-    src_ip = db.Column(db.String(45))   # IP Where unlocked
-
-
 class Answer(db.Model):
     """Log a successfully submitted answer."""
 
@@ -686,11 +604,7 @@ class Answer(db.Model):
             return 0
 
         mode = app.config.get('SCORING')
-        hints = UnlockedHint.query.filter(UnlockedHint.team == self.team)
-        deduction = sum(
-                h.hint.cost for h in hints if h.hint.challenge_cid ==
-                self.challenge_cid)
-        value = self.challenge.points - deduction
+        value = self.challenge.points
         if mode == 'plain':
             return value + self.first_blood
         if mode == 'progressive':

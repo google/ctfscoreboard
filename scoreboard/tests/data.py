@@ -79,10 +79,6 @@ def make_challenges(cats, tags):
         ch = models.Challenge.create(title, desc, points, flag, cat.slug,
                 unlocked=True)
         ch.add_tags(local_tags)
-        hints = []
-        for _ in xrange(random.randint(0, 3)):
-            hints.append({'hint': 'Some hint', 'cost': points/4})
-        ch.set_hints(hints)
         if len(challs) % 8 == 7:
             ch.prerequisite = json.dumps(
                     {'type': 'solved', 'challenge': challs[-1].cid})
