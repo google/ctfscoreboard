@@ -7,3 +7,4 @@
 static/js/app.min.js
 .virtualenv
 lib
+/static/css/*.css
