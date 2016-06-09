@@ -16,6 +16,7 @@ import flask
 import logging
 import os
 from werkzeug import exceptions
+import flask_scss
 
 from scoreboard import logger
 
@@ -61,11 +62,15 @@ def create_app(config=None):
         local_logger = logging.getLogger('scoreboard')
         local_logger.addHandler(handler)
         app.challenge_log = local_logger
+
+        #Configure Scss to watch the files
+        app.debug = app.config.get('DEBUG')
+        scss_compiler = flask_scss.Scss(app, static_dir='static/css', asset_dir='static/scss')
+        scss_compiler.update_scss()
     else:
         app.challenge_log = app.logger
         app.logger.handlers[0].setFormatter(log_formatter)
         logging.getLogger().handlers[0].setFormatter(log_formatter)
-
 
     # Install a default error handler
     error_titles = {

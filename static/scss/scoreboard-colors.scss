@@ -1,0 +1,60 @@
+
+$body-bkg: #2f343a;
+$nav-bkg: #27326d;
+$sidebar-bkg: #cbcbcb;
+$link: #8899b7;
+$news-bkg: #4e5d6c;
+$cat-bkg: #3e5edb;
+$chall-bkg: #2444c1;
+$solved-bkg: #1c3596;
+
+body {
+  background-color: $body-bkg;
+}
+.navbar-default {
+  background-color: $nav-bkg;
+}
+.left-sidebar-background {
+  background-color: $sidebar-bkg;
+}
+
+a {
+    &.list-group-item {
+      background-color: $nav-bkg;
+    }
+
+    &.list-group-item.active,
+    &.list-group-item.active:hover,
+    &.list-group-item.active:focus {
+      background-color: $link;
+      border-color: $link;
+    }
+}
+
+#news-box {
+    background-color: $news-bkg;
+}
+
+input.form-control[readonly] {
+    background-color: #fff;
+}
+
+#loading-overlay {
+    background-color: #000;
+}
+
+/* Jeopardy grid */
+.jeopardy-cat {
+  background: $cat-bkg;
+}
+
+.jeopardy-chall {
+    & .front,
+    & .back {
+      background: $chall-bkg;
+    }
+
+    &.solved .card {
+      background: $solved-bkg;
+    }
+}
