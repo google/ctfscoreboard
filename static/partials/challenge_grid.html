@@ -1,10 +1,26 @@
 <h3>Challenges</h3>
+<div class='tag-selector'>
+  <div class='tag-align'>
+    <div class='tag-filter' ng-repeat='tag in allTags'
+      ng-class='{"tag-inc": shownTags[tag.tagslug]==2, "tag-exc": shownTags[tag.tagslug]==0, "tag-either": shownTags[tag.tagslug]==1}'
+      ng-any-click='toggleTag(tag.tagslug, $click)'>
+        <span class='tag-item'>{{tag.name}}</span>
+    </div>
+  </div>
+</div>
+
 <div class='row jeopardy-container'>
   <div class='jeopardy-col' ng-repeat='cat in categories'>
     <div class='jeopardy-cat jeopardy-box'
       ng-href='"/challenges/" + cat.slug'><p ng-bind='cat.name'></p></div>
+  </div>
+</div>
+
+<div class='row jeopardy-container'>
+  <div class='jeopardy-col' ng-repeat='cat in categories'>
     <div class='jeopardy-chall jeopardy-box' ng-repeat='chall in cat.challenges'
       ng-click='goChallenge(chall)' ng-class='{solved: chall.answered}'
+      ng-show='tagsAllowed(chall)'
       ><div class='flipper'>
         <div class='card front'>
           <div class='chall-num'>
@@ -18,6 +34,7 @@
         </div>
         <div class='card back'><p ng-bind='flipSide(chall)'></p></div>
       </div>
+    </div>
   </div>
 </div>
 

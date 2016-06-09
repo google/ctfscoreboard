@@ -106,27 +106,67 @@ challengeCtrls.controller('ChallengeGridCtrl', [
     'loadingService',
     'scoreService',
     'sessionService',
+    'tagService',
     function($scope, $location, categoryService, loadingService, scoreService,
-      sessionService) {
+      sessionService, tagService) {
       $scope.categories = {};
       $scope.currChall = null;
+      $scope.shownTags = {};
       var refresh = function() {
           categoryService.getList(function(data) {
               $scope.categories = data.categories;
           });
       };
 
+      tagService.getList(function(tags) {
+        $scope.allTags = tags.tags
+        for (var i = 0; i < $scope.allTags.length; i++) {
+          $scope.shownTags[$scope.allTags[i].tagslug] = 2
+        }
+      })
+
       $scope.goChallenge = function(chall) {
         $scope.currChall = chall;
         $('#challenge-modal').modal('show');
       };
 
-      $scope.flipSide = function(chall) {
-        if (chall.answered)
-          return "Solved! (" + scoreService.getCurrentPoints(chall) + " points)";
-        else
-          return scoreService.getCurrentPoints(chall) + " points";
-      };
+      $scope.tagsAllowed = function(chall) {
+        for (var i = 0; i < chall.tags.length; i++) {
+          var type = $scope.shownTags[chall.tags[i].tagslug]
+          if (type == 0) {
+            return false
+          }
+        }
+
+        for (var i = 0; i < chall.tags.length; i++) {
+          var type = $scope.shownTags[chall.tags[i].tagslug]
+          if (type == 2) {
+            return true
+          }
+        }
+        return false;
+      }
+
+      $scope.$watch('shownTags', function() {
+        $scope.flipSide = function(chall) {
+          if (chall.answered)
+            return "Solved! (" + scoreService.getCurrentPoints(chall) + " points)";
+          else
+            return scoreService.getCurrentPoints(chall) + " points";
+        };
+      })
+
+      $scope.toggleTag = function(t, click) {
+        console.log(arguments)
+        var tindex = $scope.shownTags[t]
+        //Return next permutation
+        if (click == 0) {
+          tindex += 1
+        } else {
+          tindex += 3-1
+        }
+        $scope.shownTags[t] = tindex % 3
+      }
 
       sessionService.requireLogin(function() {
         refresh();

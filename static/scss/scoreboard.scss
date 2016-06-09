@@ -198,7 +198,7 @@ table.team-players{
             .jeopardy-box {
                 height: 120px;
                 text-align: center;
-                margin: 10px 8px;
+                margin: 10px 5px;
                 position: relative;
 
                 & p {
@@ -213,6 +213,7 @@ table.team-players{
                 font-weight: bolder;
                 font-size: 1.8em;
                 border-radius: 6px;
+                margin-bottom: 0px;
             }
 
             .jeopardy-chall {
@@ -303,6 +304,64 @@ table.team-players{
                     transform: rotateY(180deg);
                 }
             }
+        }
+    }
+}
+
+.tag-selector {
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 10px;
+    padding-bottom: 0px;
+    font-size: 20px;
+
+    .tag-align {
+        display: flex;
+
+        .tag-filter {
+            flex-grow: 1;
+            height: 36px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            cursor: pointer;
+
+            .tag-item {
+                user-select: none;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                width: 100%;
+                display: inline-block;
+                text-align: center;
+            }
+
+            &:first-child {
+                border-top-left-radius: 6px;
+                border-bottom-left-radius: 6px;
+            }
+
+            &:last-child {
+                border-top-right-radius: 6px;
+                border-bottom-right-radius: 6px;
+            }
+
+            &:not(:last-child) {
+                margin-right: 10px;
+            }
+        }
+
+        .tag-either {
+            background-color: #757575;
+        }
+
+        .tag-inc {
+            background-color: #43A047;
+        }
+
+        .tag-exc {
+            background-color: #f44336;
         }
     }
 }
