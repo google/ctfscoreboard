@@ -56,7 +56,7 @@ def setup_logging(app):
     # log to files unless on AppEngine
     if not on_appengine():
         # Main logger
-        if not app.debug:
+        if not (app.debug or app.config.get('TESTING')):
             handler = logging.FileHandler(
                 app.config.get('LOGFILE', '/tmp/scoreboard.wsgi.log'))
             handler.setLevel(logging.INFO)
