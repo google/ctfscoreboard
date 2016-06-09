@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-import unittest
+import flask
 
 from scoreboard import rest
 from scoreboard.tests import base
@@ -21,10 +21,18 @@ from scoreboard.tests import base
 
 class ConfigzTest(base.RestTestCase):
 
-    def testGetNonAdmin(self):
-        response = self.client.get("/api/configz")
+    PATH = '/api/configz'
+
+    def testGetAnonymous(self):
+        response = self.client.get(self.PATH)
         self.assert403(response)
 
+    def testGetNonAdmin(self):
+        with self.authenticated_client as c:
+            response = self.client.get(self.PATH)
+            self.assert403(response)
 
-if __name__ == '__main__':
-    unittest.main()
+    def testAdmin(self):
+        with self.admin_client as c:
+            response = c.get(self.PATH)
+            self.assert200(response)
