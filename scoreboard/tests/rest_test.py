@@ -12,25 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 
-from scoreboard.app import app
-from scoreboard import models
+import unittest
+
 from scoreboard import rest
-from scoreboard import views
+from scoreboard.tests import base
 
-# Imported just for views
-modules_for_views = (rest, views)
+
+class ConfigzTest(base.RestTestCase):
+
+    def testGetNonAdmin(self):
+        response = self.client.get("/api/configz")
+        self.assert403(response)
+
 
 if __name__ == '__main__':
-    if 'createdb' in sys.argv:
-        models.db.create_all()
-    elif 'createdata' in sys.argv:
-        from scoreboard.tests import data
-        models.db.create_all()
-        data.create_all()
-    elif 'runtests' in sys.argv:
-        from scoreboard.tests import base
-        base.run_all_tests()
-    else:
-        app.run(host='0.0.0.0', debug=True, port=app.config.get('PORT', 9999))
+    unittest.main()
