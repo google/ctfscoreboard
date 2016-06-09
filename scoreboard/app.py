@@ -39,7 +39,18 @@ def create_app(config=None):
         app.config.update(**config)
     else:
         app.config.from_object('config')  # Load from config.py
+    app.debug = app.config.get('DEBUG')
+    
+    if not on_appengine:
+        #Configure Scss to watch the files
+        scss_compiler = flask_scss.Scss(app, static_dir='static/css', asset_dir='static/scss')
+        scss_compiler.update_scss()
 
+    setup_logging(app)
+    return app
+
+
+def setup_logging(app):
     log_formatter = logger.Formatter(
             '%(asctime)s %(levelname)8s [%(filename)s:%(lineno)d] %(client)s %(message)s')
     # log to files unless on AppEngine
@@ -62,11 +73,6 @@ def create_app(config=None):
         local_logger = logging.getLogger('scoreboard')
         local_logger.addHandler(handler)
         app.challenge_log = local_logger
-
-        #Configure Scss to watch the files
-        app.debug = app.config.get('DEBUG')
-        scss_compiler = flask_scss.Scss(app, static_dir='static/css', asset_dir='static/scss')
-        scss_compiler.update_scss()
     else:
         app.challenge_log = app.logger
         app.logger.handlers[0].setFormatter(log_formatter)
