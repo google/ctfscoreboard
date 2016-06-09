@@ -40,7 +40,7 @@ class BaseTestCase(flask_testing.TestCase):
 
     def create_app(self):
         app_module.app.config.update(self.TEST_CONFIG)
-        #app_module.setup_logging(app_module.app)
+        app_module.setup_logging(app_module.app)
         return app_module.app
 
     def setUp(self):
