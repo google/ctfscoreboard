@@ -32,12 +32,15 @@ class BaseTestCase(flask_testing.TestCase):
     """
 
     TEST_CONFIG = dict(
+        PRESERVE_CONTEXT_ON_EXCEPTION = False,
+        SECRET_KEY = 'testing-session-key',
         SQLALCHEMY_DATABASE_URI = "sqlite://",
         TESTING = True,
     )
 
     def create_app(self):
         app_module.app.config.update(self.TEST_CONFIG)
+        app_module.setup_logging(app_module.app)
         return app_module.app
 
     def setUp(self):
@@ -61,6 +64,8 @@ class RestTestCase(BaseTestCase):
         self._sql_listen_args = (models.db.engine, 'before_cursor_execute',
                 self._count_query)
         event.listen(*self._sql_listen_args)
+        self.authenticated_client = AuthenticatedClient(self.client)
+        self.admin_client = AdminClient(self.client)
 
     def tearDown(self):
         if self._query_count:
@@ -70,6 +75,33 @@ class RestTestCase(BaseTestCase):
 
     def _count_query(self):
         self._query_count += 1
+
+
+class AuthenticatedClient(object):
+    """Like TestClient, but authenticated."""
+    def __init__(self, client):
+        self.client = client
+
+    def __enter__(self):
+        rv = self.client.__enter__()
+        with rv.session_transaction() as sess:
+            sess['user'] = 1
+            sess['team'] = 1
+        return rv
+
+    def __exit__(self, *args, **kwargs):
+        return self.client.__exit__(*args, **kwargs)
+
+
+class AdminClient(AuthenticatedClient):
+    """Like TestClient, but admin."""
+
+    def __enter__(self):
+        rv = self.client.__enter__()
+        with rv.session_transaction() as sess:
+            sess['user'] = 1
+            sess['admin'] = True
+        return rv
 
 
 def run_all_tests():
