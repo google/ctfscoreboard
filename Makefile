@@ -12,5 +12,10 @@ PYSCSS:=$(shell which pyscss >/dev/null && echo `which pyscss` || echo cat)
 $(MIN_JS): $(JS_SRC)
 	$(MINIFY) $^ > $@
 
-scss: $(SCSS_SRC)
-	for i in $(ls static/scss/); do $(PYSCSS) -o static/css/${i%.scss}.css static/scss/$i; done
+scss:
+	for i in $(shell ls static/scss/); do \
+		echo "Making $$i";\
+		$(PYSCSS) -o static/css/$${i%.scss}.css static/scss/$$i;\
+	done
+
+all: $(MIN_JS) scss
