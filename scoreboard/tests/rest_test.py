@@ -180,3 +180,38 @@ class UserTest(base.RestTestCase):
             self.assertEqual(resp.json['uid'], flask.session['user'])
             self.assertEqual(resp.json['admin'], flask.session['admin'])
             self.assertEqual(resp.json['team_tid'], flask.session['team'])
+
+    def testRegisterUserTeam(self):
+        team = self.authenticated_client.team
+        data = {
+            'email': 'test@example.com',
+            'nick': 'test3',
+            'password': 'test3',
+            'team_id': team.tid,
+            'team_name': None,
+            'team_code': team.code,
+        }
+        with self.client as c:
+            resp = c.post('/api/users', data=json.dumps(data),
+                    content_type='application/json')
+            self.assert200(resp)
+            self.assertItemsEqual(self.USER_FIELDS, resp.json.keys())
+            self.assertEqual(resp.json['uid'], flask.session['user'])
+            self.assertEqual(resp.json['admin'], flask.session['admin'])
+            self.assertEqual(resp.json['team_tid'], flask.session['team'])
+            self.assertEqual(team.tid, resp.json['team_tid'])
+
+    def testRegisterUserTeamNoCode(self):
+        team = self.authenticated_client.team
+        data = {
+            'email': 'test@example.com',
+            'nick': 'test3',
+            'password': 'test3',
+            'team_id': team.tid,
+            'team_name': None,
+            'team_code': 'xxx',
+        }
+        with self.client as c:
+            resp = c.post('/api/users', data=json.dumps(data),
+                    content_type='application/json')
+            self.assert400(resp)
