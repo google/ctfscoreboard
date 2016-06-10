@@ -466,3 +466,23 @@ sbDirectives.directive('challengeBox', [
         } // Link function
       }
     }]);
+
+sbDirectives.directive('ngAnyClick', [
+    "$parse",
+    function($parse) {
+        return function(scope, element, attr) {
+            var call = $parse(attr.ngAnyClick);
+            element.bind('click', function(e) {
+                scope.$apply(function() {
+                    e.preventDefault();
+                    call(scope, {$event:event, $click: 0});
+                })
+            })
+            element.bind('contextmenu', function(e) {
+                scope.$apply(function() {
+                    e.preventDefault();
+                    call(scope, {$event:event, $click: 1});
+                })
+            })
+        }
+    }])
