@@ -140,9 +140,9 @@ challengeCtrls.controller('ChallengeGridCtrl', [
       $scope.tagsAllowed = function(chall) {
         var containsTag = function(chall, tagslug) {
             for (var i = 0; i < chall.tags.length; i++) {
-              if (chall.tags[i].tagslug == tagslug) return true
+              if (chall.tags[i].tagslug == tagslug) return true;
             }
-            return false
+            return false;
         }
 
         //Check for prohibition
@@ -163,7 +163,7 @@ challengeCtrls.controller('ChallengeGridCtrl', [
       }
 
       $scope.toggleTag = function(t, click) {
-        var tindex = $scope.shownTags[t]
+        var tindex = $scope.shownTags[t];
         //Return next permutation
         if (click == 0) {
           tindex += 1;
