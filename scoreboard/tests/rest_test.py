@@ -97,6 +97,7 @@ class PageTest(base.RestTestCase):
 class UserTest(base.RestTestCase):
 
     PATH = '/api/users/%d'
+    USER_FIELDS = ('admin', 'nick', 'email', 'team_tid', 'uid')
 
     def makeTestUser(self):
         u = models.User.create('email@example.com', 'Nick', 'hunter2')
@@ -111,10 +112,18 @@ class UserTest(base.RestTestCase):
         path = self.PATH % 999
         self.assert403(self.client.get(path))
 
-    def testGetNonExistent(self):
+    def testGetNonExistentAuth(self):
         path = self.PATH % 999
         with self.authenticated_client as c:
-            self.assert404(c.get(path))
+            resp = c.get(path)
+            self.assert403(resp)
+            self.assertIn("No access", resp.json['message'])
+
+    def testGetNonExistentAdmin(self):
+        path = self.PATH % 999
+        with self.admin_client as c:
+            resp = c.get(path)
+            self.assert404(resp)
 
     def testGetSelf(self):
         user = self.authenticated_client.user
@@ -140,3 +149,34 @@ class UserTest(base.RestTestCase):
                     content_type='application/json')
             self.assert200(resp)
             self.assertEqual('Lame', resp.json['nick'])
+
+    def testGetUsers(self):
+        user = self.admin_client.user
+        with self.admin_client as c:
+            resp = c.get('/api/users')
+            self.assert200(resp)
+            self.assertIsInstance(resp.json, dict)
+            self.assertIn('users', resp.json)
+            self.assertIsInstance(resp.json['users'], list)
+            users = resp.json['users']
+            self.assertEqual(2, len(users))
+            for u in users:
+                self.assertItemsEqual(self.USER_FIELDS, u.keys())
+
+    def testRegisterUser(self):
+        data = {
+            'email': 'test@example.com',
+            'nick': 'test3',
+            'password': 'test3',
+            'team_id': 'new',
+            'team_name': 'New Team',
+            'team_code': None,
+        }
+        with self.client as c:
+            resp = c.post('/api/users', data=json.dumps(data),
+                    content_type='application/json')
+            self.assert200(resp)
+            self.assertItemsEqual(self.USER_FIELDS, resp.json.keys())
+            self.assertEqual(resp.json['uid'], flask.session['user'])
+            self.assertEqual(resp.json['admin'], flask.session['admin'])
+            self.assertEqual(resp.json['team_tid'], flask.session['team'])

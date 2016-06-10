@@ -68,8 +68,8 @@ class RestTestCase(BaseTestCase):
         self._sql_listen_args = (models.db.engine, 'before_cursor_execute',
                 self._count_query)
         event.listen(*self._sql_listen_args)
-        self.authenticated_client = AuthenticatedClient(self.client)
         self.admin_client = AdminClient(self.client)
+        self.authenticated_client = AuthenticatedClient(self.client)
 
     def tearDown(self):
         if self._query_count:
@@ -83,6 +83,10 @@ class RestTestCase(BaseTestCase):
 
 class AuthenticatedClient(object):
     """Like TestClient, but authenticated."""
+
+    def __getattr__(self, attr):
+        return getattr(self.client, attr)
+
     def __init__(self, client):
         self.client = client
         self.team = models.Team.create('team')
