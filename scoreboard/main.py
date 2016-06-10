@@ -20,6 +20,9 @@ import flask_scss
 
 from scoreboard import logger
 
+# Singleton app instance
+_app_singleton = None
+
 
 def on_appengine():
     """Returns true if we're running on AppEngine."""
@@ -39,13 +42,27 @@ def create_app(config=None):
         app.config.update(**config)
     else:
         app.config.from_object('config')  # Load from config.py
+    app.debug = app.config.get('DEBUG')
+    
+    if not on_appengine():
+        #Configure Scss to watch the files
+        scss_compiler = flask_scss.Scss(app, static_dir='static/css', asset_dir='static/scss')
+        scss_compiler.update_scss()
 
+    for c in exceptions.default_exceptions.iterkeys():
+        app.register_error_handler(c, api_error_handler)
+
+    setup_logging(app)
+    return app
+
+
+def setup_logging(app):
     log_formatter = logger.Formatter(
             '%(asctime)s %(levelname)8s [%(filename)s:%(lineno)d] %(client)s %(message)s')
     # log to files unless on AppEngine
     if not on_appengine():
         # Main logger
-        if not app.debug:
+        if not (app.debug or app.config.get('TESTING')):
             handler = logging.FileHandler(
                 app.config.get('LOGFILE', '/tmp/scoreboard.wsgi.log'))
             handler.setLevel(logging.INFO)
@@ -62,11 +79,6 @@ def create_app(config=None):
         local_logger = logging.getLogger('scoreboard')
         local_logger.addHandler(handler)
         app.challenge_log = local_logger
-
-        #Configure Scss to watch the files
-        app.debug = app.config.get('DEBUG')
-        scss_compiler = flask_scss.Scss(app, static_dir='static/css', asset_dir='static/scss')
-        scss_compiler.update_scss()
     else:
         app.challenge_log = app.logger
         app.logger.handlers[0].setFormatter(log_formatter)
@@ -80,10 +92,6 @@ def create_app(config=None):
     }
 
     return app
-
-
-# Global app instance
-app = create_app()
 
 
 def api_error_handler(ex):
@@ -106,5 +114,9 @@ def api_error_handler(ex):
             title=error_titles.get(status_code, 'Error')),
         status_code)
 
-for c in exceptions.default_exceptions.iterkeys():
-    app.register_error_handler(c, api_error_handler)
+
+def get_app():
+    global _app_singleton
+    if _app_singleton is None:
+        _app_singleton = create_app()
+    return _app_singleton

@@ -25,7 +25,9 @@ Required API:
 
 import urlparse
 
-from scoreboard import app
+from scoreboard import main
+
+app = main.get_app()
 
 
 def get_backend_path():
