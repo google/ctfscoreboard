@@ -106,15 +106,24 @@ challengeCtrls.controller('ChallengeGridCtrl', [
     'loadingService',
     'scoreService',
     'sessionService',
+    'tagService',
     function($scope, $location, categoryService, loadingService, scoreService,
-      sessionService) {
+      sessionService, tagService) {
       $scope.categories = {};
       $scope.currChall = null;
+      $scope.shownTags = {};
       var refresh = function() {
           categoryService.getList(function(data) {
               $scope.categories = data.categories;
           });
       };
+
+      tagService.getList(function(tags) {
+        $scope.allTags = tags.tags;
+        for (var i = 0; i < $scope.allTags.length; i++) {
+          $scope.shownTags[$scope.allTags[i].tagslug] = 1;
+        }
+      })
 
       $scope.goChallenge = function(chall) {
         $scope.currChall = chall;
@@ -127,6 +136,47 @@ challengeCtrls.controller('ChallengeGridCtrl', [
         else
           return scoreService.getCurrentPoints(chall) + " points";
       };
+
+      $scope.tagsAllowed = function(chall) {
+        var containsTag = function(chall, tagslug) {
+            for (var i = 0; i < chall.tags.length; i++) {
+              if (chall.tags[i].tagslug == tagslug) return true;
+            }
+            return false;
+        }
+
+        //Check for prohibition
+        for (var i = 0; i < chall.tags.length; i++) {
+          var type = $scope.shownTags[chall.tags[i].tagslug];
+          if (type == 0) {
+            return false;
+          }
+        }
+
+        //Check for inclusion
+        for (var i in $scope.shownTags) {
+          if ($scope.shownTags[i] == 2 && !containsTag(chall, i)) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      $scope.toggleTag = function(t, click) {
+        var tindex = $scope.shownTags[t];
+        //Return next permutation
+        if (click == 0) {
+          tindex += 1;
+        } else {
+          tindex += 3-1;
+        }
+        $scope.shownTags[t] = tindex % 3;
+      }
+
+      $scope.getSentiment = function(tag) {
+        var sentiments = ['sentiment_dissatisfied', 'sentiment_neutral', 'sentiment_satisfied'];
+        return sentiments[$scope.shownTags[tag.tagslug]];
+      }
 
       sessionService.requireLogin(function() {
         refresh();
