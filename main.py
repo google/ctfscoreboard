@@ -33,4 +33,4 @@ if __name__ == '__main__':
         from scoreboard.tests import base
         base.run_all_tests()
     else:
-        wsgi.app.run(host='0.0.0.0', debug=True, port=app.config.get('PORT', 9999))
+        wsgi.app.run(host='0.0.0.0', debug=True, port=wsgi.app.config.get('PORT', 9999))
