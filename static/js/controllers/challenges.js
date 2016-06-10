@@ -130,6 +130,13 @@ challengeCtrls.controller('ChallengeGridCtrl', [
         $('#challenge-modal').modal('show');
       };
 
+      $scope.flipSide = function(chall) {
+        if (chall.answered)
+          return "Solved! (" + scoreService.getCurrentPoints(chall) + " points)";
+        else
+          return scoreService.getCurrentPoints(chall) + " points";
+      };
+
       $scope.tagsAllowed = function(chall) {
         for (var i = 0; i < chall.tags.length; i++) {
           var type = $scope.shownTags[chall.tags[i].tagslug]
@@ -147,17 +154,7 @@ challengeCtrls.controller('ChallengeGridCtrl', [
         return false;
       }
 
-      $scope.$watch('shownTags', function() {
-        $scope.flipSide = function(chall) {
-          if (chall.answered)
-            return "Solved! (" + scoreService.getCurrentPoints(chall) + " points)";
-          else
-            return scoreService.getCurrentPoints(chall) + " points";
-        };
-      })
-
       $scope.toggleTag = function(t, click) {
-        console.log(arguments)
         var tindex = $scope.shownTags[t]
         //Return next permutation
         if (click == 0) {
@@ -166,6 +163,11 @@ challengeCtrls.controller('ChallengeGridCtrl', [
           tindex += 3-1
         }
         $scope.shownTags[t] = tindex % 3
+      }
+
+      $scope.getSentiment = function(tag) {
+        var sentiments = ['sentiment_dissatisfied', 'sentiment_neutral', 'sentiment_satisfied']
+        return sentiments[$scope.shownTags[tag.tagslug]]
       }
 
       sessionService.requireLogin(function() {
