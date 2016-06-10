@@ -58,7 +58,7 @@ class Team(db.Model):
 
     @property
     def code(self):
-        return hmac.new(app.config.get('SECRET_KEY'), self.name.encode('utf-8')).hexdigest()[:12]
+        return hmac.new(main.get_app().config.get('SECRET_KEY'), self.name.encode('utf-8')).hexdigest()[:12]
 
     @property
     def solves(self):
@@ -162,7 +162,7 @@ class User(db.Model):
         token_plain = '%d:%d:%s:%s' % (
                 self.uid, expires, token_type, self.pwhash)
         mac = hmac.new(
-                app.config.get('SECRET_KEY'), token_plain, hashlib.sha1).digest()
+                main.get_app().config.get('SECRET_KEY'), token_plain, hashlib.sha1).digest()
         token = '%d:%s' % (expires, mac)
         return base64.urlsafe_b64encode(token)
 
@@ -436,7 +436,7 @@ class Challenge(db.Model):
 
     @property
     def teaser(self):
-        if not app.config.get('TEASE_HIDDEN'):
+        if not main.get_app().config.get('TEASE_HIDDEN'):
             return False
         if not Team.current():
             return False
@@ -540,7 +540,7 @@ class Challenge(db.Model):
 
     def update_answers(self, exclude_team=None):
         """Update answers for variable scoring."""
-        mode = app.config.get('SCORING')
+        mode = main.get_app().config.get('SCORING')
         if mode == 'plain':
             return
         if mode == 'progressive':
@@ -603,7 +603,7 @@ class Answer(db.Model):
         if utils.GameTime.state(self.timestamp) == "AFTER":
             return 0
 
-        mode = app.config.get('SCORING')
+        mode = main.get_app().config.get('SCORING')
         value = self.challenge.points
         if mode == 'plain':
             return value + self.first_blood
@@ -614,7 +614,7 @@ class Answer(db.Model):
     @classmethod
     def create(cls, challenge, team, answer_text):
         answer = cls()
-        answer.first_blood = (app.config.get('FIRST_BLOOD')
+        answer.first_blood = (main.get_app().config.get('FIRST_BLOOD')
                 if not challenge.solves else 0)
         answer.challenge = challenge
         answer.team = team
@@ -655,7 +655,7 @@ class News(db.Model):
     def game_broadcast(cls, author=None, message=None):
         if message is None:
             raise ValueError('Missing message.')
-        author = author or app.config.get('SYSTEM_NAME')
+        author = author or main.get_app().config.get('SYSTEM_NAME')
         if not utils.GameTime.open():
             return
         return cls.broadcast(author, message)
