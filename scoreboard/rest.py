@@ -21,7 +21,6 @@ import json
 import os
 import pytz
 
-from scoreboard.app import app
 from scoreboard import attachments
 from scoreboard import auth
 from scoreboard import cache
@@ -29,9 +28,11 @@ from scoreboard import controllers
 from scoreboard import context
 from scoreboard import csrfutil
 from scoreboard import errors
+from scoreboard import main
 from scoreboard import models
 from scoreboard import utils
 
+app = main.get_app()
 api = flask_restful.Api(app)
 context.ensure_setup()
 

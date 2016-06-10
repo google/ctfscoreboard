@@ -25,7 +25,9 @@ import urlparse
 
 import flask
 
-from scoreboard.app import app
+from scoreboard import main
+
+app = main.get_app()
 
 
 def attachment_dir(create=False):

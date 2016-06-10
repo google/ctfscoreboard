@@ -16,11 +16,12 @@ import flask
 import os
 from werkzeug import exceptions
 
-from scoreboard.app import app
 from scoreboard import attachments
+from scoreboard import main
 from scoreboard import models
 from scoreboard import utils
 
+app = main.get_app()
 
 _VIEW_CACHE = {}
 

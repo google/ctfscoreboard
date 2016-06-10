@@ -20,6 +20,9 @@ import flask_scss
 
 from scoreboard import logger
 
+# Singleton app instance
+_app_singleton = None
+
 
 def on_appengine():
     """Returns true if we're running on AppEngine."""
@@ -45,6 +48,9 @@ def create_app(config=None):
         #Configure Scss to watch the files
         scss_compiler = flask_scss.Scss(app, static_dir='static/css', asset_dir='static/scss')
         scss_compiler.update_scss()
+
+    for c in exceptions.default_exceptions.iterkeys():
+        app.register_error_handler(c, api_error_handler)
 
     setup_logging(app)
     return app
@@ -88,10 +94,6 @@ def setup_logging(app):
     return app
 
 
-# Global app instance
-app = create_app()
-
-
 def api_error_handler(ex):
     """Handle errors as appropriate depending on path."""
     try:
@@ -112,5 +114,9 @@ def api_error_handler(ex):
             title=error_titles.get(status_code, 'Error')),
         status_code)
 
-for c in exceptions.default_exceptions.iterkeys():
-    app.register_error_handler(c, api_error_handler)
+
+def get_app():
+    global _app_singleton
+    if _app_singleton is None:
+        _app_singleton = create_app()
+    return _app_singleton

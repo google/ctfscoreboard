@@ -26,7 +26,9 @@ import flask
 
 import cloudstorage as gcs
 
-from scoreboard.app import app
+from scoreboard import main
+
+app = main.get_app()
 
 
 def get_bucket(path=None):
