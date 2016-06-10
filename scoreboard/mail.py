@@ -16,7 +16,9 @@ from email.mime import text
 import email.utils
 import smtplib
 
-from scoreboard.app import app
+from scoreboard import main
+
+app = main.get_app()
 
 
 class MailFailure(Exception):

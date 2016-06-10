@@ -20,7 +20,7 @@ import flask
 
 from werkzeug.contrib import cache
 
-from scoreboard import app
+from scoreboard import main
 
 
 class CacheWrapper(object):
@@ -41,7 +41,7 @@ class CacheWrapper(object):
         return getattr(self._cache, name)
 
 
-global_cache = CacheWrapper(app)
+global_cache = CacheWrapper(main.get_app())
 
 
 def rest_cache(f_or_key):

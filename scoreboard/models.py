@@ -30,10 +30,11 @@ from sqlalchemy import func
 from sqlalchemy import orm
 from sqlalchemy.orm import exc as orm_exc
 
-from scoreboard.app import app
 from scoreboard import attachments
 from scoreboard import errors
+from scoreboard import main
 
+app = main.get_app()
 db = flask_sqlalchemy.SQLAlchemy(app)
 
 

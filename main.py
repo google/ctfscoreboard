@@ -14,18 +14,14 @@
 
 import sys
 
-from scoreboard.app import app
-from scoreboard import models
-from scoreboard import rest
-from scoreboard import views
-
-# Imported just for views
-modules_for_views = (rest, views)
+from scoreboard import wsgi
 
 if __name__ == '__main__':
     if 'createdb' in sys.argv:
+        from scoreboard import models
         models.db.create_all()
     elif 'createdata' in sys.argv:
+        from scoreboard import models
         from scoreboard.tests import data
         models.db.create_all()
         data.create_all()
@@ -33,4 +29,4 @@ if __name__ == '__main__':
         from scoreboard.tests import base
         base.run_all_tests()
     else:
-        app.run(host='0.0.0.0', debug=True, port=app.config.get('PORT', 9999))
+        wsgi.app.run(host='0.0.0.0', debug=True, port=wsgi.app.config.get('PORT', 9999))

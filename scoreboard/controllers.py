@@ -19,11 +19,13 @@ import re
 from sqlalchemy import exc
 import urllib
 
-from scoreboard.app import app
 from scoreboard import errors
 from scoreboard import mail
+from scoreboard import main
 from scoreboard import models
 from scoreboard import utils
+
+app = main.get_app()
 
 
 def register_user(email, nick, password, team_id=None,

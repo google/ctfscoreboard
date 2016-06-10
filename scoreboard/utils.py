@@ -25,8 +25,9 @@ import urlparse
 from random import SystemRandom
 random = SystemRandom()
 
-from scoreboard.app import app
+from scoreboard import main
 
+app = main.get_app()
 
 # Use dateutil if available
 try:
