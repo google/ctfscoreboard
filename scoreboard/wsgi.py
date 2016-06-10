@@ -13,5 +13,10 @@
 # limitations under the License.
 
 from scoreboard import main
+from scoreboard import rest
+from scoreboard import views
 
 app = main.get_app()
+
+# Used here to catch accidental removal
+_modules_for_views = (rest, views)
