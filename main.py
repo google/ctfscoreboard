@@ -14,10 +14,10 @@
 
 import sys
 
-from scoreboard.app import app
 from scoreboard import models
 from scoreboard import rest
 from scoreboard import views
+from scoreboard import wsgi
 
 # Imported just for views
 modules_for_views = (rest, views)
@@ -33,4 +33,4 @@ if __name__ == '__main__':
         from scoreboard.tests import base
         base.run_all_tests()
     else:
-        app.run(host='0.0.0.0', debug=True, port=app.config.get('PORT', 9999))
+        wsgi.app.run(host='0.0.0.0', debug=True, port=app.config.get('PORT', 9999))

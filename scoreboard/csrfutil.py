@@ -21,7 +21,9 @@ import jinja2
 import struct
 import time
 
-from scoreboard.app import app
+from scoreboard import main
+
+app = main.get_app()
 
 
 def _get_csrf_token(user=None, expires=None):

@@ -17,9 +17,11 @@ import collections
 import flask
 from sqlalchemy import event
 
-from scoreboard.app import app
+from scoreboard import main
 from scoreboard import models
 from scoreboard import utils
+
+app = main.get_app()
 
 
 DEFAULT_CSP_POLICY = {

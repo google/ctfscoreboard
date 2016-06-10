@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Base test module, MUST be imported first."""
 
 import logging
 import os.path
@@ -21,7 +22,7 @@ import flask_sqlalchemy
 import flask_testing
 from sqlalchemy import event
 
-from scoreboard import app_module
+from scoreboard import main
 from scoreboard import models
 
 
@@ -39,14 +40,15 @@ class BaseTestCase(flask_testing.TestCase):
     )
 
     def create_app(self):
-        app_module.app.config.update(self.TEST_CONFIG)
-        app_module.setup_logging(app_module.app)
-        return app_module.app
+        app = main.get_app()
+        app.config.update(self.TEST_CONFIG)
+        main.setup_logging(app)
+        return app
 
     def setUp(self):
         """Re-setup the DB to ensure a fresh instance."""
         super(BaseTestCase, self).setUp()
-        models.db = flask_sqlalchemy.SQLAlchemy(app_module.app)
+        models.db.init_app(main.get_app())
         models.db.create_all()
 
     def tearDown(self):

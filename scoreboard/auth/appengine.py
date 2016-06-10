@@ -20,11 +20,14 @@ import flask
 
 from google.appengine.api import users
 
-from scoreboard.app import app
 from scoreboard import controllers
 from scoreboard import errors
+from scoreboard import main
 from scoreboard import models
 from scoreboard import utils
+
+
+app = main.get_app()
 
 
 def login_user(_):
