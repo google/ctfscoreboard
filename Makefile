@@ -23,3 +23,11 @@ scss:
 		echo "Making $$i";\
 		$(PYSCSS) -o static/css/$${i%.scss}.css static/scss/$$i;\
 	done
+
+tests:
+	python main.py runtests
+
+coverage:
+	coverage run main.py runtests
+	coverage html
+	xdg-open htmlcov/index.html
