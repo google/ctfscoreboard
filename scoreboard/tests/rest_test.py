@@ -52,3 +52,8 @@ class PageTest(base.RestTestCase):
         models.db.session.commit()
         response = self.client.get(self.PATH)
         self.assert200(response)
+        self.assertEqual(page.title, response.json['title'])
+        self.assertEqual(page.contents, response.json['contents'])
+
+    def testGetNonExistent(self):
+        self.assert404(self.client.get(self.PATH))

@@ -14,10 +14,12 @@
 
 """Base test module, MUST be imported first."""
 
+import json
 import logging
 import os.path
 import unittest
 
+import flask
 import flask_sqlalchemy
 import flask_testing
 from sqlalchemy import event
@@ -113,3 +115,18 @@ def run_all_tests():
     suite = unittest.defaultTestLoader.discover(test_dir, pattern='*_test.py',
             top_level_dir=top_dir)
     unittest.TextTestRunner().run(suite)
+
+
+def json_monkeypatch():
+    """Automatically strip our XSSI header."""
+    def new_loads(data, *args, **kwargs):
+        try:
+            prefix = ")]}',\n"
+            if data.startswith(prefix):
+                data = data[len(prefix):]
+            return json.loads(data, *args, **kwargs)
+        except Exception as exc:
+            logging.exception('JSON monkeypatch failed: ', exc)
+    flask.json.loads = new_loads
+
+json_monkeypatch()
