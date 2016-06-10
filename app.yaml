@@ -32,12 +32,12 @@ handlers:
   secure: always
 
 - url: /createdb
-  script: main.app
+  script: scoreboard.wsgi.app
   secure: always
   login: admin
 
 - url: /.*
-  script: main.app
+  script: scoreboard.wsgi.app
   secure: always
 
 skip_files:

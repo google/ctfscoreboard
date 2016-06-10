@@ -34,7 +34,8 @@ from scoreboard import attachments
 from scoreboard import errors
 from scoreboard import main
 
-db = flask_sqlalchemy.SQLAlchemy(main.get_app())
+app = main.get_app()
+db = flask_sqlalchemy.SQLAlchemy(app)
 
 
 class Team(db.Model):
