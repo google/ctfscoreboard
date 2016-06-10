@@ -92,3 +92,51 @@ class PageTest(base.RestTestCase):
             resp = c.post(self.PATH, data=json.dumps(page_data),
                     content_type='application/json')
             self.assert403(resp)
+
+
+class UserTest(base.RestTestCase):
+
+    PATH = '/api/users/%d'
+
+    def makeTestUser(self):
+        u = models.User.create('email@example.com', 'Nick', 'hunter2')
+        models.db.session.commit()
+        return u
+
+    def testGetAnonymous(self):
+        path = self.PATH % self.makeTestUser().uid
+        self.assert403(self.client.get(path))
+
+    def testGetNonExistentAnonymous(self):
+        path = self.PATH % 999
+        self.assert403(self.client.get(path))
+
+    def testGetNonExistent(self):
+        path = self.PATH % 999
+        with self.authenticated_client as c:
+            self.assert404(c.get(path))
+
+    def testGetSelf(self):
+        user = self.authenticated_client.user
+        with self.authenticated_client as c:
+            resp = c.get(self.PATH % user.uid)
+            self.assert200(resp)
+            self.assertEqual(user.email, resp.json['email'])
+            self.assertEqual(user.nick, resp.json['nick'])
+            self.assertEqual(user.admin, resp.json['admin'])
+
+    def testUpdateUser(self):
+        user = self.authenticated_client.user
+        with self.authenticated_client as c:
+            data = {'password': 'hunter3'} # for security
+            self.assert200(c.put(self.PATH % user.uid,
+                data=json.dumps(data), content_type='application/json'))
+
+    def testUpdateUserAdmin(self):
+        user = self.authenticated_client.user
+        with self.admin_client as c:
+            data = {'nick': 'Lame'}
+            resp = c.put(self.PATH % user.uid, data=json.dumps(data),
+                    content_type='application/json')
+            self.assert200(resp)
+            self.assertEqual('Lame', resp.json['nick'])

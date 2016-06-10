@@ -85,12 +85,16 @@ class AuthenticatedClient(object):
     """Like TestClient, but authenticated."""
     def __init__(self, client):
         self.client = client
+        self.team = models.Team.create('team')
+        self.user = models.User.create('auth@example.com', 'Authenticated',
+                'hunter2', team=self.team)
+        models.db.session.commit()
 
     def __enter__(self):
         rv = self.client.__enter__()
         with rv.session_transaction() as sess:
-            sess['user'] = 1
-            sess['team'] = 1
+            sess['user'] = self.user.uid
+            sess['team'] = self.team.tid
         return rv
 
     def __exit__(self, *args, **kwargs):
@@ -100,10 +104,16 @@ class AuthenticatedClient(object):
 class AdminClient(AuthenticatedClient):
     """Like TestClient, but admin."""
 
+    def __init__(self, client):
+        self.client = client
+        self.user = models.User.create('admin@example.com', 'Admin', 'hunter2')
+        self.user.admin = True
+        models.db.session.commit()
+
     def __enter__(self):
         rv = self.client.__enter__()
         with rv.session_transaction() as sess:
-            sess['user'] = 1
+            sess['user'] = self.user.uid
             sess['admin'] = True
         return rv
 
