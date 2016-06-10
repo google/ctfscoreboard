@@ -7,15 +7,19 @@ MINIFY:=$(shell which uglifyjs >/dev/null && echo `which uglifyjs` || echo cat)
 
 # Declarations for SCSS
 SCSS_SRC:=$(shell find static/scss -name '*.scss')
-PYSCSS:=$(shell which pyscss >/dev/null && echo `which pyscss` || echo cat)
+PYSCSS:=$(shell which pyscss >/dev/null && echo `which pyscss` )
+
+all: $(MIN_JS) scss
 
 $(MIN_JS): $(JS_SRC)
 	$(MINIFY) $^ > $@
 
 scss:
-	for i in $(shell ls static/scss/); do \
+	if [ "$(PYSCSS)" = "" ]; then\
+		echo "pyscss not found, exiting";\
+		exit -1;\
+	fi;\
+	for i in $$(ls static/scss/); do\
 		echo "Making $$i";\
 		$(PYSCSS) -o static/css/$${i%.scss}.css static/scss/$$i;\
 	done
-
-all: $(MIN_JS) scss
