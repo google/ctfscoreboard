@@ -14,6 +14,7 @@
 
 
 import flask
+import json
 
 from scoreboard.tests import base
 from scoreboard import models
@@ -43,13 +44,18 @@ class PageTest(base.RestTestCase):
 
     PATH = '/api/page/home'
 
-    def testGetAnonymous(self):
+    @staticmethod
+    def makeTestPage():
         page = models.Page()
         page.path = 'home'
         page.title = 'Home'
         page.contents = 'Home Page'
         models.db.session.add(page)
         models.db.session.commit()
+        return page
+
+    def testGetAnonymous(self):
+        page = self.makeTestPage()
         response = self.client.get(self.PATH)
         self.assert200(response)
         self.assertEqual(page.title, response.json['title'])
@@ -57,3 +63,32 @@ class PageTest(base.RestTestCase):
 
     def testGetNonExistent(self):
         self.assert404(self.client.get(self.PATH))
+
+    def testDeletePage(self):
+        page = self.makeTestPage()
+        with self.admin_client as c:
+            self.assert200(c.get(self.PATH))
+            self.assert200(c.delete(self.PATH))
+            self.assert404(c.get(self.PATH))
+
+    def testCreatePage(self):
+        with self.admin_client as c:
+            page_data = dict(
+                 title='Test',
+                 contents='Test Page Contents',
+                 )
+            resp = c.post(self.PATH, data=json.dumps(page_data),
+                    content_type='application/json')
+            self.assert200(resp)
+            self.assertEqual(page_data['title'], resp.json['title'])
+            self.assertEqual(page_data['contents'], resp.json['contents'])
+
+    def testCreatePageNonAdmin(self):
+        with self.authenticated_client as c:
+            page_data = dict(
+                 title='Test',
+                 contents='Test Page Contents',
+                 )
+            resp = c.post(self.PATH, data=json.dumps(page_data),
+                    content_type='application/json')
+            self.assert403(resp)
