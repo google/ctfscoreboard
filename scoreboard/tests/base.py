@@ -75,7 +75,7 @@ class RestTestCase(BaseTestCase):
         event.remove(*self._sql_listen_args)
         super(RestTestCase, self).tearDown()
 
-    def _count_query(self):
+    def _count_query(self, *unused_args):
         self._query_count += 1
 
 

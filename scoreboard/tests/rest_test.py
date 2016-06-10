@@ -15,8 +15,9 @@
 
 import flask
 
-from scoreboard import rest
 from scoreboard.tests import base
+from scoreboard import models
+from scoreboard import rest
 
 
 class ConfigzTest(base.RestTestCase):
@@ -36,3 +37,18 @@ class ConfigzTest(base.RestTestCase):
         with self.admin_client as c:
             response = c.get(self.PATH)
             self.assert200(response)
+
+
+class PageTest(base.RestTestCase):
+
+    PATH = '/api/page/home'
+
+    def testGetAnonymous(self):
+        page = models.Page()
+        page.path = 'home'
+        page.title = 'Home'
+        page.contents = 'Home Page'
+        models.db.session.add(page)
+        models.db.session.commit()
+        response = self.client.get(self.PATH)
+        self.assert200(response)
