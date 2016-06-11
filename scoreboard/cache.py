@@ -22,6 +22,8 @@ from werkzeug.contrib import cache
 
 from scoreboard import main
 
+app = main.get_app()
+
 
 class CacheWrapper(object):
 
@@ -41,7 +43,7 @@ class CacheWrapper(object):
         return getattr(self._cache, name)
 
 
-global_cache = CacheWrapper(main.get_app())
+global_cache = CacheWrapper(app)
 
 
 def rest_cache(f_or_key):

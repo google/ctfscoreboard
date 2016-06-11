@@ -1,0 +1,4 @@
+[run]
+source = scoreboard
+omit = scoreboard/tests/*
+branch = True

@@ -1,10 +1,21 @@
+# Compiled, swap files
 *.pyc
-/config.py
 *.swp
+.virtualenv
+
+# Runtime data
+/config.py
 *.db
 /attachments
 /attachments/**
-static/js/app.min.js
-.virtualenv
-lib
+
+# Generated files
+/static/js/app.min.js
 /static/css/*.css
+
+# Appengine libraries
+lib
+
+# Python coverage toold
+.coverage
+htmlcov
