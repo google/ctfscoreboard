@@ -65,11 +65,11 @@ class RestTestCase(BaseTestCase):
     def setUp(self):
         super(RestTestCase, self).setUp()
         self._query_count = 0
+        self.admin_client = AdminClient(self.client)
+        self.authenticated_client = AuthenticatedClient(self.client)
         self._sql_listen_args = (models.db.engine, 'before_cursor_execute',
                 self._count_query)
         event.listen(*self._sql_listen_args)
-        self.admin_client = AdminClient(self.client)
-        self.authenticated_client = AuthenticatedClient(self.client)
 
     def tearDown(self):
         if self._query_count:
@@ -77,8 +77,17 @@ class RestTestCase(BaseTestCase):
         event.remove(*self._sql_listen_args)
         super(RestTestCase, self).tearDown()
 
-    def _count_query(self, *unused_args):
+    def resetQueryCount(self):
+        self._query_count = 0
+
+    def assertMaxQueries(self, n):
+        """Assert that no more than n queries have been performed."""
+        self.assertLessEqual(self._query_count, n)
+
+    def _count_query(self, unused_conn, unused_cursor, statement, unused_parameters,
+            unused_context, unused_executemany):
         self._query_count += 1
+        logging.debug('SQLAlchemy: %s', statement)
 
 
 class AuthenticatedClient(object):
@@ -124,6 +133,7 @@ class AdminClient(AuthenticatedClient):
 
 def run_all_tests():
     """This loads and runs all tests in scoreboard.tests."""
+    logging.getLogger().setLevel(logging.INFO)
     test_dir = os.path.dirname(os.path.realpath(__file__))
     top_dir = os.path.abspath(os.path.join(test_dir, '..'))
     suite = unittest.defaultTestLoader.discover(test_dir, pattern='*_test.py',

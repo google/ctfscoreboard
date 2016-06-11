@@ -106,6 +106,7 @@ class UserTest(base.RestTestCase):
 
     def testGetAnonymous(self):
         path = self.PATH % self.makeTestUser().uid
+        self.resetQueryCount()
         self.assert403(self.client.get(path))
 
     def testGetNonExistentAnonymous(self):
