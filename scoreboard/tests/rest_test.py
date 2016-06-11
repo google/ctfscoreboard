@@ -141,6 +141,13 @@ class UserTest(base.RestTestCase):
             self.assert200(c.put(self.PATH % user.uid,
                 data=json.dumps(data), content_type='application/json'))
 
+    def testUpdateUserNoAccess(self):
+        user = self.admin_client.user
+        with self.authenticated_client as c:
+            data = {'password': 'hunter3'}
+            self.assert403(c.put(self.PATH % user.uid,
+                data=json.dumps(data), content_type='application/json'))
+
     def testUpdateUserAdmin(self):
         user = self.authenticated_client.user
         with self.admin_client as c:
@@ -149,6 +156,33 @@ class UserTest(base.RestTestCase):
                     content_type='application/json')
             self.assert200(resp)
             self.assertEqual('Lame', resp.json['nick'])
+
+    def testUpdateUserPromote(self):
+        user = self.authenticated_client.user
+        with self.admin_client as c:
+            data = {'nick': user.nick, 'admin': True}
+            resp = c.put(self.PATH % user.uid, data=json.dumps(data),
+                    content_type='application/json')
+            self.assert200(resp)
+            self.assertTrue(resp.json['admin'])
+
+    def testUpdateUserDemote(self):
+        user = self.admin_client.user
+        with self.admin_client as c:
+            data = {'nick': user.nick, 'admin': False}
+            resp = c.put(self.PATH % user.uid, data=json.dumps(data),
+                    content_type='application/json')
+            self.assert200(resp)
+            self.assertFalse(resp.json['admin'])
+
+    def testUpdateUserNoSelfPromotion(self):
+        user = self.authenticated_client.user
+        with self.authenticated_client as c:
+            data = {'admin': True}
+            resp = c.put(self.PATH % user.uid, data=json.dumps(data),
+                    content_type='application/json')
+            self.assert200(resp)
+            self.assertFalse(resp.json['admin'])
 
     def testGetUsers(self):
         user = self.admin_client.user
@@ -163,8 +197,9 @@ class UserTest(base.RestTestCase):
             for u in users:
                 self.assertItemsEqual(self.USER_FIELDS, u.keys())
 
-    def testRegisterUser(self):
-        data = {
+    @staticmethod
+    def default_data():
+        return {
             'email': 'test@example.com',
             'nick': 'test3',
             'password': 'test3',
@@ -172,6 +207,9 @@ class UserTest(base.RestTestCase):
             'team_name': 'New Team',
             'team_code': None,
         }
+
+    def testRegisterUser(self):
+        data = self.default_data()
         with self.client as c:
             resp = c.post('/api/users', data=json.dumps(data),
                     content_type='application/json')
@@ -183,14 +221,12 @@ class UserTest(base.RestTestCase):
 
     def testRegisterUserTeam(self):
         team = self.authenticated_client.team
-        data = {
-            'email': 'test@example.com',
-            'nick': 'test3',
-            'password': 'test3',
+        data = self.default_data()
+        data.update({
             'team_id': team.tid,
             'team_name': None,
             'team_code': team.code,
-        }
+        })
         with self.client as c:
             resp = c.post('/api/users', data=json.dumps(data),
                     content_type='application/json')
@@ -203,15 +239,33 @@ class UserTest(base.RestTestCase):
 
     def testRegisterUserTeamNoCode(self):
         team = self.authenticated_client.team
-        data = {
-            'email': 'test@example.com',
-            'nick': 'test3',
-            'password': 'test3',
+        data = self.default_data()
+        data.update({
             'team_id': team.tid,
             'team_name': None,
             'team_code': 'xxx',
-        }
+        })
         with self.client as c:
             resp = c.post('/api/users', data=json.dumps(data),
                     content_type='application/json')
             self.assert400(resp)
+
+    def testRegisterUserLoggedInFails(self):
+        data = self.default_data()
+        with self.authenticated_client as c:
+            resp = c.post('/api/users', data=json.dumps(data),
+                    content_type='application/json')
+            self.assert400(resp)
+
+    def testRegisterUserNoNick(self):
+        data = self.default_data()
+        del data['nick']
+        self.assert400(self.client.post('/api/users',
+            data=json.dumps(data), content_type='application/json'))
+
+    def testRegisterUserNoTeam(self):
+        data = self.default_data()
+        del data['team_name']
+        del data['team_id']
+        self.assert400(self.client.post('/api/users',
+            data=json.dumps(data), content_type='application/json'))
