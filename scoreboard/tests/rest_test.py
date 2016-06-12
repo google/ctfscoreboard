@@ -410,3 +410,34 @@ class TeamTest(base.RestTestCase):
             with self.queryLimit(n_queries):
                 resp = c.get(self.LIST_URL)
             self.assert200(resp)
+
+
+class SessionTest(base.RestTestCase):
+
+    PATH = '/api/session'
+
+    def testGetSessionAnonymous(self):
+        self.assert403(self.client.get(self.PATH))
+
+    def testGetSessionAuthenticated(self):
+        with self.authenticated_client as c:
+            with self.queryLimit(1):
+                resp = c.get(self.PATH)
+            self.assert200(resp)
+            self.assertEqual(self.authenticated_client.user.nick,
+                    resp.json['user']['nick'])
+            self.assertEqual(self.authenticated_client.team.name,
+                    resp.json['team']['name'])
+
+    def testGetSessionAdmin(self):
+        with self.admin_client as c:
+            with self.queryLimit(1):
+                resp = c.get(self.PATH)
+            self.assert200(resp)
+            self.assertEqual(self.admin_client.user.nick,
+                    resp.json['user']['nick'])
+            self.assertTrue(resp.json['user']['admin'])
+            self.assertItemsEqual(
+                    {'tid': 0, 'score': 0, 'name': None,
+                        'solves': 0, 'code': None},
+                    resp.json['team'])
