@@ -201,6 +201,7 @@ class Team(flask_restful.Resource):
 
     @flask_restful.marshal_with(resource_fields)
     def get(self, team_id):
+        # TODO: this takes too many queries, fix to 1
         team = models.Team.query.get_or_404(team_id)
         return self._marshal_team(team, extended=True)
 
@@ -253,6 +254,7 @@ class TeamList(flask_restful.Resource):
 
     @flask_restful.marshal_with(resource_fields)
     def get(self):
+        # TODO: FIXME, this is O(n) in teams!
         return dict(teams=models.Team.query.all())
 
 

@@ -21,6 +21,18 @@ from scoreboard import models
 from scoreboard import rest
 
 
+def makeTestUser():
+    u = models.User.create('email@example.com', 'Nick', 'hunter2')
+    models.db.session.commit()
+    return u
+
+def makeTestTeam(user):
+    t = models.Team.create('Test')
+    user.team = t
+    models.db.session.commit()
+    return t
+
+
 class ConfigzTest(base.RestTestCase):
 
     PATH = '/api/configz'
@@ -97,9 +109,22 @@ class PageTest(base.RestTestCase):
                  contents='Test Page Contents',
                  )
             with self.queryLimit(0):
-                resp = c.post(self.PATH, data=json.dumps(page_data),
+                resp = c.post(self.PATH_NEW, data=json.dumps(page_data),
                         content_type='application/json')
             self.assert403(resp)
+
+    def testUpdatePage(self):
+        with self.admin_client as c:
+            page_data = dict(
+                 title='Test',
+                 contents='Test Page Contents',
+                 )
+            with self.queryLimit(3):
+                resp = c.post(self.PATH, data=json.dumps(page_data),
+                    content_type='application/json')
+            self.assert200(resp)
+            self.assertEqual(page_data['title'], resp.json['title'])
+            self.assertEqual(page_data['contents'], resp.json['contents'])
 
 
 class UserTest(base.RestTestCase):
@@ -107,13 +132,8 @@ class UserTest(base.RestTestCase):
     PATH = '/api/users/%d'
     USER_FIELDS = ('admin', 'nick', 'email', 'team_tid', 'uid')
 
-    def makeTestUser(self):
-        u = models.User.create('email@example.com', 'Nick', 'hunter2')
-        models.db.session.commit()
-        return u
-
     def testGetAnonymous(self):
-        path = self.PATH % self.makeTestUser().uid
+        path = self.PATH % makeTestUser().uid
         with self.queryLimit(0):
             self.assert403(self.client.get(path))
 
@@ -227,7 +247,7 @@ class UserTest(base.RestTestCase):
         models.db.session.commit()
         with self.admin_client as c:
             data = {'nick': user.nick, 'admin': True}
-            with self.queryLimit(9):
+            with self.queryLimit(3):
                 resp = c.put(self.PATH % user.uid, data=json.dumps(data),
                         content_type='application/json')
             self.assert400(resp)
@@ -333,3 +353,61 @@ class UserTest(base.RestTestCase):
         with self.queryLimit(0):
             self.assert400(self.client.post('/api/users',
                 data=json.dumps(data), content_type='application/json'))
+
+
+class TeamTest(base.RestTestCase):
+
+    LIST_URL = '/api/teams'
+
+    def setUp(self):
+        super(TeamTest, self).setUp()
+        self.user = makeTestUser()
+        self.team = makeTestTeam(self.user)
+        self.team_path = '/api/teams/%d' % self.team.tid
+
+    def testGetTeam(self):
+        with self.authenticated_client as c:
+            with self.queryLimit(4):
+                resp = c.get(self.team_path)
+            self.assert200(resp)
+            self.assertEqual(0, len(resp.json['players']))
+            self.assertEqual(self.team.name, resp.json['name'])
+            # TODO: check other fields
+
+    def testGetTeamAnonymous(self):
+        with self.client as c:
+            with self.queryLimit(0):
+                self.assert403(c.get(self.team_path))
+
+    def testGetTeamAdmin(self):
+        with self.admin_client as c:
+            with self.queryLimit(4):
+                resp = c.get(self.team_path)
+            self.assert200(resp)
+            self.assertEqual(1, len(resp.json['players']))
+
+    def testUpdateTeamAdmin(self):
+        data = {'name': 'Updated'}
+        with self.admin_client as c:
+            with self.queryLimit(6):
+                resp = c.put(self.team_path, data=json.dumps(data),
+                        content_type='application/json')
+            self.assert200(resp)
+            self.assertEqual('Updated', resp.json['name'])
+        team = models.Team.query.get(self.team.tid)
+        self.assertEqual('Updated', team.name)
+
+    def testGetTeamList(self):
+        with self.client as c:
+            with self.queryLimit(3) as ctr:
+                resp = c.get(self.LIST_URL)
+                n_queries = ctr.query_count
+            self.assert200(resp)
+            models.Team.create('Test 2')
+            models.Team.create('Test 3')
+            models.Team.create('Test 4')
+            models.db.session.commit()
+            # TODO: reenable when O(1) is fixed
+            #with self.queryLimit(n_queries):
+            #    resp = c.get(SELF.LIST_URL)
+            #self.assert200(resp)

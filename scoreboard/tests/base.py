@@ -61,7 +61,7 @@ class BaseTestCase(flask_testing.TestCase):
         super(BaseTestCase, self).tearDown()
 
     def queryLimit(self, limit=None):
-        return MaxQueryBlock(limit)
+        return MaxQueryBlock(self, limit)
 
 
 class RestTestCase(BaseTestCase):
@@ -132,11 +132,12 @@ class AdminClient(AuthenticatedClient):
 class MaxQueryBlock(object):
     """Run a certain block with a maximum number of queries."""
 
-    def __init__(self, max_count=None):
+    def __init__(self, test=None, max_count=None):
         self.max_count = max_count
         self.queries = []
         self._sql_listen_args = (models.db.engine, 'before_cursor_execute',
                 self._count_query)
+        self.test_id = test.id() if test else ''
 
     def __enter__(self):
         event.listen(*self._sql_listen_args)
@@ -146,6 +147,9 @@ class MaxQueryBlock(object):
         event.remove(*self._sql_listen_args)
         if exc_type is not None:
             return False
+        if self.test_id:
+            limit_msg = (' Limit: %d.' % self.max_count) if self.max_count is not None else ''
+            logging.info('%s executed %d queries.%s', self.test_id, len(self.queries), limit_msg)
         if self.max_count is None:
             return
         if len(self.queries) > self.max_count:
@@ -153,6 +157,10 @@ class MaxQueryBlock(object):
                        '----QUERIES----\n%s\n----END----') % (
                             self.max_count, len(self.queries), '\n'.join(self.queries))
             raise AssertionError(message)
+
+    @property
+    def query_count(self):
+        return len(self.queries)
 
     def _count_query(self, unused_conn, unused_cursor, statement, parameters,
             unused_context, unused_executemany):
