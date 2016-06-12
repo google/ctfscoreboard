@@ -254,8 +254,7 @@ class TeamList(flask_restful.Resource):
 
     @flask_restful.marshal_with(resource_fields)
     def get(self):
-        # TODO: FIXME, this is O(n) in teams!
-        return dict(teams=models.Team.query.all())
+        return dict(teams=models.Team.all())
 
 
 class Session(flask_restful.Resource):

@@ -407,7 +407,6 @@ class TeamTest(base.RestTestCase):
             models.Team.create('Test 3')
             models.Team.create('Test 4')
             models.db.session.commit()
-            # TODO: reenable when O(1) is fixed
-            #with self.queryLimit(n_queries):
-            #    resp = c.get(SELF.LIST_URL)
-            #self.assert200(resp)
+            with self.queryLimit(n_queries):
+                resp = c.get(self.LIST_URL)
+            self.assert200(resp)
