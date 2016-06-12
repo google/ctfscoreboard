@@ -165,14 +165,28 @@ class UserTest(base.RestTestCase):
                 self.assert403(resp)
 
     def testUpdateUserAdmin(self):
-        user = self.authenticated_client.user
+        uid = self.authenticated_client.user.uid
         with self.admin_client as c:
             data = {'nick': 'Lame'}
             with self.queryLimit(2):
-                resp = c.put(self.PATH % user.uid, data=json.dumps(data),
+                resp = c.put(self.PATH % uid, data=json.dumps(data),
                         content_type='application/json')
             self.assert200(resp)
             self.assertEqual('Lame', resp.json['nick'])
+            self.assertNotEqual('Lame',
+                    self.authenticated_client.user.team.name)
+
+    def testUpdateUsersNoTeams(self):
+        uid = self.authenticated_client.user.uid
+        self.app.config['TEAMS'] = False
+        with self.admin_client as c:
+            data = {'nick': 'Lame'}
+            with self.queryLimit(3):
+                resp = c.put(self.PATH % uid, data=json.dumps(data),
+                        content_type='application/json')
+            self.assert200(resp)
+            self.assertEqual('Lame', resp.json['nick'])
+            self.assertEqual('Lame', self.authenticated_client.user.team.name)
 
     def testUpdateUserPromote(self):
         user = self.authenticated_client.user
@@ -204,6 +218,27 @@ class UserTest(base.RestTestCase):
                         content_type='application/json')
             self.assert200(resp)
             self.assertFalse(resp.json['admin'])
+
+    def testUpdateUserNoAnswers(self):
+        user = self.authenticated_client.user
+        team = self.authenticated_client.user.team
+        chall = models.Challenge.create('Foo', 'Foo', 1, 'Foo', 'foo')
+        answer = models.Answer.create(chall, team, 'Foo')
+        models.db.session.commit()
+        with self.admin_client as c:
+            data = {'nick': user.nick, 'admin': True}
+            with self.queryLimit(9):
+                resp = c.put(self.PATH % user.uid, data=json.dumps(data),
+                        content_type='application/json')
+            self.assert400(resp)
+            user = models.User.query.get(user.uid)
+            self.assertFalse(user.admin)
+
+    def testGetUsersNoAccess(self):
+        with self.authenticated_client as c:
+            with self.queryLimit(0):
+                resp = c.get('/api/users')
+            self.assert403(resp)
 
     def testGetUsers(self):
         user = self.admin_client.user

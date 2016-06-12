@@ -151,6 +151,9 @@ class User(db.Model):
     def promote(self):
         """Promote a user to admin."""
         empty_team = self.team and set(self.team.players.all()) == set([self])
+        if self.team and len(self.team.answers):
+            raise AssertionError(
+                'Cannot promote player whose team has solved answers!')
         self.admin = True
         team = self.team
         self.team = None

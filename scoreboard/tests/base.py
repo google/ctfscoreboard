@@ -38,6 +38,7 @@ class BaseTestCase(flask_testing.TestCase):
         PRESERVE_CONTEXT_ON_EXCEPTION = False,
         SECRET_KEY = 'testing-session-key',
         SQLALCHEMY_DATABASE_URI = "sqlite://",
+        TEAMS = True,
         TESTING = True,
     )
 
