@@ -17,6 +17,7 @@
 import json
 import logging
 import os.path
+import pbkdf2
 import unittest
 
 import flask
@@ -68,11 +69,20 @@ class RestTestCase(BaseTestCase):
 
     def setUp(self):
         super(RestTestCase, self).setUp()
+        # Monkey patch pbkdf2 for speed
+        self._orig_pbkdf2 = pbkdf2.crypt
+        pbkdf2.crypt = self._pbkdf2_dummy
+        # Setup some special clients
         self.admin_client = AdminClient(self.client)
         self.authenticated_client = AuthenticatedClient(self.client)
 
     def tearDown(self):
         super(RestTestCase, self).tearDown()
+        pbkdf2.crypt = self._orig_pbkdf2
+
+    @staticmethod
+    def _pbkdf2_dummy(value, *unused_args):
+        return value
 
 
 class AuthenticatedClient(object):
