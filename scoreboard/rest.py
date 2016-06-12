@@ -110,13 +110,13 @@ class User(flask_restful.Resource):
 
     @flask_restful.marshal_with(resource_fields)
     def get(self, user_id):
-        if not models.User.current().uid == user_id and not models.User.current().admin:
+        if not flask.g.uid == user_id and not flask.g.admin:
             raise errors.AccessDeniedError('No access to that user.')
         return models.User.query.get_or_404(user_id)
 
     @flask_restful.marshal_with(resource_fields)
     def put(self, user_id):
-        if not models.User.current().uid == user_id and not models.User.current().admin:
+        if not flask.g.uid == user_id and not flask.g.admin:
             raise errors.AccessDeniedError('No access to that user.')
         user = models.User.query.get_or_404(user_id)
         data = flask.request.get_json()

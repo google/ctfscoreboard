@@ -58,13 +58,16 @@ class BaseTestCase(flask_testing.TestCase):
         models.db.drop_all()
         super(BaseTestCase, self).tearDown()
 
+    def queryLimit(self, limit=None):
+        return MaxQueryBlock(limit)
+
 
 class RestTestCase(BaseTestCase):
     """Special features for testing rest handlers."""
 
     def setUp(self):
         super(RestTestCase, self).setUp()
-        self._query_count = 0
+        self._queries = []
         self.admin_client = AdminClient(self.client)
         self.authenticated_client = AuthenticatedClient(self.client)
         self._sql_listen_args = (models.db.engine, 'before_cursor_execute',
@@ -72,21 +75,30 @@ class RestTestCase(BaseTestCase):
         event.listen(*self._sql_listen_args)
 
     def tearDown(self):
-        if self._query_count:
-            logging.info('%s issued %d queries.', self.id(), self._query_count)
+        if self._queries:
+            logging.info('%s issued %d queries.', self.id(), len(self._queries))
         event.remove(*self._sql_listen_args)
         super(RestTestCase, self).tearDown()
 
     def resetQueryCount(self):
-        self._query_count = 0
+        self._queries = []
 
     def assertMaxQueries(self, n):
         """Assert that no more than n queries have been performed."""
-        self.assertLessEqual(self._query_count, n)
+        # TODO: also provide a context version of this with __enter__ and
+        # __exit__
+        try:
+            self.assertLessEqual(len(self._queries), n)
+        except AssertionError:
+            logging.warning('Queries:\n     %s', '\n     '.join(self._queries))
+            raise
+
+    def getQueries(self):
+        return self._queries
 
     def _count_query(self, unused_conn, unused_cursor, statement, unused_parameters,
             unused_context, unused_executemany):
-        self._query_count += 1
+        self._queries.append(statement)
         logging.debug('SQLAlchemy: %s', statement)
 
 
@@ -102,12 +114,14 @@ class AuthenticatedClient(object):
         self.user = models.User.create('auth@example.com', 'Authenticated',
                 'hunter2', team=self.team)
         models.db.session.commit()
+        self.uid = self.user.uid
+        self.tid = self.team.tid
 
     def __enter__(self):
         rv = self.client.__enter__()
         with rv.session_transaction() as sess:
-            sess['user'] = self.user.uid
-            sess['team'] = self.team.tid
+            sess['user'] = self.uid
+            sess['team'] = self.tid
         return rv
 
     def __exit__(self, *args, **kwargs):
@@ -122,13 +136,46 @@ class AdminClient(AuthenticatedClient):
         self.user = models.User.create('admin@example.com', 'Admin', 'hunter2')
         self.user.admin = True
         models.db.session.commit()
+        self.uid = self.user.uid
 
     def __enter__(self):
         rv = self.client.__enter__()
         with rv.session_transaction() as sess:
-            sess['user'] = self.user.uid
+            sess['user'] = self.uid
             sess['admin'] = True
         return rv
+
+
+class MaxQueryBlock(object):
+    """Run a certain block with a maximum number of queries."""
+
+    def __init__(self, max_count=None):
+        self.max_count = max_count
+        self.queries = []
+        self._sql_listen_args = (models.db.engine, 'before_cursor_execute',
+                self._count_query)
+
+    def __enter__(self):
+        event.listen(*self._sql_listen_args)
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        event.remove(*self._sql_listen_args)
+        if exc_type is not None:
+            return False
+        if self.max_count is None:
+            return
+        if len(self.queries) > self.max_count:
+            message = ('Maximum query count exceeded: limit %d, executed %d.\n'
+                       '----QUERIES----\n%s\n----END----') % (
+                            self.max_count, len(self.queries), '\n'.join(self.queries))
+            raise AssertionError(message)
+
+    def _count_query(self, unused_conn, unused_cursor, statement, parameters,
+            unused_context, unused_executemany):
+        statement = '%s (%s)' % (statement, ', '.join(str(x) for x in parameters))
+        self.queries.append(statement)
+        logging.debug('SQLAlchemy: %s', statement)
 
 
 def run_all_tests():

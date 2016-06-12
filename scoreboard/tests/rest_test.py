@@ -28,47 +28,54 @@ class ConfigzTest(base.RestTestCase):
     def testGetAnonymous(self):
         response = self.client.get(self.PATH)
         self.assert403(response)
+        self.assertMaxQueries(0)
 
     def testGetNonAdmin(self):
         with self.authenticated_client as c:
             response = self.client.get(self.PATH)
             self.assert403(response)
+        self.assertMaxQueries(0)
 
     def testAdmin(self):
         with self.admin_client as c:
             response = c.get(self.PATH)
             self.assert200(response)
+        self.assertMaxQueries(0)
 
 
 class PageTest(base.RestTestCase):
 
     PATH = '/api/page/home'
+    PATH_NEW = '/api/page/new'
+    PATH_404 = '/api/page/404'
 
-    @staticmethod
-    def makeTestPage():
+    def setUp(self):
+        super(PageTest, self).setUp()
         page = models.Page()
         page.path = 'home'
         page.title = 'Home'
         page.contents = 'Home Page'
         models.db.session.add(page)
         models.db.session.commit()
-        return page
+        self.page = page
+        self.resetQueryCount()
 
     def testGetAnonymous(self):
-        page = self.makeTestPage()
         response = self.client.get(self.PATH)
         self.assert200(response)
-        self.assertEqual(page.title, response.json['title'])
-        self.assertEqual(page.contents, response.json['contents'])
+        self.assertEqual(self.page.title, response.json['title'])
+        self.assertEqual(self.page.contents, response.json['contents'])
+        self.assertMaxQueries(1)
 
     def testGetNonExistent(self):
-        self.assert404(self.client.get(self.PATH))
+        self.assert404(self.client.get(self.PATH_404))
+        self.assertMaxQueries(1)
 
     def testDeletePage(self):
-        page = self.makeTestPage()
         with self.admin_client as c:
             self.assert200(c.get(self.PATH))
-            self.assert200(c.delete(self.PATH))
+            with self.queryLimit(1):
+                self.assert200(c.delete(self.PATH))
             self.assert404(c.get(self.PATH))
 
     def testCreatePage(self):
@@ -77,7 +84,8 @@ class PageTest(base.RestTestCase):
                  title='Test',
                  contents='Test Page Contents',
                  )
-            resp = c.post(self.PATH, data=json.dumps(page_data),
+            with self.queryLimit(3):
+                resp = c.post(self.PATH_NEW, data=json.dumps(page_data),
                     content_type='application/json')
             self.assert200(resp)
             self.assertEqual(page_data['title'], resp.json['title'])
@@ -89,8 +97,9 @@ class PageTest(base.RestTestCase):
                  title='Test',
                  contents='Test Page Contents',
                  )
-            resp = c.post(self.PATH, data=json.dumps(page_data),
-                    content_type='application/json')
+            with self.queryLimit(0):
+                resp = c.post(self.PATH, data=json.dumps(page_data),
+                        content_type='application/json')
             self.assert403(resp)
 
 
@@ -106,30 +115,34 @@ class UserTest(base.RestTestCase):
 
     def testGetAnonymous(self):
         path = self.PATH % self.makeTestUser().uid
-        self.resetQueryCount()
-        self.assert403(self.client.get(path))
+        with self.queryLimit(0):
+            self.assert403(self.client.get(path))
 
     def testGetNonExistentAnonymous(self):
         path = self.PATH % 999
-        self.assert403(self.client.get(path))
+        with self.queryLimit(0):
+            self.assert403(self.client.get(path))
 
     def testGetNonExistentAuth(self):
         path = self.PATH % 999
         with self.authenticated_client as c:
-            resp = c.get(path)
+            with self.queryLimit(0):
+                resp = c.get(path)
             self.assert403(resp)
             self.assertIn("No access", resp.json['message'])
 
     def testGetNonExistentAdmin(self):
         path = self.PATH % 999
         with self.admin_client as c:
-            resp = c.get(path)
+            with self.queryLimit(1):
+                resp = c.get(path)
             self.assert404(resp)
 
     def testGetSelf(self):
         user = self.authenticated_client.user
         with self.authenticated_client as c:
-            resp = c.get(self.PATH % user.uid)
+            with self.queryLimit(1):
+                resp = c.get(self.PATH % user.uid)
             self.assert200(resp)
             self.assertEqual(user.email, resp.json['email'])
             self.assertEqual(user.nick, resp.json['nick'])
@@ -139,22 +152,26 @@ class UserTest(base.RestTestCase):
         user = self.authenticated_client.user
         with self.authenticated_client as c:
             data = {'password': 'hunter3'} # for security
-            self.assert200(c.put(self.PATH % user.uid,
-                data=json.dumps(data), content_type='application/json'))
+            with self.queryLimit(2):
+                self.assert200(c.put(self.PATH % user.uid,
+                    data=json.dumps(data), content_type='application/json'))
 
     def testUpdateUserNoAccess(self):
-        user = self.admin_client.user
+        uid = self.admin_client.user.uid
         with self.authenticated_client as c:
             data = {'password': 'hunter3'}
-            self.assert403(c.put(self.PATH % user.uid,
-                data=json.dumps(data), content_type='application/json'))
+            with self.queryLimit(0):
+                resp = c.put(self.PATH % uid,
+                    data=json.dumps(data), content_type='application/json')
+                self.assert403(resp)
 
     def testUpdateUserAdmin(self):
         user = self.authenticated_client.user
         with self.admin_client as c:
             data = {'nick': 'Lame'}
-            resp = c.put(self.PATH % user.uid, data=json.dumps(data),
-                    content_type='application/json')
+            with self.queryLimit(2):
+                resp = c.put(self.PATH % user.uid, data=json.dumps(data),
+                        content_type='application/json')
             self.assert200(resp)
             self.assertEqual('Lame', resp.json['nick'])
 
@@ -162,8 +179,10 @@ class UserTest(base.RestTestCase):
         user = self.authenticated_client.user
         with self.admin_client as c:
             data = {'nick': user.nick, 'admin': True}
-            resp = c.put(self.PATH % user.uid, data=json.dumps(data),
-                    content_type='application/json')
+            # yes, this is a lot, but promoting is infrequent
+            with self.queryLimit(7):
+                resp = c.put(self.PATH % user.uid, data=json.dumps(data),
+                        content_type='application/json')
             self.assert200(resp)
             self.assertTrue(resp.json['admin'])
 
@@ -171,24 +190,27 @@ class UserTest(base.RestTestCase):
         user = self.admin_client.user
         with self.admin_client as c:
             data = {'nick': user.nick, 'admin': False}
-            resp = c.put(self.PATH % user.uid, data=json.dumps(data),
-                    content_type='application/json')
+            with self.queryLimit(3):
+                resp = c.put(self.PATH % user.uid, data=json.dumps(data),
+                        content_type='application/json')
             self.assert200(resp)
             self.assertFalse(resp.json['admin'])
 
     def testUpdateUserNoSelfPromotion(self):
-        user = self.authenticated_client.user
+        uid = self.authenticated_client.user.uid
         with self.authenticated_client as c:
             data = {'admin': True}
-            resp = c.put(self.PATH % user.uid, data=json.dumps(data),
-                    content_type='application/json')
+            with self.queryLimit(1):
+                resp = c.put(self.PATH % uid, data=json.dumps(data),
+                        content_type='application/json')
             self.assert200(resp)
             self.assertFalse(resp.json['admin'])
 
     def testGetUsers(self):
         user = self.admin_client.user
         with self.admin_client as c:
-            resp = c.get('/api/users')
+            with self.queryLimit(1):
+                resp = c.get('/api/users')
             self.assert200(resp)
             self.assertIsInstance(resp.json, dict)
             self.assertIn('users', resp.json)
@@ -209,18 +231,20 @@ class UserTest(base.RestTestCase):
             'team_code': None,
         }
 
-    def testRegisterUser(self):
+    def testRegisterUserNewTeam(self):
         data = self.default_data()
         with self.client as c:
-            resp = c.post('/api/users', data=json.dumps(data),
-                    content_type='application/json')
+            # TODO: maybe optimize?
+            with self.queryLimit(9):
+                resp = c.post('/api/users', data=json.dumps(data),
+                        content_type='application/json')
             self.assert200(resp)
             self.assertItemsEqual(self.USER_FIELDS, resp.json.keys())
             self.assertEqual(resp.json['uid'], flask.session['user'])
             self.assertEqual(resp.json['admin'], flask.session['admin'])
             self.assertEqual(resp.json['team_tid'], flask.session['team'])
 
-    def testRegisterUserTeam(self):
+    def testRegisterUserExistingTeam(self):
         team = self.authenticated_client.team
         data = self.default_data()
         data.update({
@@ -229,8 +253,9 @@ class UserTest(base.RestTestCase):
             'team_code': team.code,
         })
         with self.client as c:
-            resp = c.post('/api/users', data=json.dumps(data),
-                    content_type='application/json')
+            with self.queryLimit(8):
+                resp = c.post('/api/users', data=json.dumps(data),
+                        content_type='application/json')
             self.assert200(resp)
             self.assertItemsEqual(self.USER_FIELDS, resp.json.keys())
             self.assertEqual(resp.json['uid'], flask.session['user'])
@@ -247,26 +272,30 @@ class UserTest(base.RestTestCase):
             'team_code': 'xxx',
         })
         with self.client as c:
-            resp = c.post('/api/users', data=json.dumps(data),
-                    content_type='application/json')
+            with self.queryLimit(1):
+                resp = c.post('/api/users', data=json.dumps(data),
+                        content_type='application/json')
             self.assert400(resp)
 
     def testRegisterUserLoggedInFails(self):
         data = self.default_data()
         with self.authenticated_client as c:
-            resp = c.post('/api/users', data=json.dumps(data),
-                    content_type='application/json')
+            with self.queryLimit(0):
+                resp = c.post('/api/users', data=json.dumps(data),
+                        content_type='application/json')
             self.assert400(resp)
 
     def testRegisterUserNoNick(self):
         data = self.default_data()
         del data['nick']
-        self.assert400(self.client.post('/api/users',
-            data=json.dumps(data), content_type='application/json'))
+        with self.queryLimit(0):
+            self.assert400(self.client.post('/api/users',
+                data=json.dumps(data), content_type='application/json'))
 
     def testRegisterUserNoTeam(self):
         data = self.default_data()
         del data['team_name']
         del data['team_id']
-        self.assert400(self.client.post('/api/users',
-            data=json.dumps(data), content_type='application/json'))
+        with self.queryLimit(0):
+            self.assert400(self.client.post('/api/users',
+                data=json.dumps(data), content_type='application/json'))
