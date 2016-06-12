@@ -67,39 +67,11 @@ class RestTestCase(BaseTestCase):
 
     def setUp(self):
         super(RestTestCase, self).setUp()
-        self._queries = []
         self.admin_client = AdminClient(self.client)
         self.authenticated_client = AuthenticatedClient(self.client)
-        self._sql_listen_args = (models.db.engine, 'before_cursor_execute',
-                self._count_query)
-        event.listen(*self._sql_listen_args)
 
     def tearDown(self):
-        if self._queries:
-            logging.info('%s issued %d queries.', self.id(), len(self._queries))
-        event.remove(*self._sql_listen_args)
         super(RestTestCase, self).tearDown()
-
-    def resetQueryCount(self):
-        self._queries = []
-
-    def assertMaxQueries(self, n):
-        """Assert that no more than n queries have been performed."""
-        # TODO: also provide a context version of this with __enter__ and
-        # __exit__
-        try:
-            self.assertLessEqual(len(self._queries), n)
-        except AssertionError:
-            logging.warning('Queries:\n     %s', '\n     '.join(self._queries))
-            raise
-
-    def getQueries(self):
-        return self._queries
-
-    def _count_query(self, unused_conn, unused_cursor, statement, unused_parameters,
-            unused_context, unused_executemany):
-        self._queries.append(statement)
-        logging.debug('SQLAlchemy: %s', statement)
 
 
 class AuthenticatedClient(object):

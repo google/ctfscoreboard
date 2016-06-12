@@ -26,21 +26,21 @@ class ConfigzTest(base.RestTestCase):
     PATH = '/api/configz'
 
     def testGetAnonymous(self):
-        response = self.client.get(self.PATH)
+        with self.queryLimit(0):
+            response = self.client.get(self.PATH)
         self.assert403(response)
-        self.assertMaxQueries(0)
 
     def testGetNonAdmin(self):
         with self.authenticated_client as c:
-            response = self.client.get(self.PATH)
+            with self.queryLimit(0):
+                response = self.client.get(self.PATH)
             self.assert403(response)
-        self.assertMaxQueries(0)
 
     def testAdmin(self):
         with self.admin_client as c:
-            response = c.get(self.PATH)
+            with self.queryLimit(0):
+                response = c.get(self.PATH)
             self.assert200(response)
-        self.assertMaxQueries(0)
 
 
 class PageTest(base.RestTestCase):
@@ -58,18 +58,17 @@ class PageTest(base.RestTestCase):
         models.db.session.add(page)
         models.db.session.commit()
         self.page = page
-        self.resetQueryCount()
 
     def testGetAnonymous(self):
-        response = self.client.get(self.PATH)
+        with self.queryLimit(1):
+            response = self.client.get(self.PATH)
         self.assert200(response)
         self.assertEqual(self.page.title, response.json['title'])
         self.assertEqual(self.page.contents, response.json['contents'])
-        self.assertMaxQueries(1)
 
     def testGetNonExistent(self):
-        self.assert404(self.client.get(self.PATH_404))
-        self.assertMaxQueries(1)
+        with self.queryLimit(1):
+            self.assert404(self.client.get(self.PATH_404))
 
     def testDeletePage(self):
         with self.admin_client as c:
