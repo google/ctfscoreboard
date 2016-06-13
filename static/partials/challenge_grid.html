@@ -1,5 +1,8 @@
 <h3>Challenges</h3>
 <div class='tag-selector'>
+  <div class="info-box">
+    <span class='info-text'>left or right click to filter tags</span>
+  </div>
   <div class='tag-align'>
     <div class='tag-filter' ng-repeat='tag in allTags'
       ng-class='{"tag-inc": shownTags[tag.tagslug]==2, "tag-exc": shownTags[tag.tagslug]==0, "tag-either": shownTags[tag.tagslug]==1}'
