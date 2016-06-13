@@ -34,6 +34,7 @@ class Defaults(object):
         SCOREBOARD_ZEROS = True
         SCORING = 'plain'
         SECRET_KEY = None
+        TEAM_SECRET_KEY = None
         SESSION_COOKIE_HTTPONLY = True
         SESSION_COOKIE_SECURE = True
         SYSTEM_NAME = 'root'

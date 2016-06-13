@@ -23,7 +23,7 @@ Author: David Tomaschik <dwt@google.com>
         SQLALCHEMY_DATABASE_URI = 'mysql://username:password@server/db'
         #SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://username:password@server/db'
         SECRET_KEY = 'Some Random Value For Session Keys'
-        TEAM_SECRET_KEY = SECRET_KEY
+        TEAM_SECRET_KEY = 'Another Random Value For Team Invite Codes'
         TITLE = 'FakeCTF'
         TEAMS = True
         ATTACHMENT_DIR = 'attachments'
