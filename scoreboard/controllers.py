@@ -79,7 +79,7 @@ def register_user(email, nick, password, team_id=None,
         models.ScoreHistory.add_entry(team)
         models.commit()
     app.logger.info('User %s <%s> registered from IP %s.',
-                    nick, email, flask.request.access_route[0])
+                    nick, email, flask.request.remote_addr)
     return user
 
 
