@@ -73,6 +73,8 @@ def csrf_protection_request():
     """Add CSRF Protection to all non-GET/non-HEAD requests."""
     if flask.request.method in ('GET', 'HEAD'):
         return
+    if app.config.get('TESTING'):
+        return
     header = flask.request.headers.get('X-XSRF-TOKEN')
     token = header or flask.request.values.get('csrftoken')
     if not token or not verify_csrf_token(token):

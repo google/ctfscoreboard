@@ -14,10 +14,12 @@
 
 """Base test module, MUST be imported first."""
 
+import json
 import logging
 import os.path
 import unittest
 
+import flask
 import flask_sqlalchemy
 import flask_testing
 from sqlalchemy import event
@@ -66,8 +68,8 @@ class RestTestCase(BaseTestCase):
         self._sql_listen_args = (models.db.engine, 'before_cursor_execute',
                 self._count_query)
         event.listen(*self._sql_listen_args)
-        self.authenticated_client = AuthenticatedClient(self.client)
         self.admin_client = AdminClient(self.client)
+        self.authenticated_client = AuthenticatedClient(self.client)
 
     def tearDown(self):
         if self._query_count:
@@ -75,20 +77,28 @@ class RestTestCase(BaseTestCase):
         event.remove(*self._sql_listen_args)
         super(RestTestCase, self).tearDown()
 
-    def _count_query(self):
+    def _count_query(self, *unused_args):
         self._query_count += 1
 
 
 class AuthenticatedClient(object):
     """Like TestClient, but authenticated."""
+
+    def __getattr__(self, attr):
+        return getattr(self.client, attr)
+
     def __init__(self, client):
         self.client = client
+        self.team = models.Team.create('team')
+        self.user = models.User.create('auth@example.com', 'Authenticated',
+                'hunter2', team=self.team)
+        models.db.session.commit()
 
     def __enter__(self):
         rv = self.client.__enter__()
         with rv.session_transaction() as sess:
-            sess['user'] = 1
-            sess['team'] = 1
+            sess['user'] = self.user.uid
+            sess['team'] = self.team.tid
         return rv
 
     def __exit__(self, *args, **kwargs):
@@ -98,10 +108,16 @@ class AuthenticatedClient(object):
 class AdminClient(AuthenticatedClient):
     """Like TestClient, but admin."""
 
+    def __init__(self, client):
+        self.client = client
+        self.user = models.User.create('admin@example.com', 'Admin', 'hunter2')
+        self.user.admin = True
+        models.db.session.commit()
+
     def __enter__(self):
         rv = self.client.__enter__()
         with rv.session_transaction() as sess:
-            sess['user'] = 1
+            sess['user'] = self.user.uid
             sess['admin'] = True
         return rv
 
@@ -113,3 +129,18 @@ def run_all_tests():
     suite = unittest.defaultTestLoader.discover(test_dir, pattern='*_test.py',
             top_level_dir=top_dir)
     unittest.TextTestRunner().run(suite)
+
+
+def json_monkeypatch():
+    """Automatically strip our XSSI header."""
+    def new_loads(data, *args, **kwargs):
+        try:
+            prefix = ")]}',\n"
+            if data.startswith(prefix):
+                data = data[len(prefix):]
+            return json.loads(data, *args, **kwargs)
+        except Exception as exc:
+            logging.exception('JSON monkeypatch failed: ', exc)
+    flask.json.loads = new_loads
+
+json_monkeypatch()
