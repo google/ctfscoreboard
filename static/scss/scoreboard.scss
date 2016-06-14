@@ -313,6 +313,10 @@ table.team-players{
 }
 
 .tag-selector {
+    $tag-height: 36px;
+    $info-height: 56px;
+    $info-width: 150px;
+
     padding-left: 5px;
     padding-right: 5px;
     padding-top: 10px;
@@ -324,7 +328,7 @@ table.team-players{
 
         .tag-filter {
             flex-grow: 1;
-            height: 36px;
+            height: $tag-height;
             display: flex;
             flex-direction: column;
             justify-content: space-around;
@@ -371,6 +375,39 @@ table.team-players{
         .tag-exc {
             background-color: #c62828;
         }
+    }
+
+    .info-box {
+        position: absolute;
+        right: 0px;
+        width: 10px;
+
+        .info-text {
+            position: relative;
+            width: $info-width;
+            display: inline-block;
+            height: $info-height;
+            top: #{- ($info-height - $tag-height) / 2};
+            right: -20px;
+            transition-duration: 0.8s;
+            opacity: 0;
+            top: -10px;
+
+            &::before {
+                position: absolute;
+                content:"keyboard_arrow_left";
+                font-family: 'Material Icons';
+                left: -35px;
+                top: -2px;
+                font-size: 46px;
+            }
+        }
+
+    }
+
+    &:hover .info-text {
+        right: 0px;
+        opacity: 1;
     }
 }
 
