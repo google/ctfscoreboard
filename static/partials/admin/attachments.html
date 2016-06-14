@@ -1,0 +1,35 @@
+<h2>Attachments</h2>
+<div class='well' ng-repeat='a in attachments'>
+  <form ng-submit='updateAttachment(a)' name='adminAttachmentForm[$index]'>
+    <div class='form-group'>
+      <label for='name-{{a.aid}}'>Title</label>
+      <input name='name' id='name-{{a.aid}}' class='form-control'
+        ng-model='a.filename' required>
+    </div>
+    <div class='file-download'>
+      <label for='dl-{{a.aid}}'>File</label>
+      <div class='hash-link'>
+        <a ng-click='replace(a)' id='dl-{{a.aid}}' class='hash-dl' fhref='/attachment/{{a.aid}}' target='_blank'>{{a.aid}}</a>
+      </div>
+    </div>
+    <input type='submit' value='Edit' class='btn btn-primary'>
+    <div>
+      <input type='button' value='Delete' class='btn btn-danger btn-delete'
+        ng-click='deleteAttachment(a)' ng-disabled='invalidForm($index)'>
+    </div>
+  </form>
+</div>
+<div class='well'>
+  <form ng-submit='addAttachment()' name='adminAttachmentForm'>
+    <div class='form-group'>
+      <label for='new-name'>Title</label>
+      <input name='filename' id='new-name' class='form-control'
+        ng-model='newAttachment.filename' required>
+    </div>
+    <input type='submit' value='Add New' class='btn btn-primary'
+      ng-disabled='adminAttachmentForm.$invalid'>
+  </form>
+</div>
+<div class='fileupload'>
+  <input class='invisible' type='file' id='new-attachment'/>
+</div>

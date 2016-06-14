@@ -833,6 +833,16 @@ class Attachment(flask_restful.Resource):
         cache.clear()
         return attachment
 
+    def delete(self, aid):
+        attachment = models.Attachment.query.get_or_404(aid)
+        #Probably do not need to delete from disk
+        attachment.delete()
+
+        app.logger.info('Attachment %s deleted by %r.', attachment, models.User.current())
+        models.commit()
+        cache.clear()
+
+
 
 class AttachmentList(flask_restful.Resource):
     """Allow uploading of files."""
@@ -846,6 +856,10 @@ class AttachmentList(flask_restful.Resource):
     def post(self):
         fp = flask.request.files['file']
         aid, fpath = attachments.upload(fp)
+        models.Attachment.create(aid, fpath, fp.mimetype)
+        models.commit()
+        cache.clear()
+        print(aid)
         return dict(aid=aid, fpath=fpath, content_type=fp.mimetype)
 
     @flask_restful.marshal_with(resource_fields)

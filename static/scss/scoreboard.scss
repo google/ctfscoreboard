@@ -89,8 +89,15 @@ a.btn {
     margin-right: auto;
 }
 
-.well h4 {
-    margin-top: 0;
+.well {
+    .h4 {
+        margin-top: 0;
+    }
+
+    .hash-link {
+        text-align: center;
+        margin-bottom: 16px;
+    }
 }
 
 #news-box {
