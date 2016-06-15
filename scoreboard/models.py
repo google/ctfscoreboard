@@ -399,8 +399,6 @@ class Challenge(db.Model):
     cat_slug = db.Column(db.String(100), db.ForeignKey('category.slug'))
     answers = db.relationship('Answer', backref=db.backref('challenge',
         lazy='joined'), lazy='select')
-    #attachments = db.relationship('Attachment', backref='challenge',
-    #                              lazy='joined')
 
     def __repr__(self):
         return '<Challenge: %d/%s>' % (self.cid, self.name)
@@ -561,8 +559,6 @@ class Attachment(db.Model):
     """Attachment to a challenge."""
 
     aid = db.Column(db.String(64), primary_key=True)
-    #challenge_cid = db.Column(db.BigInteger, db.ForeignKey('challenge.cid'),
-    #        nullable=False)
     filename = db.Column(db.String(100), nullable=False)
     content_type = db.Column(db.String(100))
     storage_path = db.Column(db.String(256))
