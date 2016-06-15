@@ -170,18 +170,18 @@ adminChallengeCtrls.controller('AdminAttachmentCtrl', [
     'sessionService',
     'loadingService',
     'uploadService',
-    '$q',
     function($scope, attachService, errorService, sessionService, loadingService,
-        uploadService, Promise) {
+        uploadService) {
       if (!sessionService.requireAdmin()) return;
 
       $scope.attachments = [];
 
-      $scope.updateAttachment = function(attachment) {
+      $scope.updateAttachment = function(attachment, cb) {
         errorService.clearErrors();
         attachService.save({aid: attachment.aid}, attachment,
           function(data) {
             errorService.error(attachment.filename + ' updated.', 'success');
+            if (cb) cb(data);
           },
           function(data) {
             errorService.error(data);
@@ -202,6 +202,7 @@ adminChallengeCtrls.controller('AdminAttachmentCtrl', [
           });
       };
 
+      /*
       $scope.addAttachment = function() {
         errorService.clearErrors();
         attachService.create({}, $scope.newAttachment,
@@ -213,27 +214,29 @@ adminChallengeCtrls.controller('AdminAttachmentCtrl', [
             errorService.error(data);
           });
       };
+      */
 
-      $scope.newAttachments = {};
+      $scope.addAttachment = function() {
+          $scope.newAttachment.challenges = $scope.newAttachment.challenges || [];
+          $scope.updateAttachment($scope.newAttachment, function(data) {
+              $scope.newAttachment = {};
+              for (var i = 0; i < $scope.attachments.length; i++) {
+                  if ($scope.attachments[i].aid == data.aid) return;
+              }
+              $scope.attachments.push(data);
+          });
+      }
+
+      $scope.newAttachment = {};
 
       $scope.invalidForm = function(idx) {
           var form = $(document.getElementsByName('adminAttachmentForm[' + idx + ']'));
           return form.hasClass('ng-invalid');
       };
 
-      var uploadFile = function() {
-        return Promise(function(resolve) {
-          var form = $('#new-attachment');
-          form.click();
-          form.off('change');
-          form.on('change', function() {
-            resolve(uploadService.upload(form.get(0).files[0]));
-          })
-        })
-      }
-
       $scope.replace = function(a) {
-        uploadFile().then(function(newfile) {
+        uploadService.request().then(uploadService.upload).then(function(newfile) {
+          if (a.aid == newfile.aid) return;
           attachService.delete({aid: a.aid})
           a.aid = newfile.aid
           attachService.save({aid: a.aid}, a, function(d) {
@@ -242,6 +245,12 @@ adminChallengeCtrls.controller('AdminAttachmentCtrl', [
             console.error(e)
           })
         });
+      }
+
+      $scope.addfile = function() {
+        uploadService.request().then(uploadService.upload).then(function(newfile) {
+          $scope.newAttachment.aid = newfile.aid
+        })
       }
 
       sessionService.requireLogin(function() {
@@ -411,8 +420,10 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
     'loadingService',
     'adminStateService',
     'tagService',
+    'attachService',
     function($scope, $location, $routeParams, categoryService, challengeService,
-      errorService, sessionService, uploadService, loadingService, adminStateService, tagService) {
+      errorService, sessionService, uploadService, loadingService, adminStateService,
+      tagService, attachService) {
       if (!sessionService.requireAdmin()) return;
 
       $scope.cid = $routeParams.cid;
@@ -458,6 +469,15 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
           });
       };
 
+      $scope.attachmentType = 'new';
+
+      attachService.get(function(data) {
+        $scope.attachments = data.attachments;
+      }, function(e) {
+        errorService.error(e);
+      })
+
+      /*
       $scope.addAttachment = function() {
           $scope.newAttachment = {};
           $scope.addNewAttachment = true;
@@ -493,6 +513,7 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
         var idx = $scope.challenge.attachments.indexOf(attachment);
         $scope.challenge.attachments.splice(idx, 1);
       };
+      */
 
       // Prerequisite handlers
       $scope.updatePrerequisite = function() {

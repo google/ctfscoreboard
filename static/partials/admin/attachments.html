@@ -6,13 +6,13 @@
       <input name='name' id='name-{{a.aid}}' class='form-control'
         ng-model='a.filename' required>
     </div>
-    <div class='file-download'>
+    <div class='file-upload'>
       <label for='dl-{{a.aid}}'>File</label>
       <div class='hash-link'>
-        <a ng-click='replace(a)' id='dl-{{a.aid}}' class='hash-dl' fhref='/attachment/{{a.aid}}' target='_blank'>{{a.aid}}</a>
+        <div ng-click='replace(a)' id='dl-{{a.aid}}' class='hash-dl form-control' target='_blank'>{{a.aid}}</div>
       </div>
     </div>
-    <input type='submit' value='Edit' class='btn btn-primary'>
+    <input type='submit' value='Save' class='btn btn-primary'>
     <div>
       <input type='button' value='Delete' class='btn btn-danger btn-delete'
         ng-click='deleteAttachment(a)' ng-disabled='invalidForm($index)'>
@@ -26,10 +26,16 @@
       <input name='filename' id='new-name' class='form-control'
         ng-model='newAttachment.filename' required>
     </div>
+    <div class='file-upload'>
+      <label for='new-aid'>File</label>
+      <div class='hash-link'>
+        <div ng-click='addfile()' id='new-aid' class='hash-dl form-control' target='_blank'>
+          <div ng-show='newAttachment.aid' ng-bind='newAttachment.aid'></div>
+          <div ng-hide='newAttachment.aid'><i>No File Selected</i></div>
+        </div>
+      </div>
+    </div>
     <input type='submit' value='Add New' class='btn btn-primary'
-      ng-disabled='adminAttachmentForm.$invalid'>
+      ng-disabled='adminAttachmentForm.$invalid || !newAttachment.aid'>
   </form>
-</div>
-<div class='fileupload'>
-  <input class='invisible' type='file' id='new-attachment'/>
 </div>
