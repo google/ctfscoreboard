@@ -856,10 +856,11 @@ class AttachmentList(flask_restful.Resource):
     def post(self):
         fp = flask.request.files['file']
         aid, fpath = attachments.upload(fp)
-        models.Attachment.create(aid, fpath, fp.mimetype)
-        models.commit()
-        cache.clear()
-        print(aid)
+        attachment = models.Attachment.query.get(aid)
+        if not attachment:
+            models.Attachment.create(aid, fp.filename, fp.mimetype)
+            models.commit()
+            cache.clear()
         return dict(aid=aid, fpath=fpath, content_type=fp.mimetype)
 
     @flask_restful.marshal_with(resource_fields)
