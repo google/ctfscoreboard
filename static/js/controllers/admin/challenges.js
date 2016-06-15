@@ -239,9 +239,7 @@ adminChallengeCtrls.controller('AdminAttachmentCtrl', [
           if (a.aid == newfile.aid) return;
           attachService.delete({aid: a.aid})
           a.aid = newfile.aid
-          attachService.save({aid: a.aid}, a, function(d) {
-            console.log(d)
-          }, function(e) {
+          attachService.save({aid: a.aid}, a, function(d) {}, function(e) {
             console.error(e)
           })
         });
@@ -472,10 +470,52 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
       $scope.attachmentType = 'new';
 
       attachService.get(function(data) {
-        $scope.attachments = data.attachments;
+        $scope.allAttachments = data.attachments;
       }, function(e) {
         errorService.error(e);
       })
+
+      var setSubtract = function(a, b, key) {
+        var isIn = function(val) {
+          for (var i = 0; i < a.length; i++) {
+            if (a[i][key] == val) return true;
+          }
+          return false;
+        }
+        var out = []
+        for (var i = 0; i < b.length; i++) {
+          if (!isIn(b[i][key])) {
+            out.push(b[i]);
+          }
+        }
+        return out;
+      }
+
+      $scope.$watch('challenge.attachments', function() {
+        if (!$scope.challenge) return;
+        $scope.attachments = setSubtract($scope.challenge.attachments, $scope.allAttachments, 'aid');
+        $scope.attachmentType = 'new';
+      }, true)
+
+      var addAttachment = function(aid) {
+        for (var i = 0; i < $scope.attachments.length; i++) {
+          if ($scope.attachments[i].aid == aid) {
+            $scope.challenge.attachments.push($scope.attachments[i]);
+            return;
+          }
+        }
+        errorService.error('Could not add attachment: '+aid);
+      }
+
+      $scope.addAttachment = function() {
+        if ($scope.attachmentType == 'new') {
+          uploadService.request().then(uploadService.upload).then(function (data) {
+            $scope.challenge.attachments.push(data);
+          })
+        } else {
+          addAttachment($scope.attachmentType);
+        }
+      }
 
       /*
       $scope.addAttachment = function() {
@@ -508,12 +548,12 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
           // Verify existance by hash
           // TODO
       };
+      */
 
       $scope.deleteAttachment = function(attachment) {
         var idx = $scope.challenge.attachments.indexOf(attachment);
         $scope.challenge.attachments.splice(idx, 1);
       };
-      */
 
       // Prerequisite handlers
       $scope.updatePrerequisite = function() {
@@ -549,7 +589,6 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
       }
 
       $scope.toggleTag = function(tagslug) {
-        console.log($scope.challenge.tags)
         for (var i = 0; i < $scope.challenge.tags.length; i++) {
           if ($scope.challenge.tags[i].tagslug == tagslug) {
             $scope.challenge.tags.splice(i,1);

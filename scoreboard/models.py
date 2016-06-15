@@ -507,7 +507,7 @@ class Challenge(db.Model):
             aid_set.add(a['aid'])
             attachment = Attachment.query.get(a['aid'])
             if not attachment:
-                attachment = Attachment.create(a['aid'], a['filename'], a['content_type'])
+                logging.warning('Trying to add attachment that does not exist')
             self.attachments.append(attachment)
 
         for a in old_attachments:

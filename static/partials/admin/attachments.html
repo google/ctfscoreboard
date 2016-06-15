@@ -12,6 +12,12 @@
         <div ng-click='replace(a)' id='dl-{{a.aid}}' class='hash-dl form-control' target='_blank'>{{a.aid}}</div>
       </div>
     </div>
+    <label ng-show='a.challenges.length' for='ch-{{a.aid}}'>Challenges</label>
+    <div id='ch-{{a.aid}}' class='challenge-list'>
+      <div ng-repeat='ch in a.challenges'>
+        <a class='btn-info btn challenge-item' ng-href='/admin/challenge/{{ch.cid}}'>{{ch.name}}</a>
+      </div>
+    </div>
     <input type='submit' value='Save' class='btn btn-primary'>
     <div>
       <input type='button' value='Delete' class='btn btn-danger btn-delete'

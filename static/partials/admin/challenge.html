@@ -79,21 +79,18 @@
             <td><a class='btn btn-sm btn-warning'
               ng-click='deleteAttachment(attachment)'>&#x2715;</a></td>
         </tr>
-        </tbody>
-    </table>
-    <table class='table' id='add-file-table'>
-       <thead>
-         <tr>
-           <th class='col-md-8'>
-             <label for='choose-attachment'>Add Attachment</label>
-             <select id='choose-attachment' ng-model='attachmentType' class='form-control'>
-               <option value='new'>New</option>
-               <option ng-repeat='a in attachments' value='{{a.aid}}'>{{a.filename}}</option>
-             </select>
-           </th><th class='col-md-1'>
-             <a class='btn btn-sm btn-info' ng-click='addAttachment()'>+</a>
-           </th></tr>
-       </thead>
+        <tr>
+          <td colspan='2' class='col-md-8'>
+            <label class='label-sized' for='choose-attachment'>Add Attachment</label>
+            <select id='choose-attachment' ng-model='attachmentType' class='form-control'>
+              <option value='new'>New</option>
+              <option ng-repeat='a in attachments' value='{{a.aid}}'>{{a.filename}}</option>
+            </select>
+          </td><td class='button-top col-md-1'>
+            <a class='btn btn-sm btn-info' ng-click='addAttachment()'>&#x271b;</a>
+          </td>
+        </tr>
+      </tbody>
     </table>
   </div>
   <div class='well'>
