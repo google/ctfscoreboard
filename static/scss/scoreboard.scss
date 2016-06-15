@@ -319,6 +319,14 @@ table.team-players{
     }
 }
 
+@keyframes oscillate {
+    from {
+        left: -33px;
+    }
+    to {
+        left: -38px;
+    }
+}
 .tag-selector {
     $tag-height: 36px;
     $info-height: 56px;
@@ -407,6 +415,10 @@ table.team-players{
                 left: -35px;
                 top: -2px;
                 font-size: 46px;
+                animation-name: oscillate;
+                animation-duration: 1s;
+                animation-iteration-count: Infinite;
+                animation-direction: alternate;
             }
         }
 

@@ -339,7 +339,9 @@ api.add_resource(User, '/api/users/<int:user_id>')
 api.add_resource(TeamList, '/api/teams')
 api.add_resource(Team, '/api/teams/<int:team_id>')
 api.add_resource(Session, '/api/session')
-api.add_resource(PasswordReset, '/api/pwreset/<email>')
+
+if app.config.get('LOGIN_METHOD') == 'local':
+	api.add_resource(PasswordReset, '/api/pwreset/<email>')
 
 
 class Challenge(flask_restful.Resource):
@@ -448,8 +450,8 @@ class ChallengeList(flask_restful.Resource):
             data['name'],
             data['description'],
             data['points'],
-            data['cat_slug'],
             answer,
+            data['cat_slug'],
             unlocked)
         if 'attachments' in data:
             chall.set_attachments(data['attachments'])
