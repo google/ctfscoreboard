@@ -339,7 +339,9 @@ api.add_resource(User, '/api/users/<int:user_id>')
 api.add_resource(TeamList, '/api/teams')
 api.add_resource(Team, '/api/teams/<int:team_id>')
 api.add_resource(Session, '/api/session')
-api.add_resource(PasswordReset, '/api/pwreset/<email>')
+
+if app.config.get('LOGIN_METHOD') == 'local':
+	api.add_resource(PasswordReset, '/api/pwreset/<email>')
 
 
 class Challenge(flask_restful.Resource):
