@@ -22,7 +22,18 @@ uploadServices.service('uploadService', ['$http', '$q',
         var basename = function(path) {
             return path.split('/').reverse()[0];
         };
+        var that = this;
 
+        this.request = function() {
+            return $q(function(resolve) {
+                var form = $('#new-attachment');
+                form.click();
+                form.off('change');
+                form.on('change', function() {
+                  resolve(form.get(0).files[0]);
+                })
+            })
+        }
         this.upload = function(file) {
             // Returns a promise with the file hash
             var filename = basename(file.name);
@@ -40,7 +51,7 @@ uploadServices.service('uploadService', ['$http', '$q',
             var fd = new FormData();
             fd.append('file', file);
             // Request
-            $http.post('/api/upload', fd, config).
+            $http.post('/api/attachments', fd, config).
                 success(function(data) {
                     data.filename = filename;
                     promise.resolve(data);
