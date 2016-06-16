@@ -77,7 +77,7 @@ challengeServices.service('attachService', [
     function($resource, $rootScope, $cacheFactory, $timeout) {
         var attachCache = $cacheFactory('attachCache');
 
-        this.res = $resource('/api/attachment/:aid', {}, {
+        this.res = $resource('/api/attachments/:aid', {}, {
             'get': {method: 'GET', attachCache},
             'save': {method: 'PUT'},
         })

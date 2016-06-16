@@ -51,7 +51,7 @@ uploadServices.service('uploadService', ['$http', '$q',
             var fd = new FormData();
             fd.append('file', file);
             // Request
-            $http.post('/api/attachment', fd, config).
+            $http.post('/api/attachments', fd, config).
                 success(function(data) {
                     data.filename = filename;
                     promise.resolve(data);
