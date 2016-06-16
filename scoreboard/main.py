@@ -85,18 +85,17 @@ def setup_logging(app):
         logging.getLogger().handlers[0].setFormatter(log_formatter)
 
     # Install a default error handler
+    error_titles = {
+        401: 'Unauthorized',
+        403: 'Forbidden',
+        500: 'Internal Error',
+    }
 
     return app
 
 
 def api_error_handler(ex):
     """Handle errors as appropriate depending on path."""
-
-    error_titles = {
-        401: 'Unauthorized',
-        403: 'Forbidden',
-        500: 'Internal Error',
-    }
     try:
         status_code = ex.code
     except AttributeError:
