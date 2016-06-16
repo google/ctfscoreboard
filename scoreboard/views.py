@@ -68,11 +68,16 @@ def download(filename):
     """Download an attachment."""
 
     attachment = models.Attachment.query.get_or_404(filename)
-    if not attachment.challenge.unlocked:
+    valid = models.User.current().admin
+    for ch in attachment.challenges:
+        if ch.unlocked:
+            valid = True
+            break
+    if not valid:
         flask.abort(404)
     app.logger.info('Download of %s by %r.', attachment, models.User.current())
 
-    return attachments.send(attachment)
+    return attachments.backend.send(attachment)
 
 
 @app.route('/createdb')

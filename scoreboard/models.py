@@ -399,8 +399,6 @@ class Challenge(db.Model):
     cat_slug = db.Column(db.String(100), db.ForeignKey('category.slug'))
     answers = db.relationship('Answer', backref=db.backref('challenge',
         lazy='joined'), lazy='select')
-    attachments = db.relationship('Attachment', backref='challenge',
-                                  lazy='joined')
 
     def __repr__(self):
         return '<Challenge: %d/%s>' % (self.cid, self.name)
@@ -507,11 +505,12 @@ class Challenge(db.Model):
             aid_set.add(a['aid'])
             attachment = Attachment.query.get(a['aid'])
             if not attachment:
-                Attachment.create(a['aid'], a['filename'], a['content_type'], self)
+                logging.warning('Trying to add attachment %s that does not exist: %s' % (a['filename'], a['aid']))
+            self.attachments.append(attachment)
 
         for a in old_attachments:
             if a.aid not in aid_set:
-                a.delete()
+                self.attachments.remove(a)
 
     def set_prerequisite(self, prerequisite):
         if not prerequisite:
@@ -552,15 +551,20 @@ class Challenge(db.Model):
                 ScoreHistory.add_entry(a.team)
 
 
+attach_challenge_association = db.Table('attach_chall_association', db.Model.metadata,
+        db.Column('challenge_cid', db.BigInteger,  db.ForeignKey('challenge.cid')),
+        db.Column('attachment_aid',   db.String(64), db.ForeignKey('attachment.aid')))
+
 class Attachment(db.Model):
     """Attachment to a challenge."""
 
     aid = db.Column(db.String(64), primary_key=True)
-    challenge_cid = db.Column(db.BigInteger, db.ForeignKey('challenge.cid'),
-            nullable=False)
     filename = db.Column(db.String(100), nullable=False)
     content_type = db.Column(db.String(100))
     storage_path = db.Column(db.String(256))
+
+    challenges = db.relationship('Challenge', backref=db.backref('attachments', lazy='joined'),
+                                 secondary='attach_chall_association', lazy='joined')
 
     def __str__(self):
         return repr(self)
@@ -571,18 +575,34 @@ class Attachment(db.Model):
     def delete(self, from_disk=True):
         if from_disk:
             try:
-                attachments.delete(self)
+                attachments.backend.delete(self)
             except IOError as ex:
                 app.logger.exception("Couldn't delete: %s", str(ex))
         db.session.delete(self)
 
+    def set_challenges(self, challenges):
+        cid_set = set()
+        old_challenges = list(self.challenges)
+
+        for a in challenges:
+            cid_set.add(a['cid'])
+            challenge = Challenge.query.get(a['cid'])
+            if not challenge:
+                app.logger.warning('No challenge found with cid %d' % a['cid'])
+                continue
+            self.challenges.append(challenge)
+
+        for a in old_challenges:
+            if a.cid not in cid_set:
+                self.challenges.remove(a)
+
+
     @classmethod
-    def create(cls, aid, filename, content_type, challenge):
+    def create(cls, aid, filename, content_type):
         attachment = cls()
         attachment.aid = aid
         attachment.filename = filename
         attachment.content_type = content_type
-        attachment.challenge = challenge
         db.session.add(attachment)
         return attachment
 
