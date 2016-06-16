@@ -575,7 +575,7 @@ class Attachment(db.Model):
     def delete(self, from_disk=True):
         if from_disk:
             try:
-                attachments.delete(self)
+                attachments.backend.delete(self)
             except IOError as ex:
                 app.logger.exception("Couldn't delete: %s", str(ex))
         db.session.delete(self)

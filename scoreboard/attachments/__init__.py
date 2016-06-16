@@ -29,6 +29,7 @@ from scoreboard import main
 
 app = main.get_app()
 
+backend = None
 
 def get_backend_path():
     """Get backend path for attachments."""
@@ -40,11 +41,23 @@ def get_backend_type():
     backend = get_backend_path()
     return urlparse.urlparse(backend).scheme
 
+def patch(_backend_type):
+    if _backend_type == "file":
+        import file as backend
+    elif _backend_type == "gcs":
+        import gcs as backend
+    elif _backend_type == "test":
+        import testing as backend
+    else:
+        raise ImportError('Unhandled attachment backend %s' % _backend_type)
+    globals()['backend'] = backend
 
 _backend_type = get_backend_type()
 if _backend_type == "file":
-    from scoreboard.attachments.file import *
+    import file as backend
 elif _backend_type == "gcs":
-    from scoreboard.attachments.gcs import * 
+    import gcs as backend
+elif _backend_type == "test":
+    import testing as backend
 else:
     raise ImportError('Unhandled attachment backend %s' % _backend_type)
