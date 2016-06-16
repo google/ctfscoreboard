@@ -25,11 +25,11 @@ pageCtrls.controller('StaticPageCtrl', [
     'errorService',
     'loadingService',
     function($scope, pageService, errorService, loadingService) {
-        var path = pageService.pagePath();
-        if (path == "") {
-            path = "home";
+        $scope.path = pageService.pagePath();
+        if ($scope.path == "") {
+            $scope.path = "home";
         }
-        pageService.get({path: path},
+        pageService.get({path: $scope.path},
             function(data) {
                 $scope.page = data;
                 loadingService.stop();
