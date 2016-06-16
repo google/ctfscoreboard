@@ -505,7 +505,7 @@ class Challenge(db.Model):
             aid_set.add(a['aid'])
             attachment = Attachment.query.get(a['aid'])
             if not attachment:
-                logging.warning('Trying to add attachment that does not exist')
+                logging.warning('Trying to add attachment %s that does not exist: %s' % (a['filename'], a['aid']))
             self.attachments.append(attachment)
 
         for a in old_attachments:
@@ -551,9 +551,9 @@ class Challenge(db.Model):
                 ScoreHistory.add_entry(a.team)
 
 
-attch_challenge_association = db.Table('attch_chall_association', db.Model.metadata,
+attach_challenge_association = db.Table('attach_chall_association', db.Model.metadata,
         db.Column('challenge_cid', db.BigInteger,  db.ForeignKey('challenge.cid')),
-        db.Column('attachmemt_aid',   db.String(64), db.ForeignKey('attachment.aid')))
+        db.Column('attachment_aid',   db.String(64), db.ForeignKey('attachment.aid')))
 
 class Attachment(db.Model):
     """Attachment to a challenge."""
@@ -564,7 +564,7 @@ class Attachment(db.Model):
     storage_path = db.Column(db.String(256))
 
     challenges = db.relationship('Challenge', backref=db.backref('attachments', lazy='joined'),
-                                 secondary='attch_chall_association', lazy='joined')
+                                 secondary='attach_chall_association', lazy='joined')
 
     def __str__(self):
         return repr(self)

@@ -869,8 +869,8 @@ class AttachmentList(flask_restful.Resource):
     def get(self):
         return dict(attachments=list(models.Attachment.query.all()))
 
-api.add_resource(Attachment, '/api/attachment/<string:aid>')
-api.add_resource(AttachmentList, '/api/attachment')
+api.add_resource(Attachment, '/api/attachments/<string:aid>')
+api.add_resource(AttachmentList, '/api/attachments')
 
 
 class BackupRestore(flask_restful.Resource):

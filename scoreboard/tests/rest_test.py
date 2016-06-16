@@ -96,7 +96,7 @@ class PageTest(base.RestTestCase):
 
 class AttachmentTest(base.RestTestCase):
 
-    PATH = '/api/attachment/%s'
+    PATH = '/api/attachments/%s'
     ATTACHMENT_FIELDS = ('aid', 'filename', 'challenges')
 
     text = "This is a test"
@@ -107,7 +107,7 @@ class AttachmentTest(base.RestTestCase):
             string = StringIO.StringIO()
             string.write(text)
             string.seek(0)
-            return c.post('/api/attachment', data = {
+            return c.post('/api/attachments', data = {
                 'file': (string, filename)
             })
 
@@ -144,7 +144,7 @@ class AttachmentTest(base.RestTestCase):
     def testRetrieveFile(self):
         postresp = self.uploadFile(self.name, self.text)
         with self.admin_client as c:
-            getresp = c.get('/attachment/%s' % postresp.json['aid'])
+            getresp = c.get('/attachments/%s' % postresp.json['aid'])
             self.assert200(getresp)
 
     def testFileRetrievalValue(self):
@@ -156,22 +156,22 @@ class AttachmentTest(base.RestTestCase):
     def testFileDelete(self):
         postresp = self.uploadFile(self.name, self.text)
         with self.admin_client as c:
-            delresp = c.delete('/api/attachment/%s' % postresp.json['aid'])
+            delresp = c.delete('/api/attachments/%s' % postresp.json['aid'])
             self.assert200(delresp)
 
     def testDeletionRemovesFile(self):
         postresp = self.uploadFile(self.name, self.text)
         with self.admin_client as c:
-            delresp = c.delete('/api/attachment/%s' % postresp.json['aid'])
+            delresp = c.delete('/api/attachments/%s' % postresp.json['aid'])
         with self.admin_client as c:
-            getresp = c.get('/api/attachment/%s' % postresp.json['aid'])
+            getresp = c.get('/api/attachments/%s' % postresp.json['aid'])
             self.assert404(getresp)
 
     def testFileUpdate(self):
         new_name = "file.png"
         postresp = self.uploadFile(self.name, self.text)
         with self.admin_client as c:
-            putresp = c.put('/api/attachment/%s' % postresp.json['aid'], data = json.dumps({
+            putresp = c.put('/api/attachments/%s' % postresp.json['aid'], data = json.dumps({
                 'filename': new_name,
                 'aid': postresp.json['aid'],
                 'challenges': [],
@@ -182,13 +182,13 @@ class AttachmentTest(base.RestTestCase):
         new_name = "file.png"
         postresp = self.uploadFile(self.name, self.text)
         with self.admin_client as c:
-            putresp = c.put('/api/attachment/%s' % postresp.json['aid'], data = json.dumps({
+            putresp = c.put('/api/attachments/%s' % postresp.json['aid'], data = json.dumps({
                 'filename': new_name,
                 'aid': postresp.json['aid'],
                 'challenges': [],
             }), content_type = "application/json")
         with self.admin_client as c:
-            getresp = c.get('/api/attachment/%s' % postresp.json['aid'])
+            getresp = c.get('/api/attachments/%s' % postresp.json['aid'])
             self.assertEqual(getresp.json['filename'], new_name)
 
 class UserTest(base.RestTestCase):

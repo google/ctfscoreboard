@@ -41,7 +41,8 @@ def get_backend_type():
     backend = get_backend_path()
     return urlparse.urlparse(backend).scheme
 
-def patch(_backend_type):
+def get_backend(_backend_type):
+    backend = None
     if _backend_type == "file":
         import file as backend
     elif _backend_type == "gcs":
@@ -50,14 +51,9 @@ def patch(_backend_type):
         import testing as backend
     else:
         raise ImportError('Unhandled attachment backend %s' % _backend_type)
-    globals()['backend'] = backend
+    return backend
 
-_backend_type = get_backend_type()
-if _backend_type == "file":
-    import file as backend
-elif _backend_type == "gcs":
-    import gcs as backend
-elif _backend_type == "test":
-    import testing as backend
-else:
-    raise ImportError('Unhandled attachment backend %s' % _backend_type)
+def patch(_backend_type):
+    globals()['backend'] = get_backend(_backend_type)
+
+backend = get_backend(get_backend_type())
