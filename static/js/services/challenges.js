@@ -41,7 +41,6 @@ challengeServices.service('tagService', [
         })
 
         this.get = this.res.get;
-        this.create = this.res.create;
         this.save = this.res.save;
         this.delete = this.res.delete;
 

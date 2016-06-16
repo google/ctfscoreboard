@@ -202,19 +202,6 @@ adminChallengeCtrls.controller('AdminAttachmentCtrl', [
           });
       };
 
-      /*
-      $scope.addAttachment = function() {
-        errorService.clearErrors();
-        attachService.create({}, $scope.newAttachment,
-          function(data) {
-            $scope.attachments.push(data);
-            $scope.newAttachments = {};
-          },
-          function(data) {
-            errorService.error(data);
-          });
-      };
-      */
 
       $scope.addAttachment = function() {
           $scope.newAttachment.challenges = $scope.newAttachment.challenges || [];
@@ -237,17 +224,17 @@ adminChallengeCtrls.controller('AdminAttachmentCtrl', [
       $scope.replace = function(a) {
         uploadService.request().then(uploadService.upload).then(function(newfile) {
           if (a.aid == newfile.aid) return;
-          attachService.delete({aid: a.aid})
-          a.aid = newfile.aid
+          attachService.delete({aid: a.aid});
+          a.aid = newfile.aid;
           attachService.save({aid: a.aid}, a, function(d) {}, function(e) {
-            console.error(e)
+            console.error(e);
           })
         });
       }
 
       $scope.addfile = function() {
         uploadService.request().then(uploadService.upload).then(function(newfile) {
-          $scope.newAttachment.aid = newfile.aid
+          $scope.newAttachment.aid = newfile.aid;
         })
       }
 
@@ -517,38 +504,10 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
         }
       }
 
-      /*
-      $scope.addAttachment = function() {
-          $scope.newAttachment = {};
-          $scope.addNewAttachment = true;
-      };
-
-      $scope.uploadFile = function() {
-          // Upload file and get hash
-          var fileField = $('#upload-new');
-          var file = fileField.get(0).files[0];
-
-          if (!file) {
-              errorService.error('Must select a file.');
-              return;
-          }
-
-          uploadService.upload(file).then(
-            function(metadata) {
-                $scope.challenge.attachments.push(metadata);
-                $scope.newAttachment = {};
-                $scope.addNewAttachment = false;
-                fileField.replaceWith(fileField.clone(true));
-            }, function(data) {
-                errorService.error(data);
-            });
-      };
-
       $scope.verifyFile = function() {
           // Verify existance by hash
           // TODO
       };
-      */
 
       $scope.deleteAttachment = function(attachment) {
         var idx = $scope.challenge.attachments.indexOf(attachment);

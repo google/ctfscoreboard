@@ -22,7 +22,6 @@ uploadServices.service('uploadService', ['$http', '$q',
         var basename = function(path) {
             return path.split('/').reverse()[0];
         };
-        var that = this;
 
         this.request = function() {
             return $q(function(resolve) {
