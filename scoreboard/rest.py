@@ -450,8 +450,8 @@ class ChallengeList(flask_restful.Resource):
             data['name'],
             data['description'],
             data['points'],
-            data['cat_slug'],
             answer,
+            data['cat_slug'],
             unlocked)
         if 'attachments' in data:
             chall.set_attachments(data['attachments'])

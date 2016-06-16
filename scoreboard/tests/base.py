@@ -39,6 +39,7 @@ class BaseTestCase(flask_testing.TestCase):
         SECRET_KEY = 'testing-session-key',
         SQLALCHEMY_DATABASE_URI = "sqlite://",
         TESTING = True,
+        DEBUG = False,
     )
 
     def create_app(self):
