@@ -857,7 +857,7 @@ class AttachmentList(flask_restful.Resource):
 
     def post(self):
         fp = flask.request.files['file']
-        aid, fpath = attachments.upload(fp)
+        aid, fpath = attachments.backend.upload(fp)
         attachment = models.Attachment.query.get(aid)
         if not attachment:
             models.Attachment.create(aid, fp.filename, fp.mimetype)
@@ -869,8 +869,8 @@ class AttachmentList(flask_restful.Resource):
     def get(self):
         return dict(attachments=list(models.Attachment.query.all()))
 
-api.add_resource(Attachment, '/api/attachment/<string:aid>')
-api.add_resource(AttachmentList, '/api/attachment')
+api.add_resource(Attachment, '/api/attachments/<string:aid>')
+api.add_resource(AttachmentList, '/api/attachments')
 
 
 class BackupRestore(flask_restful.Resource):
