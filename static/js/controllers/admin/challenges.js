@@ -185,7 +185,6 @@ adminChallengeCtrls.controller('AdminPagesCtrl', [
         }
 
         $scope.deleteActive = function() {
-            console.log('boo')
             pageService.delete({path: $scope.active.path})
             $scope.pages.splice($scope.pages.indexOf($scope.active), 1)
             $scope.active = {}

@@ -21,7 +21,7 @@ pageServices.service('pageService', [
     '$resource',
     '$location',
     function($resource, $location) {
-        this.pagelist = []
+        this.pagelist = [];
 
         this.resource = $resource('/api/page/:path');
         this.get = this.resource.get;
