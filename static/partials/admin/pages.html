@@ -1,0 +1,70 @@
+<h2>Pages</h2>
+<div class='well'>
+  <table class='table' id='tag-table'>
+    <thead>
+      <tr>
+          <th class='col-md-3'>Title</th>
+          <th class='col-md-3'>URL</th>
+          <th class='col-md-1'></th>
+          <th class='col-md-1'></th>
+          <th class='col-md-1'></th></tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat='p in pages'>
+        <td>
+          <a class='no-decoration' ng-href='/admin/page/{{p.path}}'>{{p.title}}</a>
+        </td>
+        <td>
+            <input type='text' class='form-control' ng-model='p.new'></input>
+        </td>
+        <td><a class='btn btn-sm {{p.new == p.path ? "btn-danger" : "btn-success"}}' ng-click='activate(p)'>
+              <span class='btn-inner' ng-if='p.new != p.path'>&#x2713;</span>
+              <span class='btn-inner' ng-if='p.new == p.path'>&#x2715;</span>
+            </a>
+        </td>
+        <td>
+          <a ng-href='/{{p.path}}' class='btn btn-sm btn-info'><i class='material-icons btn-inner'>search</i></a>
+        </td>
+        <td>
+          <a ng-href='/admin/page/{{p.path}}' class='btn btn-sm btn-warning'><i class='material-icons btn-inner'>edit</i></a>
+        </td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>
+          <input type='text' class='form-control' ng-model='newpage'></input>
+        </td>
+        <td>
+          <a ng-href='/admin/page/{{newpage}}' class='btn btn-sm btn-info'><i class='material-icons btn-inner'>launch</i></a>
+        </td>
+        <td></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class='modal fade' id='delete-confirm' tabindex='-1' role='dialog' aria-labelledby='confirm-label'>
+  <div class='modal-dialog' role='document'>
+    <div class='modal-content'>
+      <div class='modal-header'>
+        <button type='button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&#x2715;</span></button>
+        <h4 class='modal-title' id='confirm-label'>Confirm deletion of "{{active.title}}"</h4>
+      </div>
+      <div class='modal-body'>
+        <p>
+          Would you like to delete /{{active.path}}? This will delete the article "{{active.title}}" and all associated data
+        </p>
+        </p>
+          This action cannot be undone.
+        </p>
+      </div>
+      <div class='modal-footer'>
+        <button type='button' class='btn btn-default' data-dismiss='modal'>Cancel</button>
+        <button type='button' class='btn btn-danger' data-dismiss='modal' ng-click='deleteActive()'>Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+

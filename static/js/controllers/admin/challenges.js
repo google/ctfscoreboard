@@ -163,6 +163,51 @@ adminChallengeCtrls.controller('AdminTagCtrl', [
       });
     }]);
 
+adminChallengeCtrls.controller('AdminPagesCtrl', [
+    '$scope',
+    'pageService',
+    'errorService',
+    'sessionService',
+    'loadingService',
+    function($scope, pageService, errorService, sessionService, loadingService) {
+        if (!sessionService.requireAdmin()) return;
+
+        $scope.active = {};
+        $scope.activate = function(p) {
+            if (p.new == p.path) {
+                $scope.active = p;
+                $("#delete-confirm").modal("show");
+            } else {
+                var oldPath = p.path;
+                p.path = p.new;
+                pageService.save({path: oldPath}, p)
+            }
+        }
+
+        $scope.deleteActive = function() {
+            console.log('boo')
+            pageService.delete({path: $scope.active.path})
+            $scope.pages.splice($scope.pages.indexOf($scope.active), 1)
+            $scope.active = {}
+        }
+
+        sessionService.requireLogin(function() {
+            errorService.clearErrors();
+            pageService.get(
+                function(data) {
+                    $scope.pages = data.pages;
+                    for (var i = 0; i < $scope.pages.length; i++) {
+                        $scope.pages[i].new = $scope.pages[i].path;
+                    }
+                    loadingService.stop();
+                },
+                function(data) {
+                    errorService.error(data);
+                    loadingService.stop();
+                });
+        });
+    }])
+
 
 adminChallengeCtrls.controller('AdminChallengesCtrl', [
     '$scope',
