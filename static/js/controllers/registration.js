@@ -117,9 +117,26 @@ regCtrls.controller('ProfileCtrl', [
     'sessionService',
     'userService',
     'loadingService',
+    'gameTimeService',
+    'teamService', 
     function($scope, configService, errorService, sessionService,
-        userService, loadingService) {
+        userService, loadingService, gameTimeService, teamService) {
       $scope.user = null;
+
+      $scope.started = gameTimeService.started;
+      $scope.changing = false;
+
+      $scope.startJoin = function() {
+        $scope.changing = true;
+      }
+
+      $scope.joinTeam = function(team) {
+        $scope.changing = false;
+        teamService.get({tid: team}, function(data) {
+          console.log(data)
+        })
+      }
+
 
       sessionService.requireLogin(function() {
         $scope.user = sessionService.session.user;
@@ -128,6 +145,9 @@ regCtrls.controller('ProfileCtrl', [
                 $scope.team = sessionService.session.team;
             loadingService.stop();
         });
+        teamService.get(function(c) {
+          $scope.teams = c.teams;
+        })
       });
 
       $scope.updateProfile = function() {

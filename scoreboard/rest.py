@@ -133,6 +133,13 @@ class User(flask_restful.Resource):
             user.nick = data['nick']
             if not app.config.get('TEAMS'):
                 user.team.name = data['nick']
+        if not user.admin and data['team_tid'] != user['team_tid']:
+            if utils.GameTime.open(after_end=True) and not utils.is_admin():
+                raise errors.AccessDeniedError(
+                        'Teams cannot be changed once the game has begun')
+            else:
+                print "bouta change some teams up in this"
+
         try:
             models.commit()
         except AssertionError:
@@ -201,6 +208,7 @@ class Team(flask_restful.Resource):
 
     @flask_restful.marshal_with(resource_fields)
     def get(self, team_id):
+        print team_id
         team = models.Team.query.get_or_404(team_id)
         return self._marshal_team(team, extended=True)
 
