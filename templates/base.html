@@ -64,6 +64,8 @@ should be in {% raw %} blocks.  DFIU! -#}
                   class='list-group-item' highlight-active>Categories</a>
                 <a href='/admin/tags'
                   class='list-group-item' highlight-active>Tags</a>
+                <a href='/admin/attachments'
+                  class='list-group-item' highlight-active>Attachments</a>
                 <a href='/admin/challenges'
                   class='list-group-item' highlight-active>Challenges</a>
                 <a href='/admin/backups'
@@ -105,6 +107,9 @@ should be in {% raw %} blocks.  DFIU! -#}
               </div>
             </div>
             <div ng-view></div>
+          </div>
+          <div class='fileupload'>
+            <input class='invisible' type='file' id='new-attachment'/>
           </div>
         </div>
       </div>

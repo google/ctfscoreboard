@@ -41,7 +41,6 @@ challengeServices.service('tagService', [
         })
 
         this.get = this.res.get;
-        this.create = this.res.create;
         this.save = this.res.save;
         this.delete = this.res.delete;
 
@@ -63,6 +62,48 @@ challengeServices.service('tagService', [
             $rootScope.$on('$locationChangeSuccess', function() {
                 this.taglist = null;
                 tagCache.removeAll();
+            });
+        }
+
+    }
+])
+
+challengeServices.service('attachService', [
+    '$resource',
+    '$rootScope',
+    '$cacheFactory',
+    '$timeout',
+    function($resource, $rootScope, $cacheFactory, $timeout) {
+        var attachCache = $cacheFactory('attachCache');
+
+        this.res = $resource('/api/attachments/:aid', {}, {
+            'get': {method: 'GET', attachCache},
+            'save': {method: 'PUT'},
+        })
+
+        this.get = this.res.get;
+        this.create = this.res.create;
+        this.save = this.res.save;
+        this.delete = this.res.delete;
+
+        this.getList = function(callback) {
+            if (this.attachlist) {
+                callback(this.attachlist);
+                return;
+            }
+            this.res.get(angular.bind(this, function(data) {
+                this.attachlist = data;
+                $timeout(
+                    angular.bind(this, function() {
+                        this.attachlist = null;
+                        attachCache.removeAll();
+                    }),
+                30000, false);
+                callback(data);
+            }))
+            $rootScope.$on('$locationChangeSuccess', function() {
+                this.attachlist = null;
+                attachCache.removeAll();
             });
         }
 

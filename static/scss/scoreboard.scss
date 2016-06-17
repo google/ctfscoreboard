@@ -115,6 +115,11 @@ a.btn {
             text-decoration: underline;
         }
     }
+
+    .hash-link {
+        text-align: center;
+        margin-bottom: 16px;
+    }
 }
 
 #news-box {
@@ -482,4 +487,27 @@ table.team-players{
 
 .modal {
     overflow-y: auto;
+}
+
+#attachment-table {
+    .label-sized {
+        height: 17px;
+    }
+
+    .button-top {
+        padding-top: 28px;
+    }
+}
+
+.challenge-list {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+
+    .challenge-item {
+        margin-left: 0px;
+        margin-top: 0px;
+        margin-right: 10px;
+        margin-bottom: 10px;
+    }
 }

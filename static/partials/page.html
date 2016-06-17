@@ -1,2 +1,6 @@
 <h2 ng-show='page.title' ng-bind='page.title'></h2>
 <div class='page markdown' id='page-contents' ng-bind-html='page.contents|markdown'></div>
+<div ng-show='isAdmin() && !page.title'>
+    <h4 class='create-head'>Page {{page.title}} does not exist</h4>
+    <div class='create-body'>If you would like to create a new page here, visit <a ng-href='/admin/page/{{path}}'>this</a> page.
+</div>
