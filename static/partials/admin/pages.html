@@ -35,7 +35,7 @@
           <input type='text' class='form-control' ng-model='newpage'></input>
         </td>
         <td>
-          <a ng-href='/admin/page/{{newpage}}' class='btn btn-sm btn-info'><i class='material-icons btn-inner'>launch</i></a>
+          <a ng-href='/admin/page/{{newpage}}' ng-disabled='!newpage||newpage.length==0' class='btn btn-sm btn-info'><i class='material-icons btn-inner'>launch</i></a>
         </td>
         <td></td>
         <td></td>
