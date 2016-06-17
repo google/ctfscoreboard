@@ -118,6 +118,10 @@ scoreboardApp.config([
           templateUrl: '/partials/admin/page.html',
           controller: 'AdminPageCtrl'
         }).
+        when('/admin/pages', {
+          templateUrl: '/partials/admin/pages.html',
+          controller: 'AdminPagesCtrl'
+        }).
         when('/admin/tools', {
           templateUrl: '/partials/admin/tools.html',
           controller: 'AdminToolCtrl'
