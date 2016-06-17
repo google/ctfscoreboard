@@ -21,9 +21,12 @@ pageServices.service('pageService', [
     '$resource',
     '$location',
     function($resource, $location) {
+        this.pagelist = [];
+
         this.resource = $resource('/api/page/:path');
         this.get = this.resource.get;
         this.save = this.resource.save;
+        this.delete = this.resource.delete;
 
         /** Return path to page with prefix stripped. */
         this.pagePath = function(prefix) {
@@ -34,4 +37,24 @@ pageServices.service('pageService', [
             }
             return path;
         };
+
+        this.getList = function(callback) {
+            if (this.pagelist) {
+                callback(this.pagelist);
+                return;
+            }
+            this.res.get(angular.bind(this, function(data) {
+                this.pagelist = data;
+                $timeout(
+                    angular.bind(this, function() {
+                        this.pagelist = null;
+                    }),
+                60000, false);
+                callback(data);
+            }))
+            $rootScope.$on('$locationChangeSuccess', function() {
+                this.pagelist = null;
+            });
+        }
+
     }]);

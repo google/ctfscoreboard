@@ -787,8 +787,9 @@ class Page(flask_restful.Resource):
             page = models.Page()
             page.path = path
             models.db.session.add(page)
-        page.title = data.get('title', '')
-        page.contents = data.get('contents', '')
+        page.path = data.get('path', path)
+        page.title = data.get('title', page.title)
+        page.contents = data.get('contents', page.contents)
         models.commit()
         return page
 
@@ -799,7 +800,22 @@ class Page(flask_restful.Resource):
         models.commit()
         return {}
 
+class PageList(flask_restful.Resource):
+    """Retrieve all pages available"""
+
+    resource_fields = {
+        'pages': fields.Nested({
+            'path': fields.String,
+            'title': fields.String,
+        })
+    }
+
+    @flask_restful.marshal_with(resource_fields)
+    def get(self):
+        return dict(pages = models.Page.query.all())
+
 api.add_resource(Page, '/api/page/<path:path>')
+api.add_resource(PageList, '/api/page')
 
 class Attachment(flask_restful.Resource):
     """"Allow updating and deleting of individual files"""

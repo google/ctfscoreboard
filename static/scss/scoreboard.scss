@@ -90,8 +90,30 @@ a.btn {
 }
 
 .well {
-    .h4 {
+    h4 {
         margin-top: 0;
+    }
+
+    .btn-sm {
+        .btn-inner {
+            font-size:16px;
+        }
+        margin: auto;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .no-decoration {
+        font-size: 24px;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
     }
 
     .hash-link {
