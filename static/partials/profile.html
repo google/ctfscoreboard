@@ -5,17 +5,17 @@
       <label for='team'>Team</label>
       <div class='form-group' ng-show='!!team && !!team.name || changing'>
         <div class='multiple'>
-          <input type='text' ng-readonly='!changing' name='team' id='team' ng-model='team.name'
+          <input type='text' ng-disabled='!changing' name='team' id='team' ng-model='team.name'
             class='form-control'>
-          <button class='btn btn-med side-button' ng-class="{'btn-info': !changing, 'btn-warning': changing}"
-              ng-click='!changing ? startJoin() : joinTeam(team.code)' ng-hide='started()' type='button'>
+          <button class='btn btn-med side-button' ng-class="{'btn-info': !changing, 'btn-danger': changing}"
+              ng-click='!changing ? startJoin() : cancel()' ng-hide='started()' type='button'>
             <span ng-if='!changing'>Change Team</span>
-            <span ng-if=' changing'>Join</span>
+            <span ng-if=' changing'>Cancel</span>
           </button>
         </div>
-        <div class='drop-down'>
-          <div ng-repeat='t in teams'
-              ng-show='t.name.toLowerCase().indexOf(team.name.toLowerCase())>=0' value='{{t.tid}}'>
+        <div class='drop-down' ng-show='changing'>
+          <div ng-repeat='t in teams' ng-click='team.name=t.name' class='list-item'
+              ng-show='t.name.toLowerCase().indexOf(team.name.toLowerCase())>=0&&t.name!=team.name' value='{{t.tid}}'>
             <a class='btn btn-info btn-sm'>
               <i class='material-icons btn-inner'>label</i>
             </a>
@@ -25,7 +25,7 @@
       </div>
       <label for='team_code'>Team Invite Code</label>
       <div class='form-group multiple' ng-show='!!team && !!team.code || changing'>
-        <input type='text' ng-readonly='!changing' name='team_code' id='team_code'
+        <input type='text' ng-disabled='!changing' name='team_code' id='team_code'
           ng-model='team.code' class='form-control'>
       </div>
       <div class='form-group'>
@@ -38,16 +38,16 @@
         <input type='password' id='password' name='password'
           placeholder='password (to change)'
           class='form-control' ng-model='user.password'
-          required>
+          >
       </div>
       <div class='form-group' ng-show='config.login_method == "local"'>
         <label for='password2'>Repeat Password</label>
         <input type='password' id='password2' name='password2'
           placeholder='repeat password' class='form-control'
-          ng-model='user.password2' required>
+          ng-model='user.password2'>
       </div>
       <input type='submit' value='Save' class='btn btn-primary'
-        ng-disabled='profileForm.$invalid'>
+        ng-disabled='profileForm.$invalid && (team.tid < 0 || !team.code || !changing)'>
     </form>
   </div>
 </div>

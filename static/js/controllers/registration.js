@@ -128,21 +128,34 @@ regCtrls.controller('ProfileCtrl', [
 
       $scope.startJoin = function() {
         $scope.changing = true;
+        $scope.team.code = "";
+        $("#team").focus();
       }
 
-      $scope.joinTeam = function(team) {
+      $scope.cancel = function() {
         $scope.changing = false;
-        teamService.get({tid: team}, function(data) {
-          console.log(data)
-        })
+        $scope.team.name = $scope.team.originalname;
+        $scope.team.code = $scope.team.originalcode;
       }
 
+      $scope.$watch('team.name', function() {
+        if (!($scope.teams && $scope.team && $scope.team.name)) return;
+        for (var i = 0; i < $scope.teams.length; i++) {
+          if ($scope.teams[i].name == $scope.team.name) {
+            return $scope.team.tid = $scope.teams[i].tid;
+          }
+        }
+        $scope.team.tid = -1;
+      })
 
       sessionService.requireLogin(function() {
         $scope.user = sessionService.session.user;
         configService.get(function(c) {
-            if (c.teams)
+            if (c.teams) {
                 $scope.team = sessionService.session.team;
+                $scope.team.originalname = $scope.team.name;
+                $scope.team.originalcode = $scope.team.code;
+            }
             loadingService.stop();
         });
         teamService.get(function(c) {
