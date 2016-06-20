@@ -97,7 +97,7 @@ A big thanks to the following projects used to build this:
 
 - [Flask](http://flask.pocoo.org/)
 - [Flask-SQLAlchemy](https://pythonhosted.org/Flask-SQLAlchemy/)
-- [Flask-RESTful](http://flask-restful.readthedocs.org/en/latest/)
+- [Flask-RESTful](https://flask-restful.readthedocs.io/en/latest/)
 - [SQLAlchemy](http://www.sqlalchemy.org/)
 - [AngularJS](https://angularjs.org/)
 - [jQuery](https://jquery.com/)
