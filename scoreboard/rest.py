@@ -110,21 +110,23 @@ class User(flask_restful.Resource):
 
     @flask_restful.marshal_with(resource_fields)
     def get(self, user_id):
-        if not models.User.current().uid == user_id and not models.User.current().admin:
+        if not flask.g.uid == user_id and not flask.g.admin:
             raise errors.AccessDeniedError('No access to that user.')
         return models.User.query.get_or_404(user_id)
 
     @flask_restful.marshal_with(resource_fields)
     def put(self, user_id):
-        if not models.User.current().uid == user_id and not models.User.current().admin:
+        if not flask.g.uid == user_id and not flask.g.admin:
             raise errors.AccessDeniedError('No access to that user.')
         user = models.User.query.get_or_404(user_id)
         data = flask.request.get_json()
-        promoting = False
         if utils.is_admin() and 'admin' in data:
             if data['admin'] and not user.admin:
-                user.promote()
-                promoting = True
+                try:
+                    user.promote()
+                except AssertionError:
+                    raise errors.ValidationError(
+                        'Error promoting. Has player solved challenges?')
             else:
                 user.admin = False
         if data.get('password'):
@@ -136,10 +138,8 @@ class User(flask_restful.Resource):
         try:
             models.commit()
         except AssertionError:
-            if promoting:
                 raise errors.ValidationError(
-                        'Error promoting. Has player solved challenges?')
-            raise
+                        'Error in updating user.  Details are logged.')
         return user
 
 
@@ -201,6 +201,7 @@ class Team(flask_restful.Resource):
 
     @flask_restful.marshal_with(resource_fields)
     def get(self, team_id):
+        # TODO: this takes too many queries, fix to 1
         team = models.Team.query.get_or_404(team_id)
         return self._marshal_team(team, extended=True)
 
@@ -253,7 +254,7 @@ class TeamList(flask_restful.Resource):
 
     @flask_restful.marshal_with(resource_fields)
     def get(self):
-        return dict(teams=models.Team.query.all())
+        return dict(teams=models.Team.all())
 
 
 class Session(flask_restful.Resource):

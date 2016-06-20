@@ -17,9 +17,11 @@
 import json
 import logging
 import os.path
+import pbkdf2
 import unittest
 
 import flask
+from flask import testing
 import flask_sqlalchemy
 import flask_testing
 from sqlalchemy import event
@@ -39,6 +41,7 @@ class BaseTestCase(flask_testing.TestCase):
         PRESERVE_CONTEXT_ON_EXCEPTION = False,
         SECRET_KEY = 'testing-session-key',
         SQLALCHEMY_DATABASE_URI = "sqlite://",
+        TEAMS = True,
         TESTING = True,
         DEBUG = False,
         ATTACHMENT_BACKEND = 'test://volatile',
@@ -62,72 +65,113 @@ class BaseTestCase(flask_testing.TestCase):
         models.db.drop_all()
         super(BaseTestCase, self).tearDown()
 
+    def queryLimit(self, limit=None):
+        return MaxQueryBlock(self, limit)
+
 
 class RestTestCase(BaseTestCase):
     """Special features for testing rest handlers."""
 
     def setUp(self):
         super(RestTestCase, self).setUp()
-        self._query_count = 0
-        self._sql_listen_args = (models.db.engine, 'before_cursor_execute',
-                self._count_query)
-        event.listen(*self._sql_listen_args)
-        self.admin_client = AdminClient(self.client)
-        self.authenticated_client = AuthenticatedClient(self.client)
+        # Monkey patch pbkdf2 for speed
+        self._orig_pbkdf2 = pbkdf2.crypt
+        pbkdf2.crypt = self._pbkdf2_dummy
+        # Setup some special clients
+        self.admin_client = AdminClient(
+                self.app, self.app.response_class)
+        self.authenticated_client = AuthenticatedClient(
+                self.app, self.app.response_class)
 
     def tearDown(self):
-        if self._query_count:
-            logging.info('%s issued %d queries.', self.id(), self._query_count)
-        event.remove(*self._sql_listen_args)
         super(RestTestCase, self).tearDown()
+        pbkdf2.crypt = self._orig_pbkdf2
 
-    def _count_query(self, *unused_args):
-        self._query_count += 1
+    @staticmethod
+    def _pbkdf2_dummy(value, *unused_args):
+        return value
 
 
-class AuthenticatedClient(object):
+class AuthenticatedClient(testing.FlaskClient):
     """Like TestClient, but authenticated."""
 
-    def __getattr__(self, attr):
-        return getattr(self.client, attr)
-
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, *args, **kwargs):
+        super(AuthenticatedClient, self).__init__(*args, **kwargs)
         self.team = models.Team.create('team')
+        self.password = 'hunter2'
         self.user = models.User.create('auth@example.com', 'Authenticated',
-                'hunter2', team=self.team)
+                self.password, team=self.team)
         models.db.session.commit()
+        self.uid = self.user.uid
+        self.tid = self.team.tid
 
-    def __enter__(self):
-        rv = self.client.__enter__()
-        with rv.session_transaction() as sess:
-            sess['user'] = self.user.uid
-            sess['team'] = self.team.tid
-        return rv
-
-    def __exit__(self, *args, **kwargs):
-        return self.client.__exit__(*args, **kwargs)
+    def open(self, *args, **kwargs):
+        with self.session_transaction() as sess:
+            sess['user'] = self.uid
+            sess['team'] = self.tid
+        return super(AuthenticatedClient, self).open(*args, **kwargs)
 
 
-class AdminClient(AuthenticatedClient):
+class AdminClient(testing.FlaskClient):
     """Like TestClient, but admin."""
 
-    def __init__(self, client):
-        self.client = client
-        self.user = models.User.create('admin@example.com', 'Admin', 'hunter2')
+    def __init__(self, *args, **kwargs):
+        super(AdminClient, self).__init__(*args, **kwargs)
+        self.user = models.User.create('admin@example.net', 'Admin', 'hunter2')
         self.user.admin = True
         models.db.session.commit()
+        self.uid = self.user.uid
+
+    def open(self, *args, **kwargs):
+        with self.session_transaction() as sess:
+            sess['user'] = self.uid
+            sess['admin'] = True
+        return super(AdminClient, self).open(*args, **kwargs)
+
+
+class MaxQueryBlock(object):
+    """Run a certain block with a maximum number of queries."""
+
+    def __init__(self, test=None, max_count=None):
+        self.max_count = max_count
+        self.queries = []
+        self._sql_listen_args = (models.db.engine, 'before_cursor_execute',
+                self._count_query)
+        self.test_id = test.id() if test else ''
 
     def __enter__(self):
-        rv = self.client.__enter__()
-        with rv.session_transaction() as sess:
-            sess['user'] = self.user.uid
-            sess['admin'] = True
-        return rv
+        event.listen(*self._sql_listen_args)
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        event.remove(*self._sql_listen_args)
+        if exc_type is not None:
+            return False
+        if self.test_id:
+            limit_msg = (' Limit: %d.' % self.max_count) if self.max_count is not None else ''
+            logging.info('%s executed %d queries.%s', self.test_id, len(self.queries), limit_msg)
+        if self.max_count is None:
+            return
+        if len(self.queries) > self.max_count:
+            message = ('Maximum query count exceeded: limit %d, executed %d.\n'
+                       '----QUERIES----\n%s\n----END----') % (
+                            self.max_count, len(self.queries), '\n'.join(self.queries))
+            raise AssertionError(message)
+
+    @property
+    def query_count(self):
+        return len(self.queries)
+
+    def _count_query(self, unused_conn, unused_cursor, statement, parameters,
+            unused_context, unused_executemany):
+        statement = '%s (%s)' % (statement, ', '.join(str(x) for x in parameters))
+        self.queries.append(statement)
+        logging.debug('SQLAlchemy: %s', statement)
 
 
 def run_all_tests():
     """This loads and runs all tests in scoreboard.tests."""
+    logging.getLogger().setLevel(logging.INFO)
     test_dir = os.path.dirname(os.path.realpath(__file__))
     top_dir = os.path.abspath(os.path.join(test_dir, '..'))
     suite = unittest.defaultTestLoader.discover(test_dir, pattern='*_test.py',

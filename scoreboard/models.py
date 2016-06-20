@@ -101,6 +101,15 @@ class Team(db.Model):
         return enumerate(sorting.all(), 1)
 
     @classmethod
+    def all(cls, with_history=True):
+        if with_history:
+            base = cls.query.options(orm.joinedload(cls.score_history))
+        else:
+            base = cls.query
+        base = base.options(orm.joinedload(cls.answers))
+        return base.all()
+
+    @classmethod
     def current(cls):
         try:
             return flask.g.team
@@ -151,6 +160,9 @@ class User(db.Model):
     def promote(self):
         """Promote a user to admin."""
         empty_team = self.team and set(self.team.players.all()) == set([self])
+        if self.team and len(self.team.answers):
+            raise AssertionError(
+                'Cannot promote player whose team has solved answers!')
         self.admin = True
         team = self.team
         self.team = None
@@ -239,6 +251,7 @@ class User(db.Model):
 tag_challenge_association = db.Table('tag_chall_association', db.Model.metadata,
         db.Column('challenge_cid', db.BigInteger,  db.ForeignKey('challenge.cid')),
         db.Column('tag_tagslug',   db.String(100), db.ForeignKey('tag.tagslug')))
+
 
 class Tag(db.Model):
     """A Tag to be Applied to Challenges"""
