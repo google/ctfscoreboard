@@ -540,3 +540,86 @@ class SessionTest(base.RestTestCase):
                     {'tid': 0, 'score': 0, 'name': None,
                         'solves': 0, 'code': None},
                     resp.json['team'])
+
+    def testSessionLoginSucceeds(self):
+        data = {
+            'email': self.authenticated_client.user.email,
+            'password': self.authenticated_client.password,
+        }
+        with self.client as c:
+            with self.queryLimit(4):
+                resp = c.post(self.PATH, data=json.dumps(data),
+                        content_type='application/json')
+            self.assert200(resp)
+            self.assertEqual(flask.session['user'],
+                    self.authenticated_client.user.uid)
+            self.assertEqual(flask.session['team'],
+                    self.authenticated_client.team.tid)
+            self.assertFalse(flask.session['admin'])
+            self.assertEqual(flask.g.user.email,
+                    self.authenticated_client.user.email)
+
+    def testSessionLoginFailsBadPassword(self):
+        data = {
+            'email': self.authenticated_client.user.email,
+            'password': 'wrong',
+        }
+        with self.client as c:
+            with self.queryLimit(1):
+                resp = c.post(self.PATH, data=json.dumps(data),
+                        content_type='application/json')
+            self.assert403(resp)
+            self.assertIsNone(flask.session.get('user'))
+            self.assertIsNone(flask.session.get('team'))
+            self.assertIsNone(flask.session.get('admin'))
+
+    def testSessionLoginFailsBadUser(self):
+        data = {
+            'email': 'no@example.com',
+            'password': 'wrong',
+        }
+        with self.client as c:
+            with self.queryLimit(1):
+                resp = c.post(self.PATH, data=json.dumps(data),
+                        content_type='application/json')
+            self.assert403(resp)
+            self.assertIsNone(flask.session.get('user'))
+            self.assertIsNone(flask.session.get('team'))
+            self.assertIsNone(flask.session.get('admin'))
+
+    def testSessionLoginAlreadyLoggedIn(self):
+        data = {
+            'email': self.authenticated_client.user.email,
+            'password': self.authenticated_client.password,
+        }
+        # This makes sure admin->non-admin downgrades properly
+        with self.admin_client as c:
+            with self.queryLimit(4):
+                resp = c.post(self.PATH, data=json.dumps(data),
+                        content_type='application/json')
+            self.assert200(resp)
+            self.assertEqual(flask.session['user'],
+                    self.authenticated_client.user.uid)
+            self.assertEqual(flask.session['team'],
+                    self.authenticated_client.team.tid)
+            self.assertFalse(flask.session['admin'])
+            self.assertEqual(flask.g.user.email,
+                    self.authenticated_client.user.email)
+
+    def testSessionLogout(self):
+        with self.authenticated_client as c:
+            with self.queryLimit(0):
+                resp = c.delete(self.PATH)
+            self.assert200(resp)
+            self.assertIsNone(flask.session.get('user'))
+            self.assertIsNone(flask.session.get('team'))
+            self.assertIsNone(flask.session.get('admin'))
+
+    def testSessionLogoutAnonymous(self):
+        with self.client as c:
+            with self.queryLimit(0):
+                resp = c.delete(self.PATH)
+            self.assert200(resp)
+            self.assertIsNone(flask.session.get('user'))
+            self.assertIsNone(flask.session.get('team'))
+            self.assertIsNone(flask.session.get('admin'))

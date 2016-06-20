@@ -98,8 +98,9 @@ class AuthenticatedClient(object):
     def __init__(self, client):
         self.client = client
         self.team = models.Team.create('team')
+        self.password = 'hunter2'
         self.user = models.User.create('auth@example.com', 'Authenticated',
-                'hunter2', team=self.team)
+                self.password, team=self.team)
         models.db.session.commit()
         self.uid = self.user.uid
         self.tid = self.team.tid
