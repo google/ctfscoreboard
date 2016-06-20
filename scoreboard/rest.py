@@ -340,7 +340,9 @@ api.add_resource(User, '/api/users/<int:user_id>')
 api.add_resource(TeamList, '/api/teams')
 api.add_resource(Team, '/api/teams/<int:team_id>')
 api.add_resource(Session, '/api/session')
-api.add_resource(PasswordReset, '/api/pwreset/<email>')
+
+if app.config.get('LOGIN_METHOD') == 'local':
+	api.add_resource(PasswordReset, '/api/pwreset/<email>')
 
 
 class Challenge(flask_restful.Resource):
@@ -449,8 +451,8 @@ class ChallengeList(flask_restful.Resource):
             data['name'],
             data['description'],
             data['points'],
-            data['cat_slug'],
             answer,
+            data['cat_slug'],
             unlocked)
         if 'attachments' in data:
             chall.set_attachments(data['attachments'])
@@ -786,8 +788,9 @@ class Page(flask_restful.Resource):
             page = models.Page()
             page.path = path
             models.db.session.add(page)
-        page.title = data.get('title', '')
-        page.contents = data.get('contents', '')
+        page.path = data.get('path', path)
+        page.title = data.get('title', page.title)
+        page.contents = data.get('contents', page.contents)
         models.commit()
         return page
 
@@ -798,20 +801,93 @@ class Page(flask_restful.Resource):
         models.commit()
         return {}
 
+class PageList(flask_restful.Resource):
+    """Retrieve all pages available"""
+
+    resource_fields = {
+        'pages': fields.Nested({
+            'path': fields.String,
+            'title': fields.String,
+        })
+    }
+
+    @flask_restful.marshal_with(resource_fields)
+    def get(self):
+        return dict(pages = models.Page.query.all())
+
 api.add_resource(Page, '/api/page/<path:path>')
+api.add_resource(PageList, '/api/page')
+
+class Attachment(flask_restful.Resource):
+    """"Allow updating and deleting of individual files"""
+
+    attachment_fields = {
+        'aid': fields.String,
+        'filename': fields.String,
+    }
+
+    challenge_fields = {
+        'name': fields.String,
+        'cid': fields.Integer,
+    }
+
+    resource_fields = attachment_fields.copy()
+    resource_fields['challenges'] = fields.List(
+            fields.Nested(challenge_fields))
+
+    decorators = [utils.admin_required]
+
+    @flask_restful.marshal_with(resource_fields)
+    def get(self, aid):
+        return models.Attachment.query.get_or_404(aid)
+
+    @flask_restful.marshal_with(resource_fields)
+    def put(self, aid):
+        attachment = models.Attachment.query.get_or_404(aid)
+        attachment.filename = get_field('filename')
+        attachment.set_challenges(get_field('challenges'))
+
+        app.logger.info('Attachment %s updated by %r.', attachment, models.User.current())
+        models.commit()
+        cache.clear()
+        return attachment
+
+    def delete(self, aid):
+        attachment = models.Attachment.query.get_or_404(aid)
+        #Probably do not need to delete from disk
+        attachment.delete()
+
+        app.logger.info('Attachment %s deleted by %r.', attachment, models.User.current())
+        models.commit()
+        cache.clear()
 
 
-class Upload(flask_restful.Resource):
+
+class AttachmentList(flask_restful.Resource):
     """Allow uploading of files."""
+
+    resource_fields = {
+        'attachments': fields.Nested(Attachment.resource_fields)
+    }
 
     decorators = [utils.admin_required]
 
     def post(self):
         fp = flask.request.files['file']
-        aid, fpath = attachments.upload(fp)
+        aid, fpath = attachments.backend.upload(fp)
+        attachment = models.Attachment.query.get(aid)
+        if not attachment:
+            models.Attachment.create(aid, fp.filename, fp.mimetype)
+            models.commit()
+            cache.clear()
         return dict(aid=aid, fpath=fpath, content_type=fp.mimetype)
 
-api.add_resource(Upload, '/api/upload')
+    @flask_restful.marshal_with(resource_fields)
+    def get(self):
+        return dict(attachments=list(models.Attachment.query.all()))
+
+api.add_resource(Attachment, '/api/attachments/<string:aid>')
+api.add_resource(AttachmentList, '/api/attachments')
 
 
 class BackupRestore(flask_restful.Resource):

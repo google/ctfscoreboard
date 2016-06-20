@@ -89,8 +89,37 @@ a.btn {
     margin-right: auto;
 }
 
-.well h4 {
-    margin-top: 0;
+.well {
+    h4 {
+        margin-top: 0;
+    }
+
+    .btn-sm {
+        .btn-inner {
+            font-size:16px;
+        }
+        margin: auto;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .no-decoration {
+        font-size: 24px;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    .hash-link {
+        text-align: center;
+        margin-bottom: 16px;
+    }
 }
 
 #news-box {
@@ -312,6 +341,14 @@ table.team-players{
     }
 }
 
+@keyframes oscillate {
+    from {
+        left: -33px;
+    }
+    to {
+        left: -38px;
+    }
+}
 .tag-selector {
     $tag-height: 36px;
     $info-height: 56px;
@@ -400,6 +437,10 @@ table.team-players{
                 left: -35px;
                 top: -2px;
                 font-size: 46px;
+                animation-name: oscillate;
+                animation-duration: 1s;
+                animation-iteration-count: Infinite;
+                animation-direction: alternate;
             }
         }
 
@@ -446,4 +487,27 @@ table.team-players{
 
 .modal {
     overflow-y: auto;
+}
+
+#attachment-table {
+    .label-sized {
+        height: 17px;
+    }
+
+    .button-top {
+        padding-top: 28px;
+    }
+}
+
+.challenge-list {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+
+    .challenge-item {
+        margin-left: 0px;
+        margin-top: 0px;
+        margin-right: 10px;
+        margin-bottom: 10px;
+    }
 }

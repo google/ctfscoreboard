@@ -15,6 +15,7 @@
 
 import flask
 import json
+import StringIO
 
 from scoreboard.tests import base
 from scoreboard import models
@@ -125,6 +126,104 @@ class PageTest(base.RestTestCase):
             self.assert200(resp)
             self.assertEqual(page_data['title'], resp.json['title'])
             self.assertEqual(page_data['contents'], resp.json['contents'])
+
+
+class AttachmentTest(base.RestTestCase):
+
+    PATH = '/api/attachments/%s'
+    ATTACHMENT_FIELDS = ('aid', 'filename', 'challenges')
+
+    text = "This is a test"
+    name = "test.txt"
+
+    def uploadFile(self, filename, text):
+        with self.admin_client as c:
+            string = StringIO.StringIO()
+            string.write(text)
+            string.seek(0)
+            return c.post('/api/attachments', data = {
+                'file': (string, filename)
+            })
+
+    def fetchFile(self, aid):
+        with self.admin_client as c:
+            return c.get(self.PATH % aid)
+
+    def testUploadFile(self):
+        resp = self.uploadFile("test.txt", "This is a test")
+        self.assert200(resp)
+        #Calculated using an external sha256 tool
+        self.assertEquals(resp.json['aid'], "c7be1ed902fb8dd4d48997c6452f5d7e509fbcdbe2808b16bcf4edce4c07d14e")
+
+    def testQueryFile(self):
+        postresp = self.uploadFile(self.name, self.text)
+        getresp = self.fetchFile(postresp.json['aid'])
+        self.assert200(getresp)
+
+    def testFileQueryAID(self):
+        postresp = self.uploadFile(self.name, self.text)
+        getresp = self.fetchFile(postresp.json['aid'])
+        self.assertEqual(getresp.json['aid'], postresp.json['aid'])
+
+    def testFileQueryName(self):
+        postresp = self.uploadFile(self.name, self.text)
+        getresp = self.fetchFile(postresp.json['aid'])
+        self.assertEqual(getresp.json['filename'], self.name)
+
+    def testFileChallengesEmpty(self):
+        postresp = self.uploadFile(self.name, self.text)
+        getresp = self.fetchFile(postresp.json['aid'])
+        self.assertEqual(len(getresp.json['challenges']), 0)
+
+    def testRetrieveFile(self):
+        postresp = self.uploadFile(self.name, self.text)
+        with self.admin_client as c:
+            getresp = c.get('/attachments/%s' % postresp.json['aid'])
+            self.assert200(getresp)
+
+    def testFileRetrievalValue(self):
+        postresp = self.uploadFile(self.name, self.text)
+        with self.admin_client as c:
+            getresp = c.get('/attachment/%s' % postresp.json['aid'])
+            self.assertEqual(getresp.get_data(), self.text)
+
+    def testFileDelete(self):
+        postresp = self.uploadFile(self.name, self.text)
+        with self.admin_client as c:
+            delresp = c.delete('/api/attachments/%s' % postresp.json['aid'])
+            self.assert200(delresp)
+
+    def testDeletionRemovesFile(self):
+        postresp = self.uploadFile(self.name, self.text)
+        with self.admin_client as c:
+            delresp = c.delete('/api/attachments/%s' % postresp.json['aid'])
+        with self.admin_client as c:
+            getresp = c.get('/api/attachments/%s' % postresp.json['aid'])
+            self.assert404(getresp)
+
+    def testFileUpdate(self):
+        new_name = "file.png"
+        postresp = self.uploadFile(self.name, self.text)
+        with self.admin_client as c:
+            putresp = c.put('/api/attachments/%s' % postresp.json['aid'], data = json.dumps({
+                'filename': new_name,
+                'aid': postresp.json['aid'],
+                'challenges': [],
+            }), content_type = "application/json")
+            self.assert200(putresp)
+
+    def testUpdateChangesName(self):
+        new_name = "file.png"
+        postresp = self.uploadFile(self.name, self.text)
+        with self.admin_client as c:
+            putresp = c.put('/api/attachments/%s' % postresp.json['aid'], data = json.dumps({
+                'filename': new_name,
+                'aid': postresp.json['aid'],
+                'challenges': [],
+            }), content_type = "application/json")
+        with self.admin_client as c:
+            getresp = c.get('/api/attachments/%s' % postresp.json['aid'])
+            self.assertEqual(getresp.json['filename'], new_name)
 
 
 class UserTest(base.RestTestCase):

@@ -17,6 +17,9 @@
 SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/scoreboard.db'
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 SECRET_KEY = 'CHANGEME CHANGEME CHANGEME'
+# Set TEAM_SECRET_KEY to a unique value so that you can rotate session
+# secrets (SECRET_KEY) without affecting team invite codes.
+TEAM_SECRET_KEY = SECRET_KEY
 TITLE = 'CTF Scoreboard Dev'
 TEAMS = True
 ATTACHMENT_BACKEND = 'file:///tmp/attachments'

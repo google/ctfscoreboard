@@ -27,6 +27,7 @@ from sqlalchemy import event
 
 from scoreboard import main
 from scoreboard import models
+from scoreboard import attachments
 
 
 class BaseTestCase(flask_testing.TestCase):
@@ -41,11 +42,14 @@ class BaseTestCase(flask_testing.TestCase):
         SQLALCHEMY_DATABASE_URI = "sqlite://",
         TEAMS = True,
         TESTING = True,
+        DEBUG = False,
+        ATTACHMENT_BACKEND = 'test://volatile',
     )
 
     def create_app(self):
         app = main.get_app()
         app.config.update(self.TEST_CONFIG)
+        attachments.patch("test")
         main.setup_logging(app)
         return app
 
