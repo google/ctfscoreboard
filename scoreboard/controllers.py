@@ -24,7 +24,6 @@ from scoreboard import mail
 from scoreboard import main
 from scoreboard import models
 from scoreboard import utils
-from scoreboard import cache
 
 app = main.get_app()
 
