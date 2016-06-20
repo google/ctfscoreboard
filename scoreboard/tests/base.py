@@ -117,7 +117,7 @@ class AdminClient(testing.FlaskClient):
 
     def __init__(self, *args, **kwargs):
         super(AdminClient, self).__init__(*args, **kwargs)
-        self.user = models.User.create('admin@example.com', 'Admin', 'hunter2')
+        self.user = models.User.create('admin@example.net', 'Admin', 'hunter2')
         self.user.admin = True
         models.db.session.commit()
         self.uid = self.user.uid

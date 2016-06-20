@@ -749,7 +749,7 @@ class ChallengeTest(base.RestTestCase):
 
     def testDeleteChallenge(self):
         with self.admin_client as c:
-            with self.queryLimit(4):
+            with self.queryLimit(5):
                 self.assert200(c.delete(self.PATH_SINGLE))
 
     def testDeleteChallengeAnonymous(self):
@@ -761,3 +761,17 @@ class ChallengeTest(base.RestTestCase):
         with self.authenticated_client as c:
             with self.queryLimit(0):
                 self.assert403(c.delete(self.PATH_SINGLE))
+
+
+class ScoreboardTest(base.RestTestCase):
+
+    PATH = '/api/scoreboard'
+
+    def setUp(self):
+        super(ScoreboardTest, self).setUp()
+        data.create_all()  # Make a bunch of data for scoreboard
+
+    def testGetScoreboard(self):
+        resp = self.client.get(self.PATH)
+        self.assert200(resp)
+        # TODO: check contents
