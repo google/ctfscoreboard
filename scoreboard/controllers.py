@@ -24,6 +24,7 @@ from scoreboard import mail
 from scoreboard import main
 from scoreboard import models
 from scoreboard import utils
+from scoreboard import cache
 
 app = main.get_app()
 
@@ -81,6 +82,34 @@ def register_user(email, nick, password, team_id=None,
     app.logger.info('User %s <%s> registered from IP %s.',
                     nick, email, flask.request.remote_addr)
     return user
+
+@utils.require_not_started
+def change_user_team(uid, team_tid, code):
+    """Provide an interface for changing a user's team"""
+    team = models.Team.query.get_or_404(team_tid)
+    user = models.User.query.get_or_404(uid)
+
+    old_team = user.team
+
+    if not team or code.lower() != team.code.lower():
+        raise errors.ValidationError('Invalid team selection or team code')
+
+    if not user:
+        raise errors.ValidationError('Invalid user id')
+
+    if team.tid == user.team_tid:
+        raise errors.ValidationError('Changing to same team')
+
+    app.logger.info('User %s switched to team %s' % (user.nick, team.name))
+    user.team = team
+    user.team_tid = team_tid
+    flask.session['team'] = team_tid
+
+    if old_team.players.count() == 0 and len(old_team.answers) == 0:
+        app.logger.info('Removing team %s due to lack of players' % old_team.name)
+        models.db.session.delete(old_team)
+
+    models.commit()
 
 
 @utils.require_submittable

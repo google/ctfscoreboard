@@ -118,7 +118,7 @@ regCtrls.controller('ProfileCtrl', [
     'userService',
     'loadingService',
     'gameTimeService',
-    'teamService', 
+    'teamService',
     function($scope, configService, errorService, sessionService,
         userService, loadingService, gameTimeService, teamService) {
       $scope.user = null;
@@ -147,6 +147,20 @@ regCtrls.controller('ProfileCtrl', [
         }
         $scope.team.tid = -1;
       })
+
+      $scope.switchTeams = function() {
+        teamService.change({
+          'uid': $scope.user.uid,
+          'team_tid': $scope.team.tid,
+          'code': $scope.team.code,
+        }, function() {
+          $scope.team.originalname = $scope.team.name;
+          $scope.team.originalcode = $scope.team.code;
+          $scope.cancel();
+        }, function(data) {
+          errorService.error(data);
+        })
+      }
 
       sessionService.requireLogin(function() {
         $scope.user = sessionService.session.user;

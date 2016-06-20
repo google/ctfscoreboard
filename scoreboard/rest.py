@@ -133,7 +133,7 @@ class User(flask_restful.Resource):
             user.nick = data['nick']
             if not app.config.get('TEAMS'):
                 user.team.name = data['nick']
-        if not user['admin'] and data['team_tid'] != user['team_tid']:
+        if not user.admin and data['team_tid'] != user.team_tid:
             if utils.GameTime.open(after_end=True) and not utils.is_admin():
                 raise errors.AccessDeniedError(
                         'Teams cannot be changed once the game has begun')
@@ -264,6 +264,22 @@ class TeamList(flask_restful.Resource):
         return dict(teams=models.Team.query.all())
 
 
+class TeamChange(flask_restful.Resource):
+    """Endpoint for changing teams."""
+
+    resource_fields = {
+        'uid': fields.Integer,
+        'team_tid': fields.Integer,
+        'code': fields.String,
+    }
+
+    @flask_restful.marshal_with(resource_fields)
+    def put(self):
+        current = models.User.current()
+        if not (current.admin or current.uid == get_field('uid')):
+            raise errors.AccessDeniedError('Cannot Modify this User')
+        controllers.change_user_team(get_field('uid'), get_field('team_tid'), get_field('code'))
+
 class Session(flask_restful.Resource):
 
     """Represents a logged-in session, used for login/logout."""
@@ -344,6 +360,7 @@ class PasswordReset(flask_restful.Resource):
 
 api.add_resource(UserList, '/api/users')
 api.add_resource(User, '/api/users/<int:user_id>')
+api.add_resource(TeamChange, '/api/teams/change')
 api.add_resource(TeamList, '/api/teams')
 api.add_resource(Team, '/api/teams/<int:team_id>')
 api.add_resource(Session, '/api/session')
