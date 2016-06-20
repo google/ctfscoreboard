@@ -90,16 +90,13 @@ def change_user_team(uid, team_tid, code):
 
     old_team = user.team
 
-    if not team or code.lower() != team.code.lower():
+    if code.lower() != team.code.lower():
         raise errors.ValidationError('Invalid team selection or team code')
-
-    if not user:
-        raise errors.ValidationError('Invalid user id')
 
     if team.tid == user.team_tid:
         raise errors.ValidationError('Changing to same team')
 
-    app.logger.info('User %s switched to team %s' % (user.nick, team.name))
+    app.logger.info('User %s switched to team %s from %s' % (user.nick, team.name, old_team.name))
     user.team = team
     user.team_tid = team_tid
     flask.session['team'] = team_tid
