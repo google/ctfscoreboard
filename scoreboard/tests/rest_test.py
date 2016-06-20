@@ -749,7 +749,7 @@ class ChallengeTest(base.RestTestCase):
 
     def testDeleteChallenge(self):
         with self.admin_client as c:
-            with self.queryLimit(1):
+            with self.queryLimit(4):
                 self.assert200(c.delete(self.PATH_SINGLE))
 
     def testDeleteChallengeAnonymous(self):

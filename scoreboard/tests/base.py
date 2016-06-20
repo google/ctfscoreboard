@@ -21,6 +21,7 @@ import pbkdf2
 import unittest
 
 import flask
+from flask import testing
 import flask_sqlalchemy
 import flask_testing
 from sqlalchemy import event
@@ -77,8 +78,10 @@ class RestTestCase(BaseTestCase):
         self._orig_pbkdf2 = pbkdf2.crypt
         pbkdf2.crypt = self._pbkdf2_dummy
         # Setup some special clients
-        self.admin_client = AdminClient(self.client)
-        self.authenticated_client = AuthenticatedClient(self.client)
+        self.admin_client = AdminClient(
+                self.app, self.app.response_class)
+        self.authenticated_client = AuthenticatedClient(
+                self.app, self.app.response_class)
 
     def tearDown(self):
         super(RestTestCase, self).tearDown()
@@ -89,14 +92,11 @@ class RestTestCase(BaseTestCase):
         return value
 
 
-class AuthenticatedClient(object):
+class AuthenticatedClient(testing.FlaskClient):
     """Like TestClient, but authenticated."""
 
-    def __getattr__(self, attr):
-        return getattr(self.client, attr)
-
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, *args, **kwargs):
+        super(AuthenticatedClient, self).__init__(*args, **kwargs)
         self.team = models.Team.create('team')
         self.password = 'hunter2'
         self.user = models.User.create('auth@example.com', 'Authenticated',
@@ -105,33 +105,28 @@ class AuthenticatedClient(object):
         self.uid = self.user.uid
         self.tid = self.team.tid
 
-    def __enter__(self):
-        rv = self.client.__enter__()
-        with rv.session_transaction() as sess:
+    def open(self, *args, **kwargs):
+        with self.session_transaction() as sess:
             sess['user'] = self.uid
             sess['team'] = self.tid
-        return rv
-
-    def __exit__(self, *args, **kwargs):
-        return self.client.__exit__(*args, **kwargs)
+        return super(AuthenticatedClient, self).open(*args, **kwargs)
 
 
-class AdminClient(AuthenticatedClient):
+class AdminClient(testing.FlaskClient):
     """Like TestClient, but admin."""
 
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, *args, **kwargs):
+        super(AdminClient, self).__init__(*args, **kwargs)
         self.user = models.User.create('admin@example.com', 'Admin', 'hunter2')
         self.user.admin = True
         models.db.session.commit()
         self.uid = self.user.uid
 
-    def __enter__(self):
-        rv = self.client.__enter__()
-        with rv.session_transaction() as sess:
+    def open(self, *args, **kwargs):
+        with self.session_transaction() as sess:
             sess['user'] = self.uid
             sess['admin'] = True
-        return rv
+        return super(AdminClient, self).open(*args, **kwargs)
 
 
 class MaxQueryBlock(object):
