@@ -448,35 +448,33 @@ class TeamTest(base.RestTestCase):
         self.team = makeTestTeam(self.user)
         self.team_path = '/api/teams/%d' % self.team.tid
 
+    @base.authenticated_test
     def testGetTeam(self):
-        with self.authenticated_client as c:
-            with self.queryLimit(4):
-                resp = c.get(self.team_path)
-            self.assert200(resp)
-            self.assertEqual(0, len(resp.json['players']))
-            self.assertEqual(self.team.name, resp.json['name'])
-            # TODO: check other fields
+        with self.queryLimit(4):
+            resp = self.client.get(self.team_path)
+        self.assert200(resp)
+        self.assertEqual(0, len(resp.json['players']))
+        self.assertEqual(self.team.name, resp.json['name'])
+        # TODO: check other fields
 
     def testGetTeamAnonymous(self):
-        with self.client as c:
-            with self.queryLimit(0):
-                self.assert403(c.get(self.team_path))
+        with self.queryLimit(0):
+            self.assert403(self.client.get(self.team_path))
 
+    @base.admin_test
     def testGetTeamAdmin(self):
-        with self.admin_client as c:
-            with self.queryLimit(4):
-                resp = c.get(self.team_path)
-            self.assert200(resp)
-            self.assertEqual(1, len(resp.json['players']))
+        with self.queryLimit(4):
+            resp = self.client.get(self.team_path)
+        self.assert200(resp)
+        self.assertEqual(1, len(resp.json['players']))
 
+    @base.admin_test
     def testUpdateTeamAdmin(self):
         data = {'name': 'Updated'}
-        with self.admin_client as c:
-            with self.queryLimit(6):
-                resp = c.put(self.team_path, data=json.dumps(data),
-                        content_type='application/json')
-            self.assert200(resp)
-            self.assertEqual('Updated', resp.json['name'])
+        with self.queryLimit(6):
+            resp = self.putJSON(self.team_path, data)
+        self.assert200(resp)
+        self.assertEqual('Updated', resp.json['name'])
         team = models.Team.query.get(self.team.tid)
         self.assertEqual('Updated', team.name)
 
@@ -502,38 +500,37 @@ class SessionTest(base.RestTestCase):
     def testGetSessionAnonymous(self):
         self.assert403(self.client.get(self.PATH))
 
+    @base.authenticated_test
     def testGetSessionAuthenticated(self):
-        with self.authenticated_client as c:
-            with self.queryLimit(1):
-                resp = c.get(self.PATH)
-            self.assert200(resp)
-            self.assertEqual(self.authenticated_client.user.nick,
-                    resp.json['user']['nick'])
-            self.assertEqual(self.authenticated_client.team.name,
-                    resp.json['team']['name'])
+        with self.queryLimit(1):
+            resp = self.client.get(self.PATH)
+        self.assert200(resp)
+        self.assertEqual(self.authenticated_client.user.nick,
+                resp.json['user']['nick'])
+        self.assertEqual(self.authenticated_client.team.name,
+                resp.json['team']['name'])
 
+    @base.admin_test
     def testGetSessionAdmin(self):
-        with self.admin_client as c:
-            with self.queryLimit(1):
-                resp = c.get(self.PATH)
-            self.assert200(resp)
-            self.assertEqual(self.admin_client.user.nick,
-                    resp.json['user']['nick'])
-            self.assertTrue(resp.json['user']['admin'])
-            self.assertItemsEqual(
-                    {'tid': 0, 'score': 0, 'name': None,
-                        'solves': 0, 'code': None},
-                    resp.json['team'])
+        with self.queryLimit(1):
+            resp = self.client.get(self.PATH)
+        self.assert200(resp)
+        self.assertEqual(self.admin_client.user.nick,
+                resp.json['user']['nick'])
+        self.assertTrue(resp.json['user']['admin'])
+        self.assertItemsEqual(
+                {'tid': 0, 'score': 0, 'name': None,
+                    'solves': 0, 'code': None},
+                resp.json['team'])
 
     def testSessionLoginSucceeds(self):
         data = {
             'email': self.authenticated_client.user.email,
             'password': self.authenticated_client.password,
         }
-        with self.client as c:
+        with self.client:
             with self.queryLimit(4):
-                resp = c.post(self.PATH, data=json.dumps(data),
-                        content_type='application/json')
+                resp = self.postJSON(self.PATH, data)
             self.assert200(resp)
             self.assertEqual(flask.session['user'],
                     self.authenticated_client.user.uid)
@@ -548,10 +545,9 @@ class SessionTest(base.RestTestCase):
             'email': self.authenticated_client.user.email,
             'password': 'wrong',
         }
-        with self.client as c:
+        with self.client:
             with self.queryLimit(1):
-                resp = c.post(self.PATH, data=json.dumps(data),
-                        content_type='application/json')
+                resp = self.postJSON(self.PATH, data)
             self.assert403(resp)
             self.assertIsNone(flask.session.get('user'))
             self.assertIsNone(flask.session.get('team'))
