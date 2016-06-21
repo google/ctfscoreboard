@@ -20,6 +20,7 @@ import hashlib
 import hmac
 import os
 import pytz
+import time
 import urlparse
 
 from random import SystemRandom
@@ -94,6 +95,9 @@ def session_for_user(user):
     flask.session['user'] = user.uid
     flask.session['team'] = user.team.tid if user.team else None
     flask.session['admin'] = user.admin
+    expires = app.config.get('SESSION_EXPIRATION_SECONDS', 0)
+    if expires:
+        flask.session['expires'] = int(time.time() + expires)
 
 
 def get_required_field(name, verbose_name=None):
