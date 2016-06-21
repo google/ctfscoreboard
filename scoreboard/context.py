@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import collections
+import time
 
 import flask
 from sqlalchemy import event
@@ -77,9 +78,6 @@ def get_csp_policy():
 @app.before_request
 def load_globals():
     """Prepopulate flask.g.* with properties."""
-    flask.g.uid = flask.session.get('user')
-    flask.g.tid = flask.session.get('team')
-    flask.g.admin = flask.session.get('admin') or False
     try:
         del flask.g.user
     except AttributeError:
@@ -88,6 +86,13 @@ def load_globals():
         del flask.g.team
     except AttributeError:
         pass
+    if (app.config.get('SESSION_EXPIRATION_SECONDS') and
+            flask.session.get('expires') > time.time()):
+        flask.session.clear()
+        return
+    flask.g.uid = flask.session.get('user')
+    flask.g.tid = flask.session.get('team')
+    flask.g.admin = flask.session.get('admin') or False
 
 
 # Add headers to responses

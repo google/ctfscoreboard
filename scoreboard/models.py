@@ -114,11 +114,9 @@ class Team(db.Model):
         try:
             return flask.g.team
         except AttributeError:
-            tid = flask.session.get('team')
-            if tid:
-                team = cls.query.get(tid)
-                flask.g.team = team
-                return team
+            user = User.current()
+            flask.g.team = user.team
+            return user.team
 
 
 class ScoreHistory(db.Model):
@@ -246,6 +244,8 @@ class User(db.Model):
             if uid:
                 user = cls.query.get(uid)
                 flask.g.user = user
+                # Bump expiration time on session
+                utils.session_for_user(user)
                 return user
 
 tag_challenge_association = db.Table('tag_chall_association', db.Model.metadata,
