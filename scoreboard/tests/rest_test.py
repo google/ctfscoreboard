@@ -130,6 +130,7 @@ class PageTest(base.RestTestCase):
         self.assertEqual(page_data['title'], resp.json['title'])
         self.assertEqual(page_data['contents'], resp.json['contents'])
 
+
 class UpdateTeam(base.RestTestCase):
 
     PATH = '/api/teams/change'
@@ -140,24 +141,26 @@ class UpdateTeam(base.RestTestCase):
         return team
 
     def changeTeam(self, tid, code):
-        with self.authenticated_client as c:
-            return c.put(self.PATH, data = json.dumps({
-                'uid': c.uid,
-                'team_tid': tid,
-                'code': code
-            }), content_type='application/json')
+        return self.putJSON(self.PATH, {
+            'uid': self.authenticated_client.uid,
+            'team_tid': tid,
+            'code': code
+        })
 
+    @base.authenticated_test
     def testChangeTeam(self):
         test_team = self.createTeam('test')
         resp = self.changeTeam(test_team.tid, test_team.code)
         self.assert200(resp)
 
+    @base.authenticated_test
     def testTeamChangeWorked(self):
         test_team = self.createTeam('test2')
         resp = self.changeTeam(test_team.tid, test_team.code)
         tid = self.authenticated_client.user.team.tid
         self.assertEqual(tid, test_team.tid)
 
+    @base.authenticated_test
     def testEmptyTeamIsDeleted(self):
         test_team_first = self.createTeam('first')
         test_team_second = self.createTeam('second')
@@ -168,6 +171,7 @@ class UpdateTeam(base.RestTestCase):
 
         self.assertIsNone(models.Team.query.get(test_team_first.tid))
 
+    @base.authenticated_test
     def testTeamWithSolvesNotDeleted(self):
         test_team_first = self.createTeam('first')
         test_team_second = self.createTeam('second')
@@ -182,6 +186,7 @@ class UpdateTeam(base.RestTestCase):
 
         self.assertIsNotNone(models.Team.query.get(test_team_first.tid))
 
+    @base.authenticated_test
     def testCantSwitchAfterStart(self):
         #patch GameTime.state
         oldState = utils.GameTime.state
@@ -191,7 +196,6 @@ class UpdateTeam(base.RestTestCase):
         self.assert403(resp)
         #restore from patch
         utils.GameTime.state = oldState
-
 
 
 class AttachmentTest(base.RestTestCase):
