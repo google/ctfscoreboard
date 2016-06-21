@@ -191,6 +191,16 @@ class GameTime(object):
         return cls.require_open(f, after_end=True)
 
     @classmethod
+    def require_not_started(cls, f):
+        """Decorator for requiring the game has not started."""
+        @functools.wraps(f)
+        def wrapper(*args, **kwargs):
+            if cls.state() == "BEFORE":
+                return f(*args, **kwargs)
+            raise errors.AccessDeniedError(cls.message())
+        return wrapper
+
+    @classmethod
     def require_submittable(cls, f):
         """Decorator for requiring that the game may be submitted to."""
         return cls.require_open(f, after_end=app.config.get('SUBMIT_AFTER_END'))
@@ -218,4 +228,5 @@ class GameTime(object):
 GameTime.setup()
 require_gametime = GameTime.require_open
 require_started = GameTime.require_started
+require_not_started = GameTime.require_not_started
 require_submittable = GameTime.require_submittable

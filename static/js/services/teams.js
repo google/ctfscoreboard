@@ -18,8 +18,12 @@ var teamServices = angular.module('teamServices', ['ngResource']);
 
 teamServices.service('teamService', ['$resource',
     function($resource) {
-      return $resource('/api/teams/:tid', {}, {
+      var resource = $resource('/api/teams/:tid', {}, {
         save: {method: 'PUT'},
         create: {method: 'POST'}
         });
+      resource.change = function(data, cb, error) {
+        return resource.save({tid: "change"}, data, cb, error);
+      }
+      return resource;
     }]);
