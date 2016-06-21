@@ -1,16 +1,36 @@
 <h2>{{user.nick}}</h2>
-<div class='row'>
+<div class='row user-field'>
   <div class='col-md-5 col-md-offset-2'>
     <form ng-submit='updateProfile()' name='profileForm'>
-      <div class='form-group' ng-show='!!team && !!team.name'>
-        <label for='team'>Team</label>
-        <input type='text' readonly name='team' id='team' ng-model='team.name'
-          class='form-control'>
+      <label for='team'>Team</label>
+      <div class='form-group' ng-show='!!team && !!team.name || changing'>
+        <div class='multiple'>
+          <input type='text' ng-disabled='!changing' name='team' id='team' ng-model='team.name'
+            class='form-control'>
+          <button class='btn btn-med side-button' ng-class="{'btn-info': !changing, 'btn-danger': changing}"
+              ng-click='!changing ? startJoin() : cancel()' ng-hide='started()' type='button'>
+            <span ng-if='!changing'>Change Team</span>
+            <span ng-if=' changing'>Cancel</span>
+          </button>
+        </div>
+        <div class='drop-down' ng-show='changing'>
+          <div ng-repeat='t in teams' ng-click='team.name=t.name' class='list-item'
+              ng-show='t.name.toLowerCase().indexOf(team.name.toLowerCase())>=0&&t.name!=team.name' value='{{t.tid}}'>
+            <a class='btn btn-info btn-sm'>
+              <i class='material-icons btn-inner'>label</i>
+            </a>
+            <div class='form-control'>{{t.name}}</div>
+          </div>
+        </div>
       </div>
-      <div class='form-group' ng-show='!!team && !!team.code'>
-        <label for='team_code'>Team Invite Code</label>
-        <input type='text' readonly name='team_code' id='team_code'
+      <label for='team_code'>Team Invite Code</label>
+      <div class='form-group multiple' ng-show='!!team && !!team.code || changing'>
+        <input type='text' ng-disabled='!changing' name='team_code' id='team_code'
           ng-model='team.code' class='form-control'>
+        <a ng-show='changing' class='btn btn-success btn-med' ng-click='switchTeams()'
+           ng-disabled='team.tid<0||!team.code'>
+          Join
+        </a>
       </div>
       <div class='form-group'>
         <label for='email'>Email</label>
@@ -22,16 +42,16 @@
         <input type='password' id='password' name='password'
           placeholder='password (to change)'
           class='form-control' ng-model='user.password'
-          required>
+          >
       </div>
       <div class='form-group' ng-show='config.login_method == "local"'>
         <label for='password2'>Repeat Password</label>
         <input type='password' id='password2' name='password2'
           placeholder='repeat password' class='form-control'
-          ng-model='user.password2' required>
+          ng-model='user.password2'>
       </div>
       <input type='submit' value='Save' class='btn btn-primary'
-        ng-disabled='profileForm.$invalid'>
+        ng-disabled='profileForm.$invalid && (team.tid < 0 || !team.code || !changing)'>
     </form>
   </div>
 </div>

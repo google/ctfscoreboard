@@ -21,6 +21,7 @@ from scoreboard.tests import base
 from scoreboard.tests import data
 from scoreboard import models
 from scoreboard import rest
+from scoreboard import utils
 
 
 def makeTestUser():
@@ -128,6 +129,69 @@ class PageTest(base.RestTestCase):
         self.assert200(resp)
         self.assertEqual(page_data['title'], resp.json['title'])
         self.assertEqual(page_data['contents'], resp.json['contents'])
+
+class UpdateTeam(base.RestTestCase):
+
+    PATH = '/api/teams/change'
+
+    def createTeam(self, teamname):
+        team = models.Team.create(teamname)
+        models.db.session.commit()
+        return team
+
+    def changeTeam(self, tid, code):
+        with self.authenticated_client as c:
+            return c.put(self.PATH, data = json.dumps({
+                'uid': c.uid,
+                'team_tid': tid,
+                'code': code
+            }), content_type='application/json')
+
+    def testChangeTeam(self):
+        test_team = self.createTeam('test')
+        resp = self.changeTeam(test_team.tid, test_team.code)
+        self.assert200(resp)
+
+    def testTeamChangeWorked(self):
+        test_team = self.createTeam('test2')
+        resp = self.changeTeam(test_team.tid, test_team.code)
+        tid = self.authenticated_client.user.team.tid
+        self.assertEqual(tid, test_team.tid)
+
+    def testEmptyTeamIsDeleted(self):
+        test_team_first = self.createTeam('first')
+        test_team_second = self.createTeam('second')
+        self.changeTeam(test_team_first.tid, test_team_first.code)
+        resp = self.changeTeam(test_team_second.tid, test_team_second.code)
+        tid = self.authenticated_client.user.team.tid
+        self.assertEqual(tid, test_team_second.tid)
+
+        self.assertIsNone(models.Team.query.get(test_team_first.tid))
+
+    def testTeamWithSolvesNotDeleted(self):
+        test_team_first = self.createTeam('first')
+        test_team_second = self.createTeam('second')
+        self.changeTeam(test_team_first.tid, test_team_first.code)
+
+        chall = models.Challenge.create('Foo', 'Foo', 1, 'Foo', 'foo')
+        answer = models.Answer.create(chall, test_team_first, 'Foo')
+
+        resp = self.changeTeam(test_team_second.tid, test_team_second.code)
+        tid = self.authenticated_client.user.team.tid
+        self.assertEqual(tid, test_team_second.tid)
+
+        self.assertIsNotNone(models.Team.query.get(test_team_first.tid))
+
+    def testCantSwitchAfterStart(self):
+        #patch GameTime.state
+        oldState = utils.GameTime.state
+        utils.GameTime.state = staticmethod(lambda: "DURING")
+        test_team = self.createTeam('test')
+        resp = self.changeTeam(test_team.tid, test_team.code)
+        self.assert403(resp)
+        #restore from patch
+        utils.GameTime.state = oldState
+
 
 
 class AttachmentTest(base.RestTestCase):

@@ -137,6 +137,10 @@ globalServices.service('gameTimeService', [
             return true;
         };
 
+        this.started = angular.bind(this, function() {
+            return !this.start || this.toStart() < 0
+        })
+
         this.then = function(callback) {
           future.promise.then(callback);
         };

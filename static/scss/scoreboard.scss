@@ -89,22 +89,22 @@ a.btn {
     margin-right: auto;
 }
 
+.btn-sm {
+    .btn-inner {
+        font-size:16px;
+    }
+    margin: auto;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
 .well {
     h4 {
         margin-top: 0;
-    }
-
-    .btn-sm {
-        .btn-inner {
-            font-size:16px;
-        }
-        margin: auto;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
     }
 
     .no-decoration {
@@ -509,5 +509,20 @@ table.team-players{
         margin-top: 0px;
         margin-right: 10px;
         margin-bottom: 10px;
+    }
+}
+
+.user-field {
+    .multiple {
+        display: flex;
+    }
+}
+
+.list-item {
+    display: flex;
+    cursor: pointer;
+
+    .form-control {
+        height:40px;
     }
 }

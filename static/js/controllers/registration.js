@@ -117,17 +117,64 @@ regCtrls.controller('ProfileCtrl', [
     'sessionService',
     'userService',
     'loadingService',
+    'gameTimeService',
+    'teamService',
     function($scope, configService, errorService, sessionService,
-        userService, loadingService) {
+        userService, loadingService, gameTimeService, teamService) {
       $scope.user = null;
+
+      $scope.started = gameTimeService.started;
+      $scope.changing = false;
+
+      $scope.startJoin = function() {
+        $scope.changing = true;
+        $scope.team.code = "";
+        $("#team").focus();
+      }
+
+      $scope.cancel = function() {
+        $scope.changing = false;
+        $scope.team.name = $scope.team.originalname;
+        $scope.team.code = $scope.team.originalcode;
+      }
+
+      $scope.$watch('team.name', function() {
+        if (!($scope.teams && $scope.team && $scope.team.name)) return;
+        for (var i = 0; i < $scope.teams.length; i++) {
+          if ($scope.teams[i].name == $scope.team.name) {
+            return $scope.team.tid = $scope.teams[i].tid;
+          }
+        }
+        $scope.team.tid = -1;
+      })
+
+      $scope.switchTeams = function() {
+        teamService.change({
+          'uid': $scope.user.uid,
+          'team_tid': $scope.team.tid,
+          'code': $scope.team.code,
+        }, function() {
+          $scope.team.originalname = $scope.team.name;
+          $scope.team.originalcode = $scope.team.code;
+          $scope.cancel();
+        }, function(data) {
+          errorService.error(data);
+        })
+      }
 
       sessionService.requireLogin(function() {
         $scope.user = sessionService.session.user;
         configService.get(function(c) {
-            if (c.teams)
+            if (c.teams) {
                 $scope.team = sessionService.session.team;
+                $scope.team.originalname = $scope.team.name;
+                $scope.team.originalcode = $scope.team.code;
+            }
             loadingService.stop();
         });
+        teamService.get(function(c) {
+          $scope.teams = c.teams;
+        })
       });
 
       $scope.updateProfile = function() {
