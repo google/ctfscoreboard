@@ -420,10 +420,9 @@ class UserTest(base.RestTestCase):
     @base.authenticated_test
     def testRegisterUserLoggedInFails(self):
         data = self.default_data()
-        with self.client:
-            with self.queryLimit(0):
-                resp = self.postJSON('/api/users', data)
-            self.assert400(resp)
+        with self.queryLimit(0):
+            resp = self.postJSON('/api/users', data)
+        self.assert400(resp)
 
     def testRegisterUserNoNick(self):
         data = self.default_data()
