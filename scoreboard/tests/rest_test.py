@@ -39,7 +39,7 @@ def makeTestChallenges():
     tags = data.make_tags()
     challs = data.make_challenges(cats, tags)
     models.db.session.commit()
-    return challs
+    return challs, cats
 
 
 class ConfigzTest(base.RestTestCase):
@@ -640,7 +640,7 @@ class ChallengeTest(base.RestTestCase):
 
     def setUp(self):
         super(ChallengeTest, self).setUp()
-        self.challs = makeTestChallenges()
+        self.challs, _ = makeTestChallenges()
         self.chall = self.challs[0]
         self.PATH_SINGLE %= self.chall.cid
 
@@ -775,3 +775,69 @@ class ScoreboardTest(base.RestTestCase):
         resp = self.client.get(self.PATH)
         self.assert200(resp)
         # TODO: check contents
+
+
+class CategoryTest(base.RestTestCase):
+
+    PATH_LIST = '/api/categories'
+    PATH_SINGLE = '/api/categories/%s'
+
+    def setUp(self):
+        super(CategoryTest, self).setUp()
+        self.challs, self.cats = makeTestChallenges()
+        self.cat = self.cats[0]
+        self.PATH_SINGLE %= self.cat.slug
+
+    def _testGetList(self):
+        resp = self.client.get(self.PATH_LIST)
+        self.assert200(resp)
+        self.assertEqual(len(self.cats), len(resp.json['categories']))
+        # TODO: check that the expected fields are visible and that others are
+        # not.
+
+    testGetListAuthenticated = base.authenticated_test(_testGetList)
+    testGetListAdmin = base.admin_test(_testGetList)
+
+    def testGetListAnonymous(self):
+        resp = self.client.get(self.PATH_LIST)
+        self.assert403(resp)
+
+    def testCreateCategoryFails(self):
+        data = {
+            'name': 'New',
+            'description': 'New Category',
+        }
+        resp = self.postJSON(self.PATH_LIST, data)
+        self.assert403(resp)
+        self.assertEqual(len(self.cats), models.Category.query.count())
+
+    testCreateCategoryFailsAuthenticated = base.authenticated_test(
+            testCreateCategoryFails)
+
+    @base.admin_test
+    def testCreateCategory(self):
+        data = {
+            'name': 'New',
+            'description': 'New Category',
+        }
+        resp = self.postJSON(self.PATH_LIST, data)
+        self.assert200(resp)
+        for f in ('name', 'description'):
+            self.assertEqual(data[f], resp.json[f])
+        cat = models.Category.query.get(resp.json['slug'])
+        for f in ('name', 'description'):
+            self.assertEqual(data[f], getattr(cat, f))
+
+    def testDeleteCategoryFails(self):
+        resp = self.client.delete(self.PATH_SINGLE)
+        self.assert403(resp)
+        self.assertIsNotNone(models.Category.query.get(self.cat.slug))
+
+    testDeleteCategoryFailsAuthenticated = base.authenticated_test(
+            testDeleteCategoryFails)
+
+    @base.admin_test
+    def testDeleteCategory(self):
+        resp = self.client.delete(self.PATH_SINGLE)
+        self.assert200(resp)
+        self.assertIsNone(models.Category.query.get(self.cat.slug))
