@@ -95,6 +95,12 @@ class RestTestCase(BaseTestCase):
                 path, data=json.dumps(data),
                 content_type='application/json')
 
+    def putJSON(self, path, data, client=None):
+        client = client or self.client
+        return client.put(
+                path, data=json.dumps(data),
+                content_type='application/json')
+
     @contextlib.contextmanager
     def swapClient(self, client):
         old_client = self.client
