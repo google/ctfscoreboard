@@ -560,23 +560,22 @@ class SessionTest(base.RestTestCase):
         }
         with self.client as c:
             with self.queryLimit(1):
-                resp = c.post(self.PATH, data=json.dumps(data),
-                        content_type='application/json')
+                resp = self.postJSON(self.PATH, data)
             self.assert403(resp)
             self.assertIsNone(flask.session.get('user'))
             self.assertIsNone(flask.session.get('team'))
             self.assertIsNone(flask.session.get('admin'))
 
+    @base.admin_test
     def testSessionLoginAlreadyLoggedIn(self):
         data = {
             'email': self.authenticated_client.user.email,
             'password': self.authenticated_client.password,
         }
         # This makes sure admin->non-admin downgrades properly
-        with self.admin_client as c:
+        with self.client as c:
             with self.queryLimit(4):
-                resp = c.post(self.PATH, data=json.dumps(data),
-                        content_type='application/json')
+                resp = self.postJSON(self.PATH, data)
             self.assert200(resp)
             self.assertEqual(flask.session['user'],
                     self.authenticated_client.user.uid)
@@ -586,8 +585,9 @@ class SessionTest(base.RestTestCase):
             self.assertEqual(flask.g.user.email,
                     self.authenticated_client.user.email)
 
+    @base.authenticated_test
     def testSessionLogout(self):
-        with self.authenticated_client as c:
+        with self.client as c:
             with self.queryLimit(0):
                 resp = c.delete(self.PATH)
             self.assert200(resp)
@@ -620,18 +620,16 @@ class ChallengeTest(base.RestTestCase):
         with self.queryLimit(0):
             self.assert403(self.client.get(self.PATH_LIST))
 
-    def testGetListAuthenticated(self):
-        with self.queryLimit(0):
-            self.assert403(self.authenticated_client.get(
-                self.PATH_LIST))
+    testGetListAuthenticated = base.authenticated_test(
+            testGetListAnonymous)
 
+    @base.admin_test
     def testGetListAdmin(self):
-        with self.admin_client as c:
-            # TODO: fix to not be O(n)
-            with self.queryLimit(None):
-                resp = c.get(self.PATH_LIST)
-            self.assert200(resp)
-            self.assertEqual(len(self.challs), len(resp.json['challenges']))
+        # TODO: fix to not be O(n)
+        with self.queryLimit(None):
+            resp = self.client.get(self.PATH_LIST)
+        self.assert200(resp)
+        self.assertEqual(len(self.challs), len(resp.json['challenges']))
 
     def newChallengeData(self):
         return {
@@ -646,30 +644,22 @@ class ChallengeTest(base.RestTestCase):
     def testCreateChallengeAnonymous(self):
         data = self.newChallengeData()
         with self.queryLimit(0):
-            self.assert403(self.client.post(
-                self.PATH_LIST,
-                data=json.dumps(data),
-                content_type='application/json'))
+            self.assert403(self.postJSON(
+                self.PATH_LIST, data))
 
-    def testCreateChallengeAuthenticated(self):
-        data = self.newChallengeData()
-        with self.queryLimit(0):
-            self.assert403(self.authenticated_client.post(
-                self.PATH_LIST,
-                data=json.dumps(data),
-                content_type='application/json'))
+    testCreateChallengeAuthenticated = base.authenticated_test(
+            testCreateChallengeAnonymous)
 
+    @base.admin_test
     def testCreateChallenge(self):
         # TODO: variants
         data = self.newChallengeData()
-        with self.admin_client as c:
-            # TODO: optimize count
-            with self.queryLimit(8):
-                resp = c.post(self.PATH_LIST, data=json.dumps(data),
-                        content_type='application/json')
-            self.assert200(resp)
-            for field in ('name', 'description', 'points', 'unlocked'):
-                self.assertEqual(data[field], resp.json[field])
+        # TODO: optimize count
+        with self.queryLimit(8):
+            resp = self.postJSON(self.PATH_LIST, data)
+        self.assert200(resp)
+        for field in ('name', 'description', 'points', 'unlocked'):
+            self.assertEqual(data[field], resp.json[field])
 
     def getUpdateData(self):
         return {
@@ -679,60 +669,49 @@ class ChallengeTest(base.RestTestCase):
             'unlocked': False
             }
 
+    @base.admin_test
     def testUpdateChallenge(self):
         data = self.getUpdateData()
-        with self.admin_client as c:
-            with self.queryLimit(6):
-                resp = c.put(self.PATH_SINGLE,
-                        data=json.dumps(data),
-                        content_type='application/json')
-            self.assert200(resp)
-            for k in data.keys():
-                self.assertEqual(data[k], resp.json[k])
+        with self.queryLimit(6):
+            resp = self.putJSON(self.PATH_SINGLE, data)
+        self.assert200(resp)
+        for k in data.keys():
+            self.assertEqual(data[k], resp.json[k])
 
     def testUpdateChallengeAnonymous(self):
         data = self.getUpdateData()
         with self.queryLimit(0):
-            self.assert403(self.client.put(self.PATH_SINGLE,
-                data=json.dumps(data), content_type='application/json'))
+            self.assert403(self.putJSON(self.PATH_SINGLE, data))
 
-    def testUpdateChallengeAuthenticated(self):
-        data = self.getUpdateData()
-        with self.queryLimit(0):
-            self.assert403(self.authenticated_client.put(self.PATH_SINGLE,
-                data=json.dumps(data), content_type='application/json'))
+    testUpdateChallengeAuthenticated = base.authenticated_test(
+            testUpdateChallengeAnonymous)
 
+    @base.admin_test
     def testGetSingleton(self):
-        with self.admin_client as c:
-            with self.queryLimit(6):
-                resp = c.get(self.PATH_SINGLE)
-            self.assert200(resp)
-            for field in ('name', 'points', 'description', 'unlocked'):
-                self.assertEqual(getattr(self.chall, field), resp.json[field])
+        with self.queryLimit(6):
+            resp = self.client.get(self.PATH_SINGLE)
+        self.assert200(resp)
+        for field in ('name', 'points', 'description', 'unlocked'):
+            self.assertEqual(getattr(self.chall, field), resp.json[field])
 
     def testGetSingletonAnonymous(self):
         with self.queryLimit(0):
             self.assert403(self.client.get(self.PATH_SINGLE))
 
-    def testGetSingletonAuthenticated(self):
-        with self.authenticated_client as c:
-            with self.queryLimit(0):
-                self.assert403(c.get(self.PATH_SINGLE))
+    testGetSingletonAuthenticated = base.authenticated_test(
+            testGetSingletonAnonymous)
 
+    @base.admin_test
     def testDeleteChallenge(self):
-        with self.admin_client as c:
-            with self.queryLimit(5):
-                self.assert200(c.delete(self.PATH_SINGLE))
+        with self.queryLimit(5):
+            self.assert200(self.client.delete(self.PATH_SINGLE))
 
     def testDeleteChallengeAnonymous(self):
-        with self.client as c:
-            with self.queryLimit(0):
-                self.assert403(c.delete(self.PATH_SINGLE))
+        with self.queryLimit(0):
+            self.assert403(self.client.delete(self.PATH_SINGLE))
 
-    def testDeleteChallengeAuthenticated(self):
-        with self.authenticated_client as c:
-            with self.queryLimit(0):
-                self.assert403(c.delete(self.PATH_SINGLE))
+    testDeleteChallengeAuthenticated = base.authenticated_test(
+            testDeleteChallengeAnonymous)
 
 
 class ScoreboardTest(base.RestTestCase):
