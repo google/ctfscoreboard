@@ -20,6 +20,7 @@ import json
 import logging
 import os.path
 import pbkdf2
+import time
 import unittest
 
 import flask
@@ -132,6 +133,8 @@ class AuthenticatedClient(testing.FlaskClient):
         with self.session_transaction() as sess:
             sess['user'] = self.uid
             sess['team'] = self.tid
+            sess['expires'] = time.time() + 3600
+            print sess
         return super(AuthenticatedClient, self).open(*args, **kwargs)
 
 
@@ -149,6 +152,7 @@ class AdminClient(testing.FlaskClient):
         with self.session_transaction() as sess:
             sess['user'] = self.uid
             sess['admin'] = True
+            sess['expires'] = time.time() + 3600
         return super(AdminClient, self).open(*args, **kwargs)
 
 
