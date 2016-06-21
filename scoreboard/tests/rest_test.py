@@ -136,6 +136,8 @@ class UpdateTeam(base.RestTestCase):
 
     PATH = '/api/teams/change'
 
+    _state = None
+
     def createTeam(self, teamname):
         team = models.Team.create(teamname)
         models.db.session.commit()
@@ -148,21 +150,34 @@ class UpdateTeam(base.RestTestCase):
             'code': code
         })
 
+    def patchState(self, time = 'BEFORE'):
+        self._state = utils.GameTime.state
+        utils.GameTime.state = staticmethod(lambda: time)
+
+    def restoreState(self):
+        if self._state:
+            utils.GameTime.state = self._state
+
     @base.authenticated_test
     def testChangeTeam(self):
+        self.patchState()
         test_team = self.createTeam('test')
         resp = self.changeTeam(test_team.tid, test_team.code)
         self.assert200(resp)
+        self.restoreState()
 
     @base.authenticated_test
     def testTeamChangeWorked(self):
+        self.patchState()
         test_team = self.createTeam('test2')
         resp = self.changeTeam(test_team.tid, test_team.code)
         tid = self.authenticated_client.user.team.tid
         self.assertEqual(tid, test_team.tid)
+        self.restoreState()
 
     @base.authenticated_test
     def testEmptyTeamIsDeleted(self):
+        self.patchState()
         test_team_first = self.createTeam('first')
         test_team_second = self.createTeam('second')
         self.changeTeam(test_team_first.tid, test_team_first.code)
@@ -171,9 +186,11 @@ class UpdateTeam(base.RestTestCase):
         self.assertEqual(tid, test_team_second.tid)
 
         self.assertIsNone(models.Team.query.get(test_team_first.tid))
+        self.restoreState()
 
     @base.authenticated_test
     def testTeamWithSolvesNotDeleted(self):
+        self.patchState()
         test_team_first = self.createTeam('first')
         test_team_second = self.createTeam('second')
         self.changeTeam(test_team_first.tid, test_team_first.code)
@@ -186,17 +203,15 @@ class UpdateTeam(base.RestTestCase):
         self.assertEqual(tid, test_team_second.tid)
 
         self.assertIsNotNone(models.Team.query.get(test_team_first.tid))
+        self.restoreState()
 
     @base.authenticated_test
     def testCantSwitchAfterStart(self):
-        #patch GameTime.state
-        oldState = utils.GameTime.state
-        utils.GameTime.state = staticmethod(lambda: "DURING")
+        self.patchState('DURING')
         test_team = self.createTeam('test')
         resp = self.changeTeam(test_team.tid, test_team.code)
         self.assert403(resp)
-        #restore from patch
-        utils.GameTime.state = oldState
+        self.restoreState()
 
 
 class AttachmentTest(base.RestTestCase):
