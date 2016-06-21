@@ -134,7 +134,6 @@ class AuthenticatedClient(testing.FlaskClient):
             sess['user'] = self.uid
             sess['team'] = self.tid
             sess['expires'] = time.time() + 3600
-            print sess
         return super(AuthenticatedClient, self).open(*args, **kwargs)
 
 
