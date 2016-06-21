@@ -44,6 +44,7 @@ class BaseTestCase(flask_testing.TestCase):
         SECRET_KEY = 'testing-session-key',
         SQLALCHEMY_DATABASE_URI = "sqlite://",
         TEAMS = True,
+        TEAM_SECRET_KEY = 'different-secret',
         TESTING = True,
         DEBUG = False,
         ATTACHMENT_BACKEND = 'test://volatile',

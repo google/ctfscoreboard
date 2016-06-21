@@ -14,19 +14,25 @@
 
 import sys
 
-from scoreboard import wsgi
 
-if __name__ == '__main__':
-    if 'createdb' in sys.argv:
-        from scoreboard import models
+def main(argv):
+    if argv[1] == 'runtests':
+        from scoreboard.tests import base
+        base.run_all_tests()
+        return
+
+    # This needs to only be imported when not testing
+    from scoreboard import wsgi
+    from scoreboard import models
+    if 'createdb' in argv:
         models.db.create_all()
-    elif 'createdata' in sys.argv:
-        from scoreboard import models
+    elif 'createdata' in argv:
         from scoreboard.tests import data
         models.db.create_all()
         data.create_all()
-    elif 'runtests' in sys.argv:
-        from scoreboard.tests import base
-        base.run_all_tests()
     else:
         wsgi.app.run(host='0.0.0.0', debug=True, port=wsgi.app.config.get('PORT', 9999))
+
+
+if __name__ == '__main__':
+    main(sys.argv)

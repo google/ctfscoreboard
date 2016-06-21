@@ -22,6 +22,7 @@ from scoreboard.tests import data
 from scoreboard import models
 from scoreboard import rest
 from scoreboard import utils
+from scoreboard import views
 
 
 def makeTestUser():
