@@ -87,6 +87,7 @@ def load_globals():
     except AttributeError:
         pass
     if (app.config.get('SESSION_EXPIRATION_SECONDS') and
+            flask.session.get('expires') and 
             flask.session.get('expires') < time.time()):
         flask.session.clear()
         return
