@@ -40,9 +40,6 @@ def create_app(config=None):
     app.config.from_object('scoreboard.config_defaults.Defaults')
     if config is not None:
         app.config.update(**config)
-    else:
-        app.config.from_object('config')  # Load from config.py
-    app.debug = app.config.get('DEBUG')
     
     if not on_appengine():
         #Configure Scss to watch the files
@@ -54,6 +51,12 @@ def create_app(config=None):
 
     setup_logging(app)
     return app
+
+
+def load_config_file(app=None):
+    app = app or get_app()
+    app.config.from_object('config')
+    setup_logging(app) # reset logs
 
 
 def setup_logging(app):
@@ -84,18 +87,16 @@ def setup_logging(app):
         app.logger.handlers[0].setFormatter(log_formatter)
         logging.getLogger().handlers[0].setFormatter(log_formatter)
 
-    # Install a default error handler
-    error_titles = {
-        401: 'Unauthorized',
-        403: 'Forbidden',
-        500: 'Internal Error',
-    }
-
     return app
 
 
 def api_error_handler(ex):
     """Handle errors as appropriate depending on path."""
+    error_titles = {
+        401: 'Unauthorized',
+        403: 'Forbidden',
+        500: 'Internal Error',
+    }
     try:
         status_code = ex.code
     except AttributeError:

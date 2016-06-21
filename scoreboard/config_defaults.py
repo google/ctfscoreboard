@@ -37,6 +37,7 @@ class Defaults(object):
         TEAM_SECRET_KEY = None
         SESSION_COOKIE_HTTPONLY = True
         SESSION_COOKIE_SECURE = True
+        SQLALCHEMY_TRACK_MODIFICATIONS = True
         SESSION_EXPIRATION_SECONDS = 60 * 60
         SYSTEM_NAME = 'root'
         TEAMS = True

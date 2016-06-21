@@ -14,6 +14,8 @@
 
 """Base test module, MUST be imported first."""
 
+import contextlib
+import functools
 import json
 import logging
 import os.path
@@ -42,6 +44,7 @@ class BaseTestCase(flask_testing.TestCase):
         SECRET_KEY = 'testing-session-key',
         SQLALCHEMY_DATABASE_URI = "sqlite://",
         TEAMS = True,
+        TEAM_SECRET_KEY = 'different-secret',
         TESTING = True,
         DEBUG = False,
         ATTACHMENT_BACKEND = 'test://volatile',
@@ -86,6 +89,26 @@ class RestTestCase(BaseTestCase):
     def tearDown(self):
         super(RestTestCase, self).tearDown()
         pbkdf2.crypt = self._orig_pbkdf2
+
+    def postJSON(self, path, data, client=None):
+        client = client or self.client
+        return client.post(
+                path, data=json.dumps(data),
+                content_type='application/json')
+
+    def putJSON(self, path, data, client=None):
+        client = client or self.client
+        return client.put(
+                path, data=json.dumps(data),
+                content_type='application/json')
+
+    @contextlib.contextmanager
+    def swapClient(self, client):
+        old_client = self.client
+        self.client = client
+        yield
+        self.client = old_client
+
 
     @staticmethod
     def _pbkdf2_dummy(value, *unused_args):
@@ -167,6 +190,24 @@ class MaxQueryBlock(object):
         statement = '%s (%s)' % (statement, ', '.join(str(x) for x in parameters))
         self.queries.append(statement)
         logging.debug('SQLAlchemy: %s', statement)
+
+
+def authenticated_test(f):
+    """Swaps out the client for an authenticated client."""
+    @functools.wraps(f)
+    def wrapped_test(self):
+        with self.swapClient(self.authenticated_client):
+            return f(self)
+    return wrapped_test
+
+
+def admin_test(f):
+    """Swaps out the client for an admin client."""
+    @functools.wraps(f)
+    def wrapped_test(self):
+        with self.swapClient(self.admin_client):
+            return f(self)
+    return wrapped_test
 
 
 def run_all_tests():
