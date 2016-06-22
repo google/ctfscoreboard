@@ -999,7 +999,85 @@ class ConfigTest(base.RestTestCase):
         with self.queryLimit(0):
             resp = self.client.get(self.PATH)
         self.assert200(resp)
+        expected_keys = set((
+                'teams',
+                'sbname',
+                'news_mechanism',
+                'news_poll_interval',
+                'csrf_token',
+                'rules',
+                'game_start',
+                'game_end',
+                'login_url',
+                'register_url',
+                'login_method',
+                'scoring',
+        ))
+        self.assertEqual(expected_keys, set(resp.json.keys()))
 
     testGetConfigAuthenticated = base.authenticated_test(
             testGetConfig)
     testGetConfigAdmin = base.authenticated_test(testGetConfig)
+
+
+class NewsTest(base.RestTestCase):
+
+    PATH = '/api/news'
+
+    def setUp(self):
+        super(NewsTest, self).setUp()
+        models.News.broadcast('test', 'Test message.')
+        models.News.unicast(self.authenticated_client.team.tid,
+                'test', 'Test team message.')
+        models.commit()
+
+    def testGetNews(self):
+        with self.queryLimit(2):
+            resp = self.client.get(self.PATH)
+        self.assert200(resp)
+        self.assertEqual(1, len(resp.json))
+
+    testGetNewsAdmin = base.admin_test(testGetNews)
+
+    @base.authenticated_test
+    def testGetNewsAuthenticated(self):
+        with self.queryLimit(2):
+            resp = self.client.get(self.PATH)
+        self.assert200(resp)
+        self.assertEqual(2, len(resp.json))
+
+    def testCreateNews(self):
+        with self.queryLimit(0):
+            resp = self.postJSON(self.PATH, {
+                'message': 'some message',
+            })
+        self.assert403(resp)
+
+    testCreateNewsAuthenticated = base.authenticated_test(testCreateNews)
+
+    @base.admin_test
+    def testCreateNewsAdmin(self):
+        msg = 'some message'
+        with self.queryLimit(3):
+            resp = self.postJSON(self.PATH, {
+                'message': msg,
+            })
+        self.assert200(resp)
+        self.assertEqual(self.client.user.nick, resp.json['author'])
+        self.assertEqual(msg, resp.json['message'])
+
+    @base.admin_test
+    def testCreateTeamNewsAdmin(self):
+        msg = 'some message'
+        tid = self.authenticated_client.team.tid
+        with self.queryLimit(3):
+            resp = self.postJSON(self.PATH, {
+                'message': msg,
+                'tid': tid,
+            })
+        self.assert200(resp)
+        self.assertEqual(self.client.user.nick, resp.json['author'])
+        self.assertEqual(msg, resp.json['message'])
+        self.assertEqual('Unicast', resp.json['news_type'])
+        news = models.News.query.get(resp.json['nid'])
+        self.assertEqual(tid, news.audience_team_tid)
