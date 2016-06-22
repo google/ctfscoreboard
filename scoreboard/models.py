@@ -244,7 +244,7 @@ class User(db.Model):
             return flask.g.user
         except AttributeError:
             uid = flask.session.get('user')
-            if uid:
+            if uid is not None:
                 user = cls.query.get(uid)
                 flask.g.user = user
                 if user:

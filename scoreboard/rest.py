@@ -267,6 +267,7 @@ class TeamChange(flask_restful.Resource):
         'code': fields.String,
     }
 
+    @utils.login_required
     @flask_restful.marshal_with(resource_fields)
     def put(self):
         current = models.User.current()

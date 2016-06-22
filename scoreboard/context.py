@@ -90,7 +90,6 @@ def load_globals():
             flask.session.get('expires') and 
             flask.session.get('expires') < time.time()):
         flask.session.clear()
-        return
     flask.g.uid = flask.session.get('user')
     flask.g.tid = flask.session.get('team')
     flask.g.admin = flask.session.get('admin') or False
