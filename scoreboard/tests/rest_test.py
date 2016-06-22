@@ -1081,3 +1081,18 @@ class NewsTest(base.RestTestCase):
         self.assertEqual('Unicast', resp.json['news_type'])
         news = models.News.query.get(resp.json['nid'])
         self.assertEqual(tid, news.audience_team_tid)
+
+
+class CTFTimeTest(base.RestTestCase):
+
+    PATH = '/api/ctftime/scoreboard'
+
+    def testGetScoreboard(self):
+        with self.queryLimit(1):
+            resp = self.client.get(self.PATH)
+        self.assert200(resp)
+        self.assertIn('standings', resp.json)
+        standings = resp.json['standings']
+        required = set(('pos', 'team', 'score'))
+        for i in standings:
+            self.assertEqual(required, required & set(i.keys()))
