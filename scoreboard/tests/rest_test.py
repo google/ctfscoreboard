@@ -604,7 +604,7 @@ class SessionTest(base.RestTestCase):
         self.assertTrue(resp.json['user']['admin'])
         self.assertItemsEqual(
                 {'tid': 0, 'score': 0, 'name': None,
-                    'solves': 0, 'code': None},
+                    'code': None},
                 resp.json['team'])
 
     def testSessionLoginSucceeds(self):
@@ -672,7 +672,7 @@ class SessionTest(base.RestTestCase):
     @base.authenticated_test
     def testSessionLogout(self):
         with self.client as c:
-            with self.queryLimit(0):
+            with self.queryLimit(1):
                 resp = c.delete(self.PATH)
             self.assert200(resp)
             self.assertIsNone(flask.session.get('user'))
@@ -824,7 +824,8 @@ class CategoryTest(base.RestTestCase):
         self.PATH_SINGLE %= self.cat.slug
 
     def _testGetList(self):
-        resp = self.client.get(self.PATH_LIST)
+        with self.queryLimit(3):
+            resp = self.client.get(self.PATH_LIST)
         self.assert200(resp)
         self.assertEqual(len(self.cats), len(resp.json['categories']))
         # TODO: check that the expected fields are visible and that others are
@@ -834,7 +835,8 @@ class CategoryTest(base.RestTestCase):
     testGetListAdmin = base.admin_test(_testGetList)
 
     def testGetListAnonymous(self):
-        resp = self.client.get(self.PATH_LIST)
+        with self.queryLimit(0):
+            resp = self.client.get(self.PATH_LIST)
         self.assert403(resp)
 
     def testCreateCategoryFails(self):
@@ -842,7 +844,8 @@ class CategoryTest(base.RestTestCase):
             'name': 'New',
             'description': 'New Category',
         }
-        resp = self.postJSON(self.PATH_LIST, data)
+        with self.queryLimit(0):
+            resp = self.postJSON(self.PATH_LIST, data)
         self.assert403(resp)
         self.assertEqual(len(self.cats), models.Category.query.count())
 
@@ -855,7 +858,8 @@ class CategoryTest(base.RestTestCase):
             'name': 'New',
             'description': 'New Category',
         }
-        resp = self.postJSON(self.PATH_LIST, data)
+        with self.queryLimit(6):
+            resp = self.postJSON(self.PATH_LIST, data)
         self.assert200(resp)
         for f in ('name', 'description'):
             self.assertEqual(data[f], resp.json[f])
@@ -864,7 +868,8 @@ class CategoryTest(base.RestTestCase):
             self.assertEqual(data[f], getattr(cat, f))
 
     def testDeleteCategoryFails(self):
-        resp = self.client.delete(self.PATH_SINGLE)
+        with self.queryLimit(0):
+            resp = self.client.delete(self.PATH_SINGLE)
         self.assert403(resp)
         self.assertIsNotNone(models.Category.query.get(self.cat.slug))
 
@@ -872,7 +877,222 @@ class CategoryTest(base.RestTestCase):
             testDeleteCategoryFails)
 
     @base.admin_test
-    def testDeleteCategory(self):
-        resp = self.client.delete(self.PATH_SINGLE)
+    def testDeleteNonEmptyCategory(self):
+        with self.queryLimit(3):
+            resp = self.client.delete(self.PATH_SINGLE)
+        self.assert400(resp)
+        self.assertIsNotNone(models.Category.query.get(self.cat.slug))
+
+    @base.admin_test
+    def testDeleteEmptyCategory(self):
+        for i in self.cat.challenges:
+            models.db.session.delete(i)
+        models.db.session.commit()
+        with self.queryLimit(3):
+            resp = self.client.delete(self.PATH_SINGLE)
         self.assert200(resp)
         self.assertIsNone(models.Category.query.get(self.cat.slug))
+
+    def testGetCategoryAnonymous(self):
+        with self.queryLimit(0):
+            self.assert403(self.client.get(self.PATH_SINGLE))
+
+    def _testGetCategory(self):
+        with self.queryLimit(None):
+            resp = self.client.get(self.PATH_SINGLE)
+        self.assert200(resp)
+
+    testGetCategoryAuthenticated = base.authenticated_test(
+            _testGetCategory)
+    testGetCategoryAdmin = base.admin_test(_testGetCategory)
+
+    def testUpdateCategoryAnonymous(self):
+        with self.queryLimit(0):
+            resp = self.putJSON(self.PATH_SINGLE, {
+                'name': 'new name'})
+        self.assert403(resp)
+
+    testUpdateCategoryAuthenticated = base.authenticated_test(
+            testUpdateCategoryAnonymous)
+
+    @base.admin_test
+    def testUpdateCategoryAdmin(self):
+        data = {'name': 'new name'}
+        with self.queryLimit(None):
+            resp = self.putJSON(self.PATH_SINGLE, data)
+        self.assert200(resp)
+        self.assertEqual(data['name'], resp.json['name'])
+        cat = models.Category.query.get(self.cat.slug)
+        self.assertEqual(data['name'], cat.name)
+
+
+class AnswerTest(base.RestTestCase):
+
+    PATH = '/api/answers'
+
+    def setUp(self):
+        super(AnswerTest, self).setUp()
+        cat = models.Category.create('test', 'test')
+        self.answer = 'foobar'
+        self.points = 100
+        self.chall = models.Challenge.create('test', 'test', self.points,
+                self.answer, cat.slug, unlocked=True)
+        self.cid = self.chall.cid
+        models.db.session.commit()
+
+    def testSubmitAnonymous(self):
+        with self.queryLimit(0):
+            self.assert403(self.postJSON(self.PATH, {
+                'cid': self.cid,
+                'answer': self.answer,
+            }))
+
+    @base.admin_test
+    def testSubmitAdmin(self):
+        with self.queryLimit(0):
+            self.assert400(self.postJSON(self.PATH, {
+                'cid': self.cid,
+                'answer': self.answer,
+            }))
+
+    @base.authenticated_test
+    def testSubmitCorrect(self):
+        with self.queryLimit(6):
+            resp = self.postJSON(self.PATH, {
+                'cid': self.cid,
+                'answer': self.answer,
+            })
+        self.assert200(resp)
+        self.assertEqual(self.points, resp.json['points'])
+
+    @base.authenticated_test
+    def testSubmitIncorrect(self):
+        old_score = self.client.team.score
+        with self.queryLimit(2):
+            resp = self.postJSON(self.PATH, {
+                'cid': self.cid,
+                'answer': 'incorrect',
+            })
+        self.assert403(resp)
+        team = models.Team.query.get(self.client.team.tid)
+        self.assertEqual(old_score, team.score)
+
+    @base.authenticated_test
+    def testSubmitDouble(self):
+        models.Answer.create(self.chall, self.client.team, '')
+        old_score = self.client.team.score
+        with self.queryLimit(4):
+            resp = self.postJSON(self.PATH, {
+                'cid': self.cid,
+                'answer': self.answer,
+            })
+        self.assert403(resp)
+        team = models.Team.query.get(self.client.team.tid)
+        self.assertEqual(old_score, team.score)
+
+
+class ConfigTest(base.RestTestCase):
+
+    PATH = '/api/config'
+
+    def testGetConfig(self):
+        with self.queryLimit(0):
+            resp = self.client.get(self.PATH)
+        self.assert200(resp)
+        expected_keys = set((
+                'teams',
+                'sbname',
+                'news_mechanism',
+                'news_poll_interval',
+                'csrf_token',
+                'rules',
+                'game_start',
+                'game_end',
+                'login_url',
+                'register_url',
+                'login_method',
+                'scoring',
+        ))
+        self.assertEqual(expected_keys, set(resp.json.keys()))
+
+    testGetConfigAuthenticated = base.authenticated_test(
+            testGetConfig)
+    testGetConfigAdmin = base.authenticated_test(testGetConfig)
+
+
+class NewsTest(base.RestTestCase):
+
+    PATH = '/api/news'
+
+    def setUp(self):
+        super(NewsTest, self).setUp()
+        models.News.broadcast('test', 'Test message.')
+        models.News.unicast(self.authenticated_client.team.tid,
+                'test', 'Test team message.')
+        models.commit()
+
+    def testGetNews(self):
+        with self.queryLimit(2):
+            resp = self.client.get(self.PATH)
+        self.assert200(resp)
+        self.assertEqual(1, len(resp.json))
+
+    testGetNewsAdmin = base.admin_test(testGetNews)
+
+    @base.authenticated_test
+    def testGetNewsAuthenticated(self):
+        with self.queryLimit(2):
+            resp = self.client.get(self.PATH)
+        self.assert200(resp)
+        self.assertEqual(2, len(resp.json))
+
+    def testCreateNews(self):
+        with self.queryLimit(0):
+            resp = self.postJSON(self.PATH, {
+                'message': 'some message',
+            })
+        self.assert403(resp)
+
+    testCreateNewsAuthenticated = base.authenticated_test(testCreateNews)
+
+    @base.admin_test
+    def testCreateNewsAdmin(self):
+        msg = 'some message'
+        with self.queryLimit(3):
+            resp = self.postJSON(self.PATH, {
+                'message': msg,
+            })
+        self.assert200(resp)
+        self.assertEqual(self.client.user.nick, resp.json['author'])
+        self.assertEqual(msg, resp.json['message'])
+
+    @base.admin_test
+    def testCreateTeamNewsAdmin(self):
+        msg = 'some message'
+        tid = self.authenticated_client.team.tid
+        with self.queryLimit(3):
+            resp = self.postJSON(self.PATH, {
+                'message': msg,
+                'tid': tid,
+            })
+        self.assert200(resp)
+        self.assertEqual(self.client.user.nick, resp.json['author'])
+        self.assertEqual(msg, resp.json['message'])
+        self.assertEqual('Unicast', resp.json['news_type'])
+        news = models.News.query.get(resp.json['nid'])
+        self.assertEqual(tid, news.audience_team_tid)
+
+
+class CTFTimeTest(base.RestTestCase):
+
+    PATH = '/api/ctftime/scoreboard'
+
+    def testGetScoreboard(self):
+        with self.queryLimit(1):
+            resp = self.client.get(self.PATH)
+        self.assert200(resp)
+        self.assertIn('standings', resp.json)
+        standings = resp.json['standings']
+        required = set(('pos', 'team', 'score'))
+        for i in standings:
+            self.assertEqual(required, required & set(i.keys()))

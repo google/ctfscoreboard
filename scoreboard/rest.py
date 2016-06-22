@@ -20,6 +20,7 @@ import hashlib
 import json
 import os
 import pytz
+from sqlalchemy import exc
 
 from scoreboard import attachments
 from scoreboard import auth
@@ -159,7 +160,7 @@ class UserList(flask_restful.Resource):
     @flask_restful.marshal_with(User.resource_fields)
     def post(self):
         """Register a new user."""
-        if models.User.current():
+        if utils.is_logged_in():
             raise errors.ValidationError('Cannot register while logged in.')
         data = flask.request.get_json()
         if not data.get('nick', ''):
@@ -279,16 +280,20 @@ class Session(flask_restful.Resource):
 
     """Represents a logged-in session, used for login/logout."""
 
-    team_fields = Team.team_fields.copy()
-    team_fields['code'] = fields.String
+    team_fields = {
+        'tid': fields.Integer,
+        'name': fields.String,
+        'score': fields.Integer,
+        'code': fields.String,
+    }
     resource_fields = {
         'user': fields.Nested(User.resource_fields),
         'team': fields.Nested(team_fields),
         'redirect': fields.String,
     }
 
-    @flask_restful.marshal_with(resource_fields)
     @utils.login_required
+    @flask_restful.marshal_with(resource_fields)
     def get(self):
         """Get the current session."""
         return dict(
@@ -596,7 +601,7 @@ class Category(flask_restful.Resource):
     def put(self, category_slug):
         category = models.Category.query.get_or_404(category_slug)
         category.name = get_field('name')
-        category.description = get_field('description', '')
+        category.description = get_field('description', category.description)
 
         app.logger.info('Category %s updated by %r.', category, models.User.current())
         models.commit()
@@ -629,9 +634,14 @@ class Category(flask_restful.Resource):
     @utils.admin_required
     def delete(self, category_slug):
         category = models.Category.query.get_or_404(category_slug)
-        models.db.session.delete(category)
-        cache.clear()
-        models.commit()
+        try:
+            models.db.session.delete(category)
+            cache.clear()
+            models.commit()
+        except exc.IntegrityError:
+            models.db.session.rollback()
+            raise errors.ValidationError(
+                'Unable to delete category: make sure it is empty')
 
 
 class CategoryList(flask_restful.Resource):
@@ -674,7 +684,11 @@ class Answer(flask_restful.Resource):
         data = flask.request.get_json()
         answer = utils.normalize_input(data['answer'])
         points = controllers.submit_answer(data['cid'], answer)
-        models.commit()
+        try:
+            models.commit()
+        except (errors.IntegrityError, errors.FlushError):
+            models.db.session.rollback()
+            raise errors.AccessDeniedError("You've already solved that one!")
         cache.delete_team('cats/%d')
         cache.delete('scoreboard')
         return dict(points=points)
