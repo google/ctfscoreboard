@@ -892,3 +892,35 @@ class CategoryTest(base.RestTestCase):
             resp = self.client.delete(self.PATH_SINGLE)
         self.assert200(resp)
         self.assertIsNone(models.Category.query.get(self.cat.slug))
+
+    def testGetCategoryAnonymous(self):
+        with self.queryLimit(0):
+            self.assert403(self.client.get(self.PATH_SINGLE))
+
+    def _testGetCategory(self):
+        with self.queryLimit(None):
+            resp = self.client.get(self.PATH_SINGLE)
+        self.assert200(resp)
+
+    testGetCategoryAuthenticated = base.authenticated_test(
+            _testGetCategory)
+    testGetCategoryAdmin = base.admin_test(_testGetCategory)
+
+    def testUpdateCategoryAnonymous(self):
+        with self.queryLimit(0):
+            resp = self.putJSON(self.PATH_SINGLE, {
+                'name': 'new name'})
+        self.assert403(resp)
+
+    testUpdateCategoryAuthenticated = base.authenticated_test(
+            testUpdateCategoryAnonymous)
+
+    @base.admin_test
+    def testUpdateCategoryAdmin(self):
+        data = {'name': 'new name'}
+        with self.queryLimit(None):
+            resp = self.putJSON(self.PATH_SINGLE, data)
+        self.assert200(resp)
+        self.assertEqual(data['name'], resp.json['name'])
+        cat = models.Category.query.get(self.cat.slug)
+        self.assertEqual(data['name'], cat.name)

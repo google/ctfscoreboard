@@ -601,7 +601,7 @@ class Category(flask_restful.Resource):
     def put(self, category_slug):
         category = models.Category.query.get_or_404(category_slug)
         category.name = get_field('name')
-        category.description = get_field('description', '')
+        category.description = get_field('description', category.description)
 
         app.logger.info('Category %s updated by %r.', category, models.User.current())
         models.commit()
