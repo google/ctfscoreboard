@@ -989,3 +989,17 @@ class AnswerTest(base.RestTestCase):
         self.assert403(resp)
         team = models.Team.query.get(self.client.team.tid)
         self.assertEqual(old_score, team.score)
+
+
+class ConfigTest(base.RestTestCase):
+
+    PATH = '/api/config'
+
+    def testGetConfig(self):
+        with self.queryLimit(0):
+            resp = self.client.get(self.PATH)
+        self.assert200(resp)
+
+    testGetConfigAuthenticated = base.authenticated_test(
+            testGetConfig)
+    testGetConfigAdmin = base.authenticated_test(testGetConfig)
