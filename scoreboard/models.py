@@ -321,7 +321,7 @@ class Category(db.Model):
     unlocked = db.Column(db.Boolean, default=True)
     challenges = db.relationship(
         'Challenge', backref=db.backref('category', lazy='joined'),
-        lazy='select')
+        lazy='joined')
 
     def __repr__(self):
         return '<Category: %s/%s>' % (self.slug, self.name)
@@ -416,7 +416,8 @@ class Challenge(db.Model):
     unlocked = db.Column(db.Boolean, default=False)
     weight = db.Column(db.Integer, nullable=False)  # Order for display
     prerequisite = db.Column(db.Text, nullable=False)  # Prerequisite Metadata
-    cat_slug = db.Column(db.String(100), db.ForeignKey('category.slug'))
+    cat_slug = db.Column(db.String(100), db.ForeignKey('category.slug'),
+            nullable=False)
     answers = db.relationship('Answer', backref=db.backref('challenge',
         lazy='joined'), lazy='select')
 

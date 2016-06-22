@@ -20,6 +20,7 @@ import hashlib
 import json
 import os
 import pytz
+from sqlalchemy import exc
 
 from scoreboard import attachments
 from scoreboard import auth
@@ -633,9 +634,14 @@ class Category(flask_restful.Resource):
     @utils.admin_required
     def delete(self, category_slug):
         category = models.Category.query.get_or_404(category_slug)
-        models.db.session.delete(category)
-        cache.clear()
-        models.commit()
+        try:
+            models.db.session.delete(category)
+            cache.clear()
+            models.commit()
+        except exc.IntegrityError:
+            models.db.session.rollback()
+            raise errors.ValidationError(
+                'Unable to delete category: make sure it is empty')
 
 
 class CategoryList(flask_restful.Resource):

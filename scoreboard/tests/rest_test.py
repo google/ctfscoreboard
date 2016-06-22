@@ -858,7 +858,8 @@ class CategoryTest(base.RestTestCase):
             'name': 'New',
             'description': 'New Category',
         }
-        resp = self.postJSON(self.PATH_LIST, data)
+        with self.queryLimit(6):
+            resp = self.postJSON(self.PATH_LIST, data)
         self.assert200(resp)
         for f in ('name', 'description'):
             self.assertEqual(data[f], resp.json[f])
@@ -867,7 +868,8 @@ class CategoryTest(base.RestTestCase):
             self.assertEqual(data[f], getattr(cat, f))
 
     def testDeleteCategoryFails(self):
-        resp = self.client.delete(self.PATH_SINGLE)
+        with self.queryLimit(0):
+            resp = self.client.delete(self.PATH_SINGLE)
         self.assert403(resp)
         self.assertIsNotNone(models.Category.query.get(self.cat.slug))
 
@@ -875,7 +877,18 @@ class CategoryTest(base.RestTestCase):
             testDeleteCategoryFails)
 
     @base.admin_test
-    def testDeleteCategory(self):
-        resp = self.client.delete(self.PATH_SINGLE)
+    def testDeleteNonEmptyCategory(self):
+        with self.queryLimit(3):
+            resp = self.client.delete(self.PATH_SINGLE)
+        self.assert400(resp)
+        self.assertIsNotNone(models.Category.query.get(self.cat.slug))
+
+    @base.admin_test
+    def testDeleteEmptyCategory(self):
+        for i in self.cat.challenges:
+            models.db.session.delete(i)
+        models.db.session.commit()
+        with self.queryLimit(3):
+            resp = self.client.delete(self.PATH_SINGLE)
         self.assert200(resp)
         self.assertIsNone(models.Category.query.get(self.cat.slug))
