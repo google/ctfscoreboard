@@ -604,7 +604,7 @@ class SessionTest(base.RestTestCase):
         self.assertTrue(resp.json['user']['admin'])
         self.assertItemsEqual(
                 {'tid': 0, 'score': 0, 'name': None,
-                    'solves': 0, 'code': None},
+                    'code': None},
                 resp.json['team'])
 
     def testSessionLoginSucceeds(self):
@@ -672,7 +672,7 @@ class SessionTest(base.RestTestCase):
     @base.authenticated_test
     def testSessionLogout(self):
         with self.client as c:
-            with self.queryLimit(0):
+            with self.queryLimit(1):
                 resp = c.delete(self.PATH)
             self.assert200(resp)
             self.assertIsNone(flask.session.get('user'))
@@ -824,7 +824,8 @@ class CategoryTest(base.RestTestCase):
         self.PATH_SINGLE %= self.cat.slug
 
     def _testGetList(self):
-        resp = self.client.get(self.PATH_LIST)
+        with self.queryLimit(3):
+            resp = self.client.get(self.PATH_LIST)
         self.assert200(resp)
         self.assertEqual(len(self.cats), len(resp.json['categories']))
         # TODO: check that the expected fields are visible and that others are
@@ -834,7 +835,8 @@ class CategoryTest(base.RestTestCase):
     testGetListAdmin = base.admin_test(_testGetList)
 
     def testGetListAnonymous(self):
-        resp = self.client.get(self.PATH_LIST)
+        with self.queryLimit(0):
+            resp = self.client.get(self.PATH_LIST)
         self.assert403(resp)
 
     def testCreateCategoryFails(self):
@@ -842,7 +844,8 @@ class CategoryTest(base.RestTestCase):
             'name': 'New',
             'description': 'New Category',
         }
-        resp = self.postJSON(self.PATH_LIST, data)
+        with self.queryLimit(0):
+            resp = self.postJSON(self.PATH_LIST, data)
         self.assert403(resp)
         self.assertEqual(len(self.cats), models.Category.query.count())
 

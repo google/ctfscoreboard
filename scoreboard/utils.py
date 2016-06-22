@@ -37,12 +37,19 @@ except ImportError:
     dateutil = None
 
 
+def is_logged_in():
+    try:
+        return flask.g.uid is not None
+    except AttributeError:
+        return False
+
+
 def login_required(f):
     """Decorator to require login for a method."""
 
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
-        if not flask.g.uid:
+        if not is_logged_in():
             raise errors.AccessDeniedError('You must be logged in.')
         return f(*args, **kwargs)
     return wrapper

@@ -48,8 +48,9 @@ class Team(db.Model):
         'User', backref=db.backref('team', lazy='joined'), lazy='dynamic')
     answers = db.relationship('Answer', backref='team', lazy='select',
             cascade='delete')
-    score_history = db.relationship('ScoreHistory', backref='team',
-            cascade='delete')
+    score_history = db.relationship('ScoreHistory',
+            backref=db.backref('team', lazy='joined'),
+            lazy='select', cascade='delete')
 
     def __repr__(self):
         return '<Team: %s>' % self.name.encode('utf-8')
@@ -245,12 +246,14 @@ class User(db.Model):
         except AttributeError:
             uid = flask.session.get('user')
             if uid is not None:
-                user = cls.query.get(uid)
+                # For some reason, .get() does not join!
+                user = cls.query.filter(cls.uid == uid).first()
                 flask.g.user = user
                 if user:
                     # Bump expiration time on session
                     utils.session_for_user(user)
                 return user
+
 
 tag_challenge_association = db.Table('tag_chall_association', db.Model.metadata,
         db.Column('challenge_cid', db.BigInteger,  db.ForeignKey('challenge.cid')),
@@ -425,7 +428,7 @@ class Challenge(db.Model):
             team = Team.current()
         if not team:
             return False
-        if answers:
+        if answers is not None:
             for a in answers:
                 if a.team_tid == team.tid and a.challenge_cid == self.cid:
                     return True
@@ -489,7 +492,7 @@ class Challenge(db.Model):
                     'non-existent challenge %d.', self.cid,
                     int(prereq['challenge']))
             return False
-        return chall.is_answered(team=team)
+        return chall.is_answered(team=team, answers=team.answers)
 
     @classmethod
     def create(cls, name, description, points, answer, slug, unlocked=False):

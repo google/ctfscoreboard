@@ -159,7 +159,7 @@ class UserList(flask_restful.Resource):
     @flask_restful.marshal_with(User.resource_fields)
     def post(self):
         """Register a new user."""
-        if models.User.current():
+        if utils.is_logged_in():
             raise errors.ValidationError('Cannot register while logged in.')
         data = flask.request.get_json()
         if not data.get('nick', ''):
@@ -279,16 +279,20 @@ class Session(flask_restful.Resource):
 
     """Represents a logged-in session, used for login/logout."""
 
-    team_fields = Team.team_fields.copy()
-    team_fields['code'] = fields.String
+    team_fields = {
+        'tid': fields.Integer,
+        'name': fields.String,
+        'score': fields.Integer,
+        'code': fields.String,
+    }
     resource_fields = {
         'user': fields.Nested(User.resource_fields),
         'team': fields.Nested(team_fields),
         'redirect': fields.String,
     }
 
-    @flask_restful.marshal_with(resource_fields)
     @utils.login_required
+    @flask_restful.marshal_with(resource_fields)
     def get(self):
         """Get the current session."""
         return dict(
