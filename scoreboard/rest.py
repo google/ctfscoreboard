@@ -684,7 +684,11 @@ class Answer(flask_restful.Resource):
         data = flask.request.get_json()
         answer = utils.normalize_input(data['answer'])
         points = controllers.submit_answer(data['cid'], answer)
-        models.commit()
+        try:
+            models.commit()
+        except (errors.IntegrityError, errors.FlushError):
+            models.db.session.rollback()
+            raise errors.AccessDeniedError("You've already solved that one!")
         cache.delete_team('cats/%d')
         cache.delete('scoreboard')
         return dict(points=points)

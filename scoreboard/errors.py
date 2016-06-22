@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Custom error classes
+# Custom error classes plus access to SQLAlchemy exceptions
 from werkzeug import exceptions
+
+from sqlalchemy.exc import *
+from sqlalchemy.orm.exc import *
 
 
 class _MessageException(exceptions.HTTPException):

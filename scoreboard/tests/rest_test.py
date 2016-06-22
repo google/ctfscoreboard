@@ -924,3 +924,68 @@ class CategoryTest(base.RestTestCase):
         self.assertEqual(data['name'], resp.json['name'])
         cat = models.Category.query.get(self.cat.slug)
         self.assertEqual(data['name'], cat.name)
+
+
+class AnswerTest(base.RestTestCase):
+
+    PATH = '/api/answers'
+
+    def setUp(self):
+        super(AnswerTest, self).setUp()
+        cat = models.Category.create('test', 'test')
+        self.answer = 'foobar'
+        self.points = 100
+        self.chall = models.Challenge.create('test', 'test', self.points,
+                self.answer, cat.slug, unlocked=True)
+        self.cid = self.chall.cid
+        models.db.session.commit()
+
+    def testSubmitAnonymous(self):
+        with self.queryLimit(0):
+            self.assert403(self.postJSON(self.PATH, {
+                'cid': self.cid,
+                'answer': self.answer,
+            }))
+
+    @base.admin_test
+    def testSubmitAdmin(self):
+        with self.queryLimit(0):
+            self.assert400(self.postJSON(self.PATH, {
+                'cid': self.cid,
+                'answer': self.answer,
+            }))
+
+    @base.authenticated_test
+    def testSubmitCorrect(self):
+        with self.queryLimit(6):
+            resp = self.postJSON(self.PATH, {
+                'cid': self.cid,
+                'answer': self.answer,
+            })
+        self.assert200(resp)
+        self.assertEqual(self.points, resp.json['points'])
+
+    @base.authenticated_test
+    def testSubmitIncorrect(self):
+        old_score = self.client.team.score
+        with self.queryLimit(2):
+            resp = self.postJSON(self.PATH, {
+                'cid': self.cid,
+                'answer': 'incorrect',
+            })
+        self.assert403(resp)
+        team = models.Team.query.get(self.client.team.tid)
+        self.assertEqual(old_score, team.score)
+
+    @base.authenticated_test
+    def testSubmitDouble(self):
+        models.Answer.create(self.chall, self.client.team, '')
+        old_score = self.client.team.score
+        with self.queryLimit(4):
+            resp = self.postJSON(self.PATH, {
+                'cid': self.cid,
+                'answer': self.answer,
+            })
+        self.assert403(resp)
+        team = models.Team.query.get(self.client.team.tid)
+        self.assertEqual(old_score, team.score)
