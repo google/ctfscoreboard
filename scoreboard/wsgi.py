@@ -17,6 +17,7 @@ from scoreboard import rest
 from scoreboard import views
 
 app = main.get_app()
+main.load_config_file(app)
 
 # Used here to catch accidental removal
 _modules_for_views = (rest, views)
