@@ -40,7 +40,7 @@ def create_app(config=None):
     app.config.from_object('scoreboard.config_defaults.Defaults')
     if config is not None:
         app.config.update(**config)
-    
+
     if not on_appengine():
         #Configure Scss to watch the files
         scss_compiler = flask_scss.Scss(app, static_dir='static/css', asset_dir='static/scss')
