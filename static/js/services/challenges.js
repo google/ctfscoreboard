@@ -42,6 +42,7 @@ challengeServices.service('tagService', [
 
         this.get = this.res.get;
         this.save = this.res.save;
+        this.create = this.res.create;
         this.delete = this.res.delete;
 
         this.getList = function(callback) {
