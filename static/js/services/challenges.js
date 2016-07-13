@@ -42,6 +42,7 @@ challengeServices.service('tagService', [
 
         this.get = this.res.get;
         this.save = this.res.save;
+        this.create = this.res.create;
         this.delete = this.res.delete;
 
         this.getList = function(callback) {
@@ -118,7 +119,7 @@ challengeServices.service('categoryService', [
       var categoryCache = $cacheFactory('categoryCache');
       this.catlist = null;
 
-      this.res = $resource('/api/categories/:cid', {}, {
+      this.res = $resource('/api/categories/:slug', {}, {
         'get': {method: 'GET', cache: categoryCache},
         'save': {method: 'PUT'},
         'create': {method: 'POST'},
