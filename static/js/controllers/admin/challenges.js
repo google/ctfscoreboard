@@ -500,7 +500,6 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
       $scope.attachmentType = 'new';
 
       attachService.get(function(data) {
-        console.log(data)
         $scope.allAttachments = data.attachments;
         $scope.updateAttachments();
       }, function(e) {
