@@ -22,6 +22,7 @@ import os
 import pytz
 import time
 import urlparse
+import re
 
 from random import SystemRandom
 random = SystemRandom()
@@ -140,6 +141,17 @@ def generate_id():
 def normalize_input(answer):
     """"Take a string and normalize it to a standard format."""
     return answer.strip().lower()
+
+
+email_regex = re.compile("^([\\w\\.]{3})[\\w\\.]*@([\\w\\.]{2})[\\w\\.]*\\.(\\w*)$")
+def obfuscate_email(user):
+    """Obfuscate a users email address, and return the result."""
+    if is_admin() or not app.config.get('OBFUSCATE_EMAILS'):
+        return user
+    email = user.email
+    match = email_regex.match(email)
+    user.email = match.group(1) + "...@" + match.group(2) + "..." + match.group(3)
+    return user
 
 class GameTime(object):
     """Manage start/end times for the game."""
