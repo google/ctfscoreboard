@@ -501,11 +501,14 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
 
       attachService.get(function(data) {
         $scope.allAttachments = data.attachments;
+        $scope.updateAttachments();
       }, function(e) {
         errorService.error(e);
       })
 
       var setSubtract = function(a, b, key) {
+        if (!a) return b;
+        if (!b) return [];
         var isIn = function(val) {
           for (var i = 0; i < a.length; i++) {
             if (a[i][key] == val) return true;
@@ -521,11 +524,13 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
         return out;
       }
 
-      $scope.$watch('challenge.attachments', function() {
+      $scope.updateAttachments = function () {
         if (!$scope.challenge) return;
         $scope.attachments = setSubtract($scope.challenge.attachments, $scope.allAttachments, 'aid');
         $scope.attachmentType = 'new';
-      }, true)
+      }
+
+      $scope.$watch('challenge.attachments', $scope.updateAttachments, true);
 
       var addAttachment = function(aid) {
         for (var i = 0; i < $scope.attachments.length; i++) {

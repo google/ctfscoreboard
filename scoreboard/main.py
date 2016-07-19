@@ -41,7 +41,6 @@ def create_app(config=None):
     if config is not None:
         app.config.update(**config)
 
-    load_config_file(app)
     if not on_appengine():
         #Configure Scss to watch the files
         scss_compiler = flask_scss.Scss(app, static_dir='static/css', asset_dir='static/scss')
