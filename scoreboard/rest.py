@@ -134,7 +134,7 @@ class User(flask_restful.Resource):
             user.set_password(data['password'])
         if utils.is_admin():
             user.nick = data['nick']
-            if not app.config.get('TEAMS'):
+            if not app.config.get('TEAMS') and user.team:
                 user.team.name = data['nick']
 
         try:
