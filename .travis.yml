@@ -1,0 +1,14 @@
+language: python
+sudo: false
+python:
+  - "2.7"
+
+install:
+  - pip install --user -r requirements.txt
+  - pip install coverage codecov
+
+script:
+  - coverage run main.py runtests
+
+after_success:
+  - codecov
