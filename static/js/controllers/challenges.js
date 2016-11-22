@@ -60,8 +60,8 @@ challengeCtrls.controller('CategoryCtrl', [
       loadingService) {
       errorService.clearErrors();
 
-      var refresh = function(cid) {
-        categoryService.get({cid: cid},
+      var refresh = function(slug) {
+        categoryService.get({slug: slug},
             function(cat) {
               $scope.category = cat;
               $scope.category.answers = {};
