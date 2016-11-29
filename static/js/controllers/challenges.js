@@ -66,6 +66,9 @@ challengeCtrls.controller('CategoryCtrl', [
               $scope.category = cat;
               $scope.category.answers = {};
               $scope.challenges = cat.challenges;
+              $scope.challenges.sort(function(a, b) {
+                return (a.weight - b.weight);
+              });
               loadingService.stop();
             });
       };
@@ -115,6 +118,11 @@ challengeCtrls.controller('ChallengeGridCtrl', [
       var refresh = function() {
           categoryService.getList(function(data) {
               $scope.categories = data.categories;
+              angular.forEach($scope.categories, function(c) {
+                c.challenges.sort(function(a, b) {
+                  return (a.weight - b.weight);
+                });
+              });
           });
       };
 
