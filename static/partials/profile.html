@@ -2,7 +2,8 @@
 <div class='row user-field'>
   <div class='col-md-5 col-md-offset-2'>
     <form ng-submit='updateProfile()' name='profileForm'>
-      <label for='team'>Team</label>
+      <label for='team'
+        ng-show='!!team && !!team.name || changing'>Team</label>
       <div class='form-group' ng-show='!!team && !!team.name || changing'>
         <div class='multiple'>
           <input type='text' ng-disabled='!changing' name='team' id='team' ng-model='team.name'
@@ -23,7 +24,8 @@
           </div>
         </div>
       </div>
-      <label for='team_code'>Team Invite Code</label>
+      <label for='team_code'
+        ng-show='!!team && !!team.code || changing'>Team Invite Code</label>
       <div class='form-group multiple' ng-show='!!team && !!team.code || changing'>
         <input type='text' ng-disabled='!changing' name='team_code' id='team_code'
           ng-model='team.code' class='form-control'>
