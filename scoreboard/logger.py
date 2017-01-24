@@ -19,14 +19,15 @@ import flask
 
 class Formatter(logging.Formatter):
     """Custom formatter to handle application logging.
-    
+
     This formatter adds a "client" attribute that will log the user and client
     information.
     """
 
     def format(self, record):
         if flask.request:
-            user = ('UID<%d>' % flask.g.uid) if 'uid' in flask.g and flask.g.uid else '-'
+            user = (('UID<%d>' % flask.g.uid)
+                    if 'uid' in flask.g and flask.g.uid else '-')
             record.client = "[{}/{}]".format(flask.request.remote_addr, user)
         else:
             record.client = ""
