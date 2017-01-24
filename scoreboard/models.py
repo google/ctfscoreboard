@@ -47,8 +47,9 @@ class Team(db.Model):
     players = db.relationship(
         'User', backref=db.backref('team', lazy='joined'), lazy='dynamic')
     answers = db.relationship('Answer', backref='team', lazy='select',
-            cascade='delete')
-    score_history = db.relationship('ScoreHistory',
+                              cascade='delete')
+    score_history = db.relationship(
+            'ScoreHistory',
             backref=db.backref('team', lazy='joined'),
             lazy='select', cascade='delete')
 
@@ -60,7 +61,8 @@ class Team(db.Model):
 
     @property
     def code(self):
-        return hmac.new(app.config.get('TEAM_SECRET_KEY'), self.name.encode('utf-8')).hexdigest()[:12]
+        return hmac.new(app.config.get('TEAM_SECRET_KEY'),
+                        self.name.encode('utf-8')).hexdigest()[:12]
 
     @property
     def solves(self):
@@ -125,9 +127,9 @@ class Team(db.Model):
 
 class ScoreHistory(db.Model):
     team_tid = db.Column(db.Integer, db.ForeignKey('team.tid'), nullable=False,
-            primary_key=True)
+                         primary_key=True)
     when = db.Column(db.DateTime, nullable=False, primary_key=True,
-            default=datetime.datetime.utcnow)
+                     default=datetime.datetime.utcnow)
     score = db.Column(db.Integer, default=0, nullable=False)
 
     @classmethod
@@ -148,7 +150,7 @@ class User(db.Model):
     admin = db.Column(db.Boolean, default=False)
     team_tid = db.Column(db.Integer, db.ForeignKey('team.tid'))
     create_ip = db.Column(db.String(45))     # max 45 bytes for IPv6
-    last_login_ip = db.Column(db.String(45))  
+    last_login_ip = db.Column(db.String(45))
 
     def set_password(self, password):
         self.pwhash = pbkdf2.crypt(password)
@@ -177,7 +179,8 @@ class User(db.Model):
         token_plain = '%d:%d:%s:%s' % (
                 self.uid, expires, token_type, self.pwhash)
         mac = hmac.new(
-                app.config.get('SECRET_KEY'), token_plain, hashlib.sha1).digest()
+                app.config.get('SECRET_KEY'), token_plain,
+                hashlib.sha1).digest()
         token = '%d:%s' % (expires, mac)
         return base64.urlsafe_b64encode(token)
 
@@ -255,20 +258,26 @@ class User(db.Model):
                 return user
 
 
-tag_challenge_association = db.Table('tag_chall_association', db.Model.metadata,
-        db.Column('challenge_cid', db.BigInteger,  db.ForeignKey('challenge.cid')),
-        db.Column('tag_tagslug',   db.String(100), db.ForeignKey('tag.tagslug')))
+tag_challenge_association = db.Table(
+        'tag_chall_association', db.Model.metadata,
+        db.Column('challenge_cid', db.BigInteger,
+                  db.ForeignKey('challenge.cid')),
+        db.Column('tag_tagslug', db.String(100),
+                  db.ForeignKey('tag.tagslug')))
 
 
 class Tag(db.Model):
     """A Tag to be Applied to Challenges"""
 
-    #To differentiate from a catslug
-    tagslug = db.Column(db.String(100), unique = True, primary_key=True, nullable=False, index=True)
+    # To differentiate from a catslug
+    tagslug = db.Column(db.String(100), unique=True, primary_key=True,
+                        nullable=False, index=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
     description = db.Column(db.Text)
-    challenges = db.relationship('Challenge', backref=db.backref('tags', lazy='joined'),
-                                 secondary='tag_chall_association', lazy='joined')
+    challenges = db.relationship('Challenge',
+                                 backref=db.backref('tags', lazy='joined'),
+                                 secondary='tag_chall_association',
+                                 lazy='joined')
 
     def __repr__(self):
         return '<Tag: %s/%s>' % (self.tagslug, self.name)
@@ -286,7 +295,8 @@ class Tag(db.Model):
         return tag
 
     def get_challenges(self, unlocked_only=True, sort=True, force_query=False):
-        if force_query or 'challenges' in sqlalchemy_base.inspect(self).unloaded:
+        if (force_query or
+                'challenges' in sqlalchemy_base.inspect(self).unloaded):
             return self._get_challenges_query(
                     unlocked_only=unlocked_only, sort=sort)
         return self._get_challenges_cached(
@@ -301,7 +311,8 @@ class Tag(db.Model):
         return challenges
 
     def _get_challenges_query(self, unlocked_only=True, sort=True):
-        challenges = Challenge.query.filter(Challenge.tags.any(tagslug=self.tagslug))
+        challenges = Challenge.query.filter(
+                Challenge.tags.any(tagslug=self.tagslug))
         if unlocked_only:
             unlocked_identity = True
             challenges = challenges.filter(
@@ -311,12 +322,12 @@ class Tag(db.Model):
         return challenges.order_by(Challenge.weight)
 
 
-
 class Category(db.Model):
     """A Category of Challenges."""
 
     name = db.Column(db.String(100), unique=True, nullable=False)
-    slug = db.Column(db.String(100), primary_key=True, unique=True, nullable=False, index=True)
+    slug = db.Column(db.String(100), primary_key=True, unique=True,
+                     nullable=False, index=True)
     description = db.Column(db.Text)
     unlocked = db.Column(db.Boolean, default=True)
     challenges = db.relationship(
@@ -375,7 +386,8 @@ class Category(db.Model):
         db.session.delete(self)
 
     def get_challenges(self, unlocked_only=True, sort=True, force_query=False):
-        if force_query or 'challenges' in sqlalchemy_base.inspect(self).unloaded:
+        if (force_query or
+                'challenges' in sqlalchemy_base.inspect(self).unloaded):
             return self._get_challenges_query(
                     unlocked_only=unlocked_only, sort=sort)
         return self._get_challenges_cached(
@@ -402,7 +414,7 @@ class Category(db.Model):
     @classmethod
     def joined_query(cls):
         return cls.query.options(orm.joinedload(cls.challenges)
-                                .joinedload(Challenge.answers))
+                                 .joinedload(Challenge.answers))
 
 
 class Challenge(db.Model):
@@ -419,9 +431,10 @@ class Challenge(db.Model):
     weight = db.Column(db.Integer, nullable=False)  # Order for display
     prerequisite = db.Column(db.Text, nullable=False)  # Prerequisite Metadata
     cat_slug = db.Column(db.String(100), db.ForeignKey('category.slug'),
-            nullable=False)
-    answers = db.relationship('Answer', backref=db.backref('challenge',
-        lazy='joined'), lazy='select')
+                         nullable=False)
+    answers = db.relationship('Answer',
+                              backref=db.backref('challenge', lazy='joined'),
+                              lazy='select')
 
     def __repr__(self):
         return '<Challenge: %d/%s>' % (self.cid, self.name)
@@ -455,7 +468,7 @@ class Challenge(db.Model):
             return False
         if not Team.current():
             return False
-        return not self.unlocked_for_team(Team.current()) 
+        return not self.unlocked_for_team(Team.current())
 
     def unlocked_for_team(self, team):
         """Checks if prerequisites are met for this team."""
@@ -467,7 +480,7 @@ class Challenge(db.Model):
             prereq = json.loads(self.prerequisite)
         except ValueError:
             logging.error('Unable to parse prerequisite data for challenge %d',
-                    self.cid)
+                          self.cid)
             return False
         if prereq['type'] == 'None':
             return True
@@ -485,8 +498,8 @@ class Challenge(db.Model):
         chall = Challenge.query.get(int(prereq['challenge']))
         if not chall:
             logging.error('Challenge %d prerequisite depends on '
-                    'non-existent challenge %d.', self.cid,
-                    int(prereq['challenge']))
+                          'non-existent challenge %d.', self.cid,
+                          int(prereq['challenge']))
             return False
         return chall.is_answered(team=team, answers=team.answers)
 
@@ -521,7 +534,9 @@ class Challenge(db.Model):
             aid_set.add(a['aid'])
             attachment = Attachment.query.get(a['aid'])
             if not attachment:
-                logging.warning('Trying to add attachment %s that does not exist: %s' % (a['filename'], a['aid']))
+                logging.warning(
+                        'Trying to add attachment %s that does not exist: %s' %
+                        (a['filename'], a['aid']))
             self.attachments.append(attachment)
 
         for a in old_attachments:
@@ -547,12 +562,12 @@ class Challenge(db.Model):
             if tag:
                 self.tags.append(tag)
             else:
-                app.logger.warning("Skipping tag %s which does not exist" % t['tagslug'])
+                app.logger.warning('Skipping tag %s which does not exist' %
+                                   t['tagslug'])
 
         for t in old_tags:
             if t.tagslug not in tag_set:
                 self.tags.remove(t)
-
 
     def update_answers(self, exclude_team=None):
         """Update answers for variable scoring."""
@@ -567,9 +582,15 @@ class Challenge(db.Model):
                 ScoreHistory.add_entry(a.team)
 
 
-attach_challenge_association = db.Table('attach_chall_association', db.Model.metadata,
-        db.Column('challenge_cid', db.BigInteger,  db.ForeignKey('challenge.cid')),
-        db.Column('attachment_aid',   db.String(64), db.ForeignKey('attachment.aid')))
+attach_challenge_association = db.Table(
+        'attach_chall_association', db.Model.metadata,
+        db.Column(
+            'challenge_cid', db.BigInteger,
+            db.ForeignKey('challenge.cid')),
+        db.Column(
+            'attachment_aid', db.String(64),
+            db.ForeignKey('attachment.aid')))
+
 
 class Attachment(db.Model):
     """Attachment to a challenge."""
@@ -579,8 +600,9 @@ class Attachment(db.Model):
     content_type = db.Column(db.String(100))
     storage_path = db.Column(db.String(256))
 
-    challenges = db.relationship('Challenge', backref=db.backref('attachments', lazy='joined'),
-                                 secondary='attach_chall_association', lazy='joined')
+    challenges = db.relationship(
+            'Challenge', backref=db.backref('attachments', lazy='joined'),
+            secondary='attach_chall_association', lazy='joined')
 
     def __str__(self):
         return repr(self)
@@ -611,7 +633,6 @@ class Attachment(db.Model):
         for a in old_challenges:
             if a.cid not in cid_set:
                 self.challenges.remove(a)
-
 
     @classmethod
     def create(cls, aid, filename, content_type):
@@ -647,12 +668,11 @@ class Answer(db.Model):
         if mode == 'progressive':
             return max((value / self.challenge.solves) + self.first_blood, 1)
 
-
     @classmethod
     def create(cls, challenge, team, answer_text):
         answer = cls()
         answer.first_blood = (app.config.get('FIRST_BLOOD')
-                if not challenge.solves else 0)
+                              if not challenge.solves else 0)
         answer.challenge = challenge
         answer.team = team
         answer.timestamp = datetime.datetime.utcnow()
@@ -721,7 +741,8 @@ class News(db.Model):
 
     @classmethod
     def for_public(cls, limit=10):
-        return cls.query.filter(cls.news_type != 'Unicast'
+        return cls.query.filter(
+                cls.news_type != 'Unicast'
                 ).order_by(cls.timestamp.desc()).limit(limit)
 
 
