@@ -13,7 +13,6 @@
 # limitations under the License.
 
 
-
 import functools
 import json
 import flask
@@ -49,6 +48,7 @@ global_cache = CacheWrapper(app)
 def rest_cache(f_or_key):
     """Mark a function for global caching."""
     override_cache_key = None
+
     def wrap_func(f):
         @functools.wraps(f)
         def wrapped(*args, **kwargs):
@@ -71,6 +71,7 @@ def rest_cache(f_or_key):
 def rest_team_cache(f_or_key):
     """Mark a function for per-team caching."""
     override_cache_key = None
+
     def wrap_func(f):
         @functools.wraps(f)
         def wrapped(*args, **kwargs):

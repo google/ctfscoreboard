@@ -49,7 +49,7 @@ def register_user(email, nick, password, team_id=None,
         if team_id == 'new':
             try:
                 app.logger.info('Creating new team %s for user %s',
-                        team_name, nick)
+                                team_name, nick)
                 team = models.Team.create(team_name)
             except exc.IntegrityError:
                 models.db.session.rollback()
@@ -82,6 +82,7 @@ def register_user(email, nick, password, team_id=None,
                     nick, email, flask.request.remote_addr)
     return user
 
+
 @utils.require_not_started
 def change_user_team(uid, team_tid, code):
     """Provide an interface for changing a user's team"""
@@ -96,13 +97,15 @@ def change_user_team(uid, team_tid, code):
     if team.tid == user.team_tid:
         raise errors.ValidationError('Changing to same team')
 
-    app.logger.info('User %s switched to team %s from %s' % (user.nick, team.name, old_team.name))
+    app.logger.info('User %s switched to team %s from %s' %
+                    (user.nick, team.name, old_team.name))
     user.team = team
     user.team_tid = team_tid
     flask.session['team'] = team_tid
 
     if old_team.players.count() == 0 and len(old_team.answers) == 0:
-        app.logger.info('Removing team %s due to lack of players' % old_team.name)
+        app.logger.info('Removing team %s due to lack of players' %
+                        old_team.name)
         models.db.session.delete(old_team)
 
     models.commit()
@@ -145,16 +148,18 @@ def submit_answer(cid, answer):
     finally:
         user = models.User.current()
         app.challenge_log.info(
-            'Player %s <%s>(%d)/Team %s(%d) submitted "%s" for Challenge %s<%d>: %s',
-            user.nick, user.email, user.uid, team.name, team.tid, answer, challenge.name,
-            challenge.cid, correct)
+            'Player %s <%s>(%d)/Team %s(%d) submitted '
+            '"%s" for Challenge %s<%d>: %s',
+            user.nick, user.email, user.uid, team.name, team.tid, answer,
+            challenge.name, challenge.cid, correct)
 
 
 def offer_password_reset(user):
     token = user.get_token()
     token_url = utils.absolute_url('/pwreset/%s/%s' %
-            (urllib.quote(user.email), token))
-    message = flask.render_template('pwreset.eml', token_url=token_url,
+                                   (urllib.quote(user.email), token))
+    message = flask.render_template(
+            'pwreset.eml', token_url=token_url,
             user=user, ip=flask.request.remote_addr, config=app.config)
     subject = '%s Password Reset' % app.config.get('TITLE')
     try:
