@@ -36,14 +36,15 @@ def attachment_dir(create=False):
     app.config_dir = components.path or components.netloc
     if app.config.get('CWD'):
         target_dir = os.path.normpath(os.path.join(app.config.get('CWD'),
-            app.config_dir))
+                                      app.config_dir))
     else:
         target_dir = os.path.abspath(app.config_dir)
     if not os.path.isdir(target_dir):
         if create:
             os.mkdir(target_dir)
         else:
-            app.logger.error('Missing or invalid ATTACHMENT_DIR: %s', target_dir)
+            app.logger.error('Missing or invalid ATTACHMENT_DIR: %s',
+                             target_dir)
             flask.abort(500)
     return target_dir
 
