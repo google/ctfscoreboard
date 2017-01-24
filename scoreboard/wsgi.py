@@ -17,8 +17,9 @@ from scoreboard import main
 app = main.get_app()
 main.load_config_file(app)
 
-from scoreboard import rest
-from scoreboard import views
+# These must be after config loading
+from scoreboard import rest   # nopep8
+from scoreboard import views  # nopep8
 
 # Used here to catch accidental removal
 _modules_for_views = (rest, views)
