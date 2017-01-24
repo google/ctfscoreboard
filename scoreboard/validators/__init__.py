@@ -14,9 +14,11 @@
 
 
 from . import static_pbkdf2
+from . import per_team
 
 _Validators = {
         'static_pbkdf2': static_pbkdf2.StaticPBKDF2Validator,
+        'per_team': per_team.PerTeamValidator,
         }
 
 
