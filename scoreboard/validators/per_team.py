@@ -22,6 +22,8 @@ from scoreboard.validators import base
 class PerTeamValidator(base.BaseValidator):
     """Creates a flag that's per-team."""
 
+    name = 'Per-Team'
+
     def validate_answer(self, answer, team):
         return utils.compare_digest(
                 self.construct_mac(team),

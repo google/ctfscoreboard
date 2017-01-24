@@ -754,6 +754,7 @@ class Config(flask_restful.Resource):
             register_url=auth.get_register_uri(),
             login_method=app.config.get('LOGIN_METHOD'),
             scoring=app.config.get('SCORING'),
+            validators=validators.ValidatorNames(),
             )
 
 api.add_resource(Config, '/api/config')

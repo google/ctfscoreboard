@@ -27,4 +27,8 @@ def GetValidatorForChallenge(challenge):
     return cls(challenge)
 
 
+def ValidatorNames():
+    return {k: getattr(v, 'name', k) for k,v in _Validators.iteritems()}
+
+
 __all__ = [GetValidatorForChallenge]

@@ -21,6 +21,8 @@ from scoreboard.validators import base
 class StaticPBKDF2Validator(base.BaseValidator):
     """PBKDF2-based secrets, everyone gets the same flag."""
 
+    name = 'Static'
+
     def validate_answer(self, answer, unused_team):
         return utils.compare_digest(
                 pbkdf2.crypt(answer, self.challenge.answer_hash),
