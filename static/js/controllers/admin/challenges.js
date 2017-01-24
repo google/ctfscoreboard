@@ -449,9 +449,10 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
     'adminStateService',
     'tagService',
     'attachService',
+    'configService',
     function($scope, $location, $routeParams, categoryService, challengeService,
       errorService, sessionService, uploadService, loadingService, adminStateService,
-      tagService, attachService) {
+      tagService, attachService, configService) {
       if (!sessionService.requireAdmin()) return;
 
       $scope.cid = $routeParams.cid;
@@ -459,6 +460,7 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
       $scope.addNewAttachment = false;
       $scope.action = 'New';
       $scope.editing = false;  // New or editing?
+      $scope.config = configService.get();
 
       var goEdit = function() {
         $scope.action = 'Edit';
@@ -522,13 +524,13 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
           }
         }
         return out;
-      }
+      };
 
       $scope.updateAttachments = function () {
         if (!$scope.challenge) return;
         $scope.attachments = setSubtract($scope.challenge.attachments, $scope.allAttachments, 'aid');
         $scope.attachmentType = 'new';
-      }
+      };
 
       $scope.$watch('challenge.attachments', $scope.updateAttachments, true);
 
@@ -540,7 +542,7 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
           }
         }
         errorService.error('Could not add attachment: '+aid);
-      }
+      };
 
       $scope.addAttachment = function() {
         if ($scope.attachmentType == 'new') {
@@ -550,7 +552,7 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
         } else {
           addAttachment($scope.attachmentType);
         }
-      }
+      };
 
       $scope.verifyFile = function() {
           // Verify existance by hash
@@ -630,7 +632,8 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
                 'attachments': [],
                 'prerequisite': {
                   'type': 'None'
-                }
+                },
+                'validator': 'static_pbkdf2'
             };
             var slug = adminStateService.getCategory();
             if (typeof slug === "string") {

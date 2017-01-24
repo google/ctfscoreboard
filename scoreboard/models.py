@@ -412,6 +412,8 @@ class Challenge(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
     points = db.Column(db.Integer, nullable=False)
+    validator = db.Column(db.String(24), nullable=False,
+            default='static_pbkdf2')
     answer_hash = db.Column(db.String(48))  # Protect answers
     unlocked = db.Column(db.Boolean, default=False)
     weight = db.Column(db.Integer, nullable=False)  # Order for display
@@ -436,13 +438,6 @@ class Challenge(db.Model):
             return False
         return bool(Answer.query.filter(Answer.challenge == self,
                                         Answer.team == team).count())
-
-    def verify_answer(self, answer):
-        return utils.compare_digest(
-                pbkdf2.crypt(answer, self.answer_hash), self.answer_hash)
-
-    def change_answer(self, answer):
-        self.answer_hash = pbkdf2.crypt(answer)
 
     @property
     def solves(self):

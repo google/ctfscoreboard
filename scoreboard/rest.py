@@ -32,6 +32,7 @@ from scoreboard import errors
 from scoreboard import main
 from scoreboard import models
 from scoreboard import utils
+from scoreboard import validators
 
 app = main.get_app()
 api = flask_restful.Api(app)
@@ -427,7 +428,8 @@ class Challenge(flask_restful.Resource):
                 challenge, field, data.get(field, getattr(challenge, field)))
         if 'answer' in data and data['answer']:
             answer = utils.normalize_input(data['answer'])
-            challenge.change_answer(answer)
+            validator = validators.GetValidatorForChallenge(challenge)
+            validator.change_answer(answer)
         if 'attachments' in data:
             challenge.set_attachments(data['attachments'])
         if 'prerequisite' in data:
@@ -752,6 +754,7 @@ class Config(flask_restful.Resource):
             register_url=auth.get_register_uri(),
             login_method=app.config.get('LOGIN_METHOD'),
             scoring=app.config.get('SCORING'),
+            validators=validators.ValidatorNames(),
             )
 
 api.add_resource(Config, '/api/config')

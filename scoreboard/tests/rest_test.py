@@ -1012,6 +1012,7 @@ class ConfigTest(base.RestTestCase):
                 'register_url',
                 'login_method',
                 'scoring',
+                'validators',
         ))
         self.assertEqual(expected_keys, set(resp.json.keys()))
 

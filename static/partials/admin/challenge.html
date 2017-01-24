@@ -33,11 +33,24 @@
           ng-model='challenge.description' required
           placeholder='Description'></textarea>
     </div>
-    <div class='form-group'>
-        <label for='answer'>Answer</label>
-        <input id='answer' name='answer' class='form-control'
-          placeholder='{{answerPlaceholder}}' ng-model='challenge.answer'
-          ng-required='!editing'>
+    <div class='row'>
+      <div class='col-md-6'>
+        <div class='form-group'>
+            <label for='validator'>Validator</label>
+            <select id='validator' name='validator' class='form-control'
+              ng-options='key as value for (key, value) in config.validators'
+              ng-model='challenge.validator' required>
+            </select>
+        </div>
+      </div>
+      <div class='col-md-6'>
+        <div class='form-group'>
+            <label for='answer'>Answer</label>
+            <input id='answer' name='answer' class='form-control'
+              placeholder='{{answerPlaceholder}}' ng-model='challenge.answer'
+              ng-required='!editing'>
+        </div>
+      </div>
     </div>
     <div class='form-group'>
         <label for='unlocked'>Unlocked</label>

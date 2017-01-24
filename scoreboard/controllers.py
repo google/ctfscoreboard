@@ -24,6 +24,7 @@ from scoreboard import mail
 from scoreboard import main
 from scoreboard import models
 from scoreboard import utils
+from scoreboard import validators
 
 app = main.get_app()
 
@@ -123,7 +124,8 @@ def submit_answer(cid, answer):
         challenge = models.Challenge.query.get(cid)
         if not challenge.unlocked_for_team(team):
             raise errors.AccessDeniedError('Challenge is locked!')
-        if challenge.verify_answer(answer):
+        validator = validators.GetValidatorForChallenge(challenge)
+        if validator.validate_answer(answer, team):
             ans = models.Answer.create(challenge, team, answer)
 
             if utils.GameTime.over():
