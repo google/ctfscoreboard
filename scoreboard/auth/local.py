@@ -43,7 +43,8 @@ def logout():
 
 def register(flask_request):
     data = flask_request.get_json()
-    user = controllers.register_user(data['email'], data['nick'],
+    user = controllers.register_user(
+            data['email'], data['nick'],
             data['password'], data.get('team_id'), data.get('team_name'),
             data.get('team_code'))
     return user
