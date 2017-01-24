@@ -23,8 +23,7 @@ import pytz
 import time
 import urlparse
 
-from random import SystemRandom
-random = SystemRandom()
+from random import SystemRandom as random
 
 from scoreboard import main
 
@@ -62,10 +61,14 @@ def admin_required(f):
     def wrapper(*args, **kwargs):
         try:
             if not flask.g.admin:
-                app.logger.error('Attempt by non-admin to access @admin_required resource.')
+                app.logger.error(
+                        'Attempt by non-admin to access '
+                        '@admin_required resource.')
                 flask.abort(403)
         except AttributeError:
-            app.logger.error('AttributeError by non-admin to access @admin_required resource.')
+            app.logger.error(
+                    'AttributeError by non-admin to access '
+                    '@admin_required resource.')
             flask.abort(403)
         return f(*args, **kwargs)
     return login_required(wrapper)
@@ -133,13 +136,16 @@ def absolute_url(path):
     """Build an absolute URL.  Not safe for untrusted input."""
     return urlparse.urljoin(flask.request.host_url, path)
 
+
 def generate_id():
     """Generate a unique identifier for the database"""
     return int(random.getrandbits(48))
 
+
 def normalize_input(answer):
     """"Take a string and normalize it to a standard format."""
     return answer.strip().lower()
+
 
 class GameTime(object):
     """Manage start/end times for the game."""
@@ -214,7 +220,8 @@ class GameTime(object):
     @classmethod
     def require_submittable(cls, f):
         """Decorator for requiring that the game may be submitted to."""
-        return cls.require_open(f, after_end=app.config.get('SUBMIT_AFTER_END'))
+        return cls.require_open(
+                f, after_end=app.config.get('SUBMIT_AFTER_END'))
 
     @classmethod
     def message(cls):

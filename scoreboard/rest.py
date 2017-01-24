@@ -65,8 +65,7 @@ class PrerequisiteField(fields.Raw):
         return data
 
 
-
-### Utility functions
+# Utility functions
 @api.representation('application/json')
 def output_json(data, code, headers=None):
     """Custom JSON output with JSONP buster."""
@@ -166,7 +165,7 @@ class UserList(flask_restful.Resource):
         if not data.get('nick', ''):
             raise errors.ValidationError('Need a player nick.')
         if (app.config.get('TEAMS') and not data.get('team_name', '') and not
-            data.get('team_id', 0)):
+                data.get('team_id', 0)):
             raise errors.ValidationError('Need a team name.')
         user = auth.register(flask.request)
         utils.session_for_user(user)
@@ -237,7 +236,8 @@ class Team(flask_restful.Resource):
     @flask_restful.marshal_with(resource_fields)
     def put(self, team_id):
         team = models.Team.query.get_or_404(team_id)
-        app.logger.info('Update of team %r by %r.', team, models.User.current())
+        app.logger.info('Update of team %r by %r.',
+                        team, models.User.current())
         data = flask.request.get_json()
         # Writable fields
         for field in ('name', 'score'):
@@ -274,7 +274,9 @@ class TeamChange(flask_restful.Resource):
         current = models.User.current()
         if not (current.admin or current.uid == get_field('uid')):
             raise errors.AccessDeniedError('Cannot Modify this User')
-        controllers.change_user_team(get_field('uid'), get_field('team_tid'), get_field('code'))
+        controllers.change_user_team(
+                get_field('uid'), get_field('team_tid'), get_field('code'))
+
 
 class Session(flask_restful.Resource):
 
@@ -366,7 +368,7 @@ api.add_resource(Team, '/api/teams/<int:team_id>')
 api.add_resource(Session, '/api/session')
 
 if app.config.get('LOGIN_METHOD') == 'local':
-	api.add_resource(PasswordReset, '/api/pwreset/<email>')
+    api.add_resource(PasswordReset, '/api/pwreset/<email>')
 
 
 class Challenge(flask_restful.Resource):
@@ -422,7 +424,8 @@ class Challenge(flask_restful.Resource):
         data = flask.request.get_json()
         old_unlocked = challenge.unlocked
         for field in (
-                'name', 'description', 'points', 'cat_slug', 'unlocked', 'weight'):
+                'name', 'description', 'points',
+                'cat_slug', 'unlocked', 'weight'):
             setattr(
                 challenge, field, data.get(field, getattr(challenge, field)))
         if 'answer' in data and data['answer']:
@@ -440,7 +443,8 @@ class Challenge(flask_restful.Resource):
             news = 'Challenge "%s" unlocked!' % challenge.name
             models.News.game_broadcast(message=news)
 
-        app.logger.info('Challenge %s updated by %r.', challenge, models.User.current())
+        app.logger.info('Challenge %s updated by %r.',
+                        challenge, models.User.current())
 
         models.commit()
         cache.clear()
@@ -490,8 +494,10 @@ class ChallengeList(flask_restful.Resource):
             models.News.game_broadcast(message=news)
 
         models.commit()
-        app.logger.info('Challenge %s created by %r.', chall, models.User.current())
+        app.logger.info('Challenge %s created by %r.',
+                        chall, models.User.current())
         return chall
+
 
 class Tag(flask_restful.Resource):
     """Single tag for challenges."""
@@ -510,7 +516,6 @@ class Tag(flask_restful.Resource):
     def get(self, tag_slug):
         tag = models.Tag.query.get_or_404(tag_slug)
         return self.get_challenges(tag)
-
 
     @utils.admin_required
     @flask_restful.marshal_with(resource_fields)
@@ -547,6 +552,7 @@ class Tag(flask_restful.Resource):
         res['challenges'] = list(challenges)
         return res
 
+
 class TagList(flask_restful.Resource):
     """List of all tags"""
 
@@ -572,7 +578,6 @@ class TagList(flask_restful.Resource):
         app.logger.info('Tag %s created by %r.', tag, models.User.current())
         cache.clear()
         return tag
-
 
 
 class Category(flask_restful.Resource):
@@ -603,7 +608,8 @@ class Category(flask_restful.Resource):
         category.name = get_field('name')
         category.description = get_field('description', category.description)
 
-        app.logger.info('Category %s updated by %r.', category, models.User.current())
+        app.logger.info('Category %s updated by %r.',
+                        category, models.User.current())
         models.commit()
         cache.clear()
         return self.get_challenges(category)
@@ -667,7 +673,8 @@ class CategoryList(flask_restful.Resource):
             get_field('name'),
             get_field('description', ''))
         models.commit()
-        app.logger.info('Category %s created by %r.', cat, models.User.current())
+        app.logger.info('Category %s created by %r.',
+                        cat, models.User.current())
         cache.clear()
         return cat
 
@@ -675,8 +682,9 @@ class CategoryList(flask_restful.Resource):
 class Answer(flask_restful.Resource):
     """Submit an answer."""
 
-    decorators = [utils.login_required, utils.team_required,
-            utils.require_submittable]
+    decorators = [utils.login_required,
+                  utils.team_required,
+                  utils.require_submittable]
 
     # TODO: get answers for admin?
 
@@ -834,6 +842,7 @@ class Page(flask_restful.Resource):
         models.commit()
         return {}
 
+
 class PageList(flask_restful.Resource):
     """Retrieve all pages available"""
 
@@ -846,10 +855,11 @@ class PageList(flask_restful.Resource):
 
     @flask_restful.marshal_with(resource_fields)
     def get(self):
-        return dict(pages = models.Page.query.all())
+        return dict(pages=models.Page.query.all())
 
 api.add_resource(Page, '/api/page/<path:path>')
 api.add_resource(PageList, '/api/page')
+
 
 class Attachment(flask_restful.Resource):
     """"Allow updating and deleting of individual files"""
@@ -880,20 +890,21 @@ class Attachment(flask_restful.Resource):
         attachment.filename = get_field('filename')
         attachment.set_challenges(get_field('challenges'))
 
-        app.logger.info('Attachment %s updated by %r.', attachment, models.User.current())
+        app.logger.info('Attachment %s updated by %r.',
+                        attachment, models.User.current())
         models.commit()
         cache.clear()
         return attachment
 
     def delete(self, aid):
         attachment = models.Attachment.query.get_or_404(aid)
-        #Probably do not need to delete from disk
+        # Probably do not need to delete from disk
         attachment.delete()
 
-        app.logger.info('Attachment %s deleted by %r.', attachment, models.User.current())
+        app.logger.info('Attachment %s deleted by %r.',
+                        attachment, models.User.current())
         models.commit()
         cache.clear()
-
 
 
 class AttachmentList(flask_restful.Resource):
@@ -983,8 +994,9 @@ class BackupRestore(flask_restful.Resource):
 
             for challenge in cat['challenges']:
                 newchall = models.Challenge()
-                for f in ('cid', 'name', 'description', 'points', 'answer_hash',
-                          'prerequisite', 'weight'):
+                for f in ('cid', 'name', 'description',
+                          'points', 'answer_hash', 'prerequisite',
+                          'weight'):
                     setattr(newchall, f, challenge.get(f, None))
                 newchall.category = newcat
                 models.db.session.add(newchall)
@@ -1011,11 +1023,11 @@ class CTFTimeScoreFeed(flask_restful.Resource):
     At this time, it is only intended to cover the manditory fields in the
     feed: https://ctftime.org/json-scoreboard-feed
     """
-    
+
     def get(self):
         standings = [{'pos': i, 'team': v.name, 'score': v.score}
-                for i, v in models.Team.enumerate()]
-        data = {'standings': standings} 
+                     for i, v in models.Team.enumerate()]
+        data = {'standings': standings}
         return data, 200, {'X-No-XSSI': 1}
 
 api.add_resource(CTFTimeScoreFeed, '/api/ctftime/scoreboard')
