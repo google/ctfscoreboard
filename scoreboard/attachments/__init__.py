@@ -31,6 +31,7 @@ app = main.get_app()
 
 backend = None
 
+
 def get_backend_path():
     """Get backend path for attachments."""
     return app.config.get('ATTACHMENT_BACKEND')
@@ -40,6 +41,7 @@ def get_backend_type():
     """Determine type of backend."""
     backend = get_backend_path()
     return urlparse.urlparse(backend).scheme
+
 
 def get_backend(_backend_type):
     backend = None
@@ -52,6 +54,7 @@ def get_backend(_backend_type):
     else:
         raise ImportError('Unhandled attachment backend %s' % _backend_type)
     return backend
+
 
 def patch(_backend_type):
     globals()['backend'] = get_backend(_backend_type)

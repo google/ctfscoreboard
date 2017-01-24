@@ -32,6 +32,7 @@ app = main.get_app()
 
 files = {}
 
+
 def send(attachment):
     """Send the attachment to the client."""
     return flask.send_file(files[attachment.aid],
