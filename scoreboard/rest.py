@@ -114,7 +114,7 @@ class User(flask_restful.Resource):
     def get(self, user_id):
         if not flask.g.uid == user_id and not flask.g.admin:
             raise errors.AccessDeniedError('No access to that user.')
-        return models.User.query.get_or_404(user_id)
+        return utils.obfuscate_email(models.User.query.get_or_404(user_id))
 
     @flask_restful.marshal_with(resource_fields)
     def put(self, user_id):
@@ -143,7 +143,7 @@ class User(flask_restful.Resource):
         except AssertionError:
                 raise errors.ValidationError(
                         'Error in updating user.  Details are logged.')
-        return user
+        return utils.obfuscate_email(user)
 
 
 class UserList(flask_restful.Resource):
@@ -156,7 +156,9 @@ class UserList(flask_restful.Resource):
     @utils.admin_required
     @flask_restful.marshal_with(resource_fields)
     def get(self):
-        return dict(users=models.User.query.all())
+            users = models.User.query.all()
+            users = map(utils.obfuscate_email, users)
+            return dict(users=users)
 
     @flask_restful.marshal_with(User.resource_fields)
     def post(self):
@@ -171,7 +173,7 @@ class UserList(flask_restful.Resource):
             raise errors.ValidationError('Need a team name.')
         user = auth.register(flask.request)
         utils.session_for_user(user)
-        return user
+        return utils.obfuscate_email(user)
 
 
 class Team(flask_restful.Resource):
@@ -229,7 +231,7 @@ class Team(flask_restful.Resource):
             result['solved_challenges'] = []
             result['score_history'] = []
         if team.can_access():
-            result['players'] = list(team.players.all())
+            result['players'] = map(utils.obfuscate_email, list(team.players.all()))
         else:
             result['players'] = []
         return result
@@ -298,7 +300,7 @@ class Session(flask_restful.Resource):
     def get(self):
         """Get the current session."""
         return dict(
-                user=models.User.current(),
+                user=utils.obfuscate_email(models.User.current()),
                 team=models.Team.current())
 
     @flask_restful.marshal_with(resource_fields)
@@ -312,7 +314,7 @@ class Session(flask_restful.Resource):
             return {}
         app.logger.info('%r logged in.', user)
         utils.session_for_user(user)
-        return dict(user=user, team=user.team)
+        return dict(user=utils.obfuscate_email(user), team=user.team)
 
     def delete(self):
         auth.logout()
