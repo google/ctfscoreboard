@@ -23,6 +23,8 @@ class PerTeamValidator(base.BaseValidator):
     """Creates a flag that's per-team."""
 
     name = 'Per-Team'
+    flag_gen = True
+    per_team = True
 
     def validate_answer(self, answer, team):
         return utils.compare_digest(

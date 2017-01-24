@@ -15,6 +15,11 @@
 
 class BaseValidator(object):
 
+    # Can we generate these flags?
+    flag_gen = False
+    # Is this flag per team?
+    per_team = False
+
     def __init__(self, challenge):
         self.challenge = challenge
 
