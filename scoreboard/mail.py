@@ -54,4 +54,3 @@ def send(message, subject, to, to_name=None, sender=None, sender_name=None):
             server.quit()
         except smtplib.SMTPException:
             pass
-
