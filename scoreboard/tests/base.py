@@ -25,7 +25,6 @@ import unittest
 
 import flask
 from flask import testing
-import flask_sqlalchemy
 import flask_testing
 from sqlalchemy import event
 
@@ -241,5 +240,6 @@ def json_monkeypatch():
         except Exception as exc:
             logging.exception('JSON monkeypatch failed: ', exc)
     flask.json.loads = new_loads
+
 
 json_monkeypatch()

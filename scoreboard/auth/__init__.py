@@ -30,8 +30,8 @@ from scoreboard import main
 
 _login_method = main.get_app().config.get('LOGIN_METHOD')
 if _login_method == 'local':
-    from scoreboard.auth.local import *
+    from scoreboard.auth.local import *  # noqa: F401,F403
 elif _login_method == 'appengine':
-    from scoreboard.auth.appengine import *
+    from scoreboard.auth.appengine import *  # noqa: F401,F403
 else:
     raise ImportError('Unhandled LOGIN_METHOD %s' % _login_method)
