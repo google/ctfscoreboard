@@ -26,9 +26,7 @@ import sqlalchemy as sqlalchemy_base
 import time
 import utils
 from sqlalchemy import exc
-from sqlalchemy import func
 from sqlalchemy import orm
-from sqlalchemy.orm import exc as orm_exc
 
 from scoreboard import attachments
 from scoreboard import errors

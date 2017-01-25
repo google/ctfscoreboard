@@ -59,4 +59,5 @@ def get_backend(_backend_type):
 def patch(_backend_type):
     globals()['backend'] = get_backend(_backend_type)
 
+
 backend = get_backend(get_backend_type())

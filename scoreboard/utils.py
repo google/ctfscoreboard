@@ -18,16 +18,16 @@ import flask
 import functools
 import hashlib
 import hmac
-import os
 import pytz
 import time
 import urlparse
 
-from random import SystemRandom as random
+from random import SystemRandom
 
 from scoreboard import main
 
 app = main.get_app()
+random = SystemRandom()
 
 # Use dateutil if available
 try:
@@ -242,6 +242,7 @@ class GameTime(object):
             return dt
         # TODO: parse with strptime
         raise RuntimeError('No parser available.')
+
 
 GameTime.setup()
 require_gametime = GameTime.require_open

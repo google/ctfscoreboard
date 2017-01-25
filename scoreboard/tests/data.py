@@ -114,7 +114,7 @@ def create_all():
 
     # Teams and players
     teams = make_teams()
-    players = make_players(teams)
+    make_players(teams)
 
     # Categories and challenges
     cats = make_categories()

@@ -16,9 +16,7 @@ import datetime
 import flask
 import flask_restful
 from flask_restful import fields
-import hashlib
 import json
-import os
 import pytz
 from sqlalchemy import exc
 
@@ -360,6 +358,7 @@ class PasswordReset(flask_restful.Resource):
         models.commit()
         controllers.user_login(email, data['password'])
         return {'message': 'Password reset.'}
+
 
 api.add_resource(UserList, '/api/users')
 api.add_resource(User, '/api/users/<int:user_id>')
@@ -703,6 +702,7 @@ class Answer(flask_restful.Resource):
         cache.delete('scoreboard')
         return dict(points=points)
 
+
 api.add_resource(Tag, '/api/tags/<string:tag_slug>')
 api.add_resource(TagList, '/api/tags')
 api.add_resource(Category, '/api/categories/<string:category_slug>')
@@ -738,6 +738,7 @@ class APIScoreboard(flask_restful.Resource):
              'score': v.score, 'history': v.score_history}
             for i, v in models.Team.enumerate(**opts)])
 
+
 api.add_resource(APIScoreboard, '/api/scoreboard')
 
 
@@ -764,6 +765,7 @@ class Config(flask_restful.Resource):
             scoring=app.config.get('SCORING'),
             validators=validators.ValidatorNames(),
             )
+
 
 api.add_resource(Config, '/api/config')
 
@@ -860,6 +862,7 @@ class PageList(flask_restful.Resource):
     def get(self):
         return dict(pages=models.Page.query.all())
 
+
 api.add_resource(Page, '/api/page/<path:path>')
 api.add_resource(PageList, '/api/page')
 
@@ -932,6 +935,7 @@ class AttachmentList(flask_restful.Resource):
     @flask_restful.marshal_with(resource_fields)
     def get(self):
         return dict(attachments=list(models.Attachment.query.all()))
+
 
 api.add_resource(Attachment, '/api/attachments/<string:aid>')
 api.add_resource(AttachmentList, '/api/attachments')
@@ -1017,6 +1021,7 @@ class BackupRestore(flask_restful.Resource):
         return {'message': '%d Categories and %d Challenges imported.' %
                 (len(cats), challs)}
 
+
 api.add_resource(BackupRestore, '/api/backup')
 
 
@@ -1033,6 +1038,7 @@ class CTFTimeScoreFeed(flask_restful.Resource):
         data = {'standings': standings}
         return data, 200, {'X-No-XSSI': 1}
 
+
 api.add_resource(CTFTimeScoreFeed, '/api/ctftime/scoreboard')
 
 
@@ -1043,6 +1049,7 @@ class Configz(flask_restful.Resource):
 
     def get(self):
         return repr(app.config)
+
 
 api.add_resource(Configz, '/api/configz')
 
@@ -1061,5 +1068,6 @@ class ToolsRecalculate(flask_restful.Resource):
         models.commit()
         cache.clear()
         return {'message': ('Recalculated, %d changed.' % changed)}
+
 
 api.add_resource(ToolsRecalculate, '/api/tools/recalculate')

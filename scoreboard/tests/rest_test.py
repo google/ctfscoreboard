@@ -24,6 +24,9 @@ from scoreboard import rest
 from scoreboard import utils
 from scoreboard import views
 
+# Needed imports
+_ = (rest, views)
+
 
 def makeTestUser():
     u = models.User.create('email@example.com', 'Nick', 'hunter2')
@@ -172,7 +175,7 @@ class UpdateTeam(base.RestTestCase):
     def testTeamChangeWorked(self):
         self.patchState()
         test_team = self.createTeam('test2')
-        resp = self.changeTeam(test_team.tid, test_team.code)
+        self.changeTeam(test_team.tid, test_team.code)
         tid = self.authenticated_client.user.team.tid
         self.assertEqual(tid, test_team.tid)
         self.restoreState()
@@ -183,7 +186,7 @@ class UpdateTeam(base.RestTestCase):
         test_team_first = self.createTeam('first')
         test_team_second = self.createTeam('second')
         self.changeTeam(test_team_first.tid, test_team_first.code)
-        resp = self.changeTeam(test_team_second.tid, test_team_second.code)
+        self.changeTeam(test_team_second.tid, test_team_second.code)
         tid = self.authenticated_client.user.team.tid
         self.assertEqual(tid, test_team_second.tid)
 
@@ -198,9 +201,9 @@ class UpdateTeam(base.RestTestCase):
         self.changeTeam(test_team_first.tid, test_team_first.code)
 
         chall = models.Challenge.create('Foo', 'Foo', 1, 'Foo', 'foo')
-        answer = models.Answer.create(chall, test_team_first, 'Foo')
+        models.Answer.create(chall, test_team_first, 'Foo')
 
-        resp = self.changeTeam(test_team_second.tid, test_team_second.code)
+        self.changeTeam(test_team_second.tid, test_team_second.code)
         tid = self.authenticated_client.user.team.tid
         self.assertEqual(tid, test_team_second.tid)
 
@@ -287,7 +290,7 @@ class AttachmentTest(base.RestTestCase):
     def testDeletionRemovesFile(self):
         postresp = self.uploadFile(self.name, self.text)
         with self.admin_client as c:
-            delresp = c.delete('/api/attachments/%s' % postresp.json['aid'])
+            c.delete('/api/attachments/%s' % postresp.json['aid'])
         with self.admin_client as c:
             getresp = c.get('/api/attachments/%s' % postresp.json['aid'])
             self.assert404(getresp)
@@ -309,9 +312,8 @@ class AttachmentTest(base.RestTestCase):
         new_name = "file.png"
         postresp = self.uploadFile(self.name, self.text)
         with self.admin_client as c:
-            putresp = c.put(
-                    '/api/attachments/%s' % postresp.json['aid'],
-                    data=json.dumps({
+            c.put('/api/attachments/%s' % postresp.json['aid'],
+                  data=json.dumps({
                         'filename': new_name,
                         'aid': postresp.json['aid'],
                         'challenges': [],
@@ -429,7 +431,7 @@ class UserTest(base.RestTestCase):
         user = self.authenticated_client.user
         team = self.authenticated_client.user.team
         chall = models.Challenge.create('Foo', 'Foo', 1, 'Foo', 'foo')
-        answer = models.Answer.create(chall, team, 'Foo')
+        models.Answer.create(chall, team, 'Foo')
         models.db.session.commit()
         data = {'nick': user.nick, 'admin': True}
         with self.queryLimit(3):
@@ -446,7 +448,7 @@ class UserTest(base.RestTestCase):
 
     @base.admin_test
     def testGetUsers(self):
-        user = self.admin_client.user
+        self.admin_client.user
         with self.queryLimit(1):
             resp = self.client.get('/api/users')
         self.assert200(resp)
@@ -507,7 +509,7 @@ class UserTest(base.RestTestCase):
             'team_name': None,
             'team_code': 'xxx',
         })
-        with self.client as c:
+        with self.client:
             with self.queryLimit(1):
                 resp = self.postJSON('/api/users', data)
             self.assert400(resp)
@@ -659,7 +661,7 @@ class SessionTest(base.RestTestCase):
             'email': 'no@example.com',
             'password': 'wrong',
         }
-        with self.client as c:
+        with self.client:
             with self.queryLimit(1):
                 resp = self.postJSON(self.PATH, data)
             self.assert403(resp)
@@ -674,7 +676,7 @@ class SessionTest(base.RestTestCase):
             'password': self.authenticated_client.password,
         }
         # This makes sure admin->non-admin downgrades properly
-        with self.client as c:
+        with self.client:
             with self.queryLimit(4):
                 resp = self.postJSON(self.PATH, data)
             self.assert200(resp)
