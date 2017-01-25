@@ -30,11 +30,13 @@ def makeTestUser():
     models.db.session.commit()
     return u
 
+
 def makeTestTeam(user):
     t = models.Team.create('Test')
     user.team = t
     models.db.session.commit()
     return t
+
 
 def makeTestChallenges():
     cats = data.make_categories()
@@ -150,7 +152,7 @@ class UpdateTeam(base.RestTestCase):
             'code': code
         })
 
-    def patchState(self, time = 'BEFORE'):
+    def patchState(self, time='BEFORE'):
         self._state = utils.GameTime.state
         utils.GameTime.state = staticmethod(lambda: time)
 
@@ -227,7 +229,7 @@ class AttachmentTest(base.RestTestCase):
             string = StringIO.StringIO()
             string.write(text)
             string.seek(0)
-            return c.post('/api/attachments', data = {
+            return c.post('/api/attachments', data={
                 'file': (string, filename)
             })
 
@@ -238,8 +240,11 @@ class AttachmentTest(base.RestTestCase):
     def testUploadFile(self):
         resp = self.uploadFile("test.txt", "This is a test")
         self.assert200(resp)
-        #Calculated using an external sha256 tool
-        self.assertEquals(resp.json['aid'], "c7be1ed902fb8dd4d48997c6452f5d7e509fbcdbe2808b16bcf4edce4c07d14e")
+        # Calculated using an external sha256 tool
+        self.assertEquals(
+                resp.json['aid'],
+                "c7be1ed902fb8dd4d48997c6452f5d7e"
+                "509fbcdbe2808b16bcf4edce4c07d14e")
 
     def testQueryFile(self):
         postresp = self.uploadFile(self.name, self.text)
@@ -291,22 +296,26 @@ class AttachmentTest(base.RestTestCase):
         new_name = "file.png"
         postresp = self.uploadFile(self.name, self.text)
         with self.admin_client as c:
-            putresp = c.put('/api/attachments/%s' % postresp.json['aid'], data = json.dumps({
-                'filename': new_name,
-                'aid': postresp.json['aid'],
-                'challenges': [],
-            }), content_type = "application/json")
+            putresp = c.put(
+                    '/api/attachments/%s' % postresp.json['aid'],
+                    data=json.dumps({
+                        'filename': new_name,
+                        'aid': postresp.json['aid'],
+                        'challenges': [],
+                        }), content_type="application/json")
             self.assert200(putresp)
 
     def testUpdateChangesName(self):
         new_name = "file.png"
         postresp = self.uploadFile(self.name, self.text)
         with self.admin_client as c:
-            putresp = c.put('/api/attachments/%s' % postresp.json['aid'], data = json.dumps({
-                'filename': new_name,
-                'aid': postresp.json['aid'],
-                'challenges': [],
-            }), content_type = "application/json")
+            putresp = c.put(
+                    '/api/attachments/%s' % postresp.json['aid'],
+                    data=json.dumps({
+                        'filename': new_name,
+                        'aid': postresp.json['aid'],
+                        'challenges': [],
+                        }), content_type="application/json")
             getresp = c.get('/api/attachments/%s' % postresp.json['aid'])
             self.assertEqual(getresp.json['filename'], new_name)
 
@@ -350,9 +359,10 @@ class UserTest(base.RestTestCase):
     @base.authenticated_test
     def testUpdateUser(self):
         user = self.authenticated_client.user
-        data = {'password': 'hunter3'} # for security
+        data = {'password': 'hunter3'}  # for security
         with self.queryLimit(2):
-            self.assert200(self.putJSON(self.PATH % user.uid,
+            self.assert200(self.putJSON(
+                self.PATH % user.uid,
                 data))
 
     @base.authenticated_test
@@ -371,7 +381,8 @@ class UserTest(base.RestTestCase):
             resp = self.putJSON(self.PATH % uid, data)
         self.assert200(resp)
         self.assertEqual('Lame', resp.json['nick'])
-        self.assertNotEqual('Lame',
+        self.assertNotEqual(
+                'Lame',
                 self.authenticated_client.user.team.name)
 
     @base.admin_test
@@ -589,9 +600,11 @@ class SessionTest(base.RestTestCase):
         with self.queryLimit(1):
             resp = self.client.get(self.PATH)
         self.assert200(resp)
-        self.assertEqual(self.authenticated_client.user.nick,
+        self.assertEqual(
+                self.authenticated_client.user.nick,
                 resp.json['user']['nick'])
-        self.assertEqual(self.authenticated_client.team.name,
+        self.assertEqual(
+                self.authenticated_client.team.name,
                 resp.json['team']['name'])
 
     @base.admin_test
@@ -599,7 +612,8 @@ class SessionTest(base.RestTestCase):
         with self.queryLimit(1):
             resp = self.client.get(self.PATH)
         self.assert200(resp)
-        self.assertEqual(self.admin_client.user.nick,
+        self.assertEqual(
+                self.admin_client.user.nick,
                 resp.json['user']['nick'])
         self.assertTrue(resp.json['user']['admin'])
         self.assertItemsEqual(
@@ -616,12 +630,15 @@ class SessionTest(base.RestTestCase):
             with self.queryLimit(4):
                 resp = self.postJSON(self.PATH, data)
             self.assert200(resp)
-            self.assertEqual(flask.session['user'],
+            self.assertEqual(
+                    flask.session['user'],
                     self.authenticated_client.user.uid)
-            self.assertEqual(flask.session['team'],
+            self.assertEqual(
+                    flask.session['team'],
                     self.authenticated_client.team.tid)
             self.assertFalse(flask.session['admin'])
-            self.assertEqual(flask.g.user.email,
+            self.assertEqual(
+                    flask.g.user.email,
                     self.authenticated_client.user.email)
 
     def testSessionLoginFailsBadPassword(self):
@@ -661,12 +678,15 @@ class SessionTest(base.RestTestCase):
             with self.queryLimit(4):
                 resp = self.postJSON(self.PATH, data)
             self.assert200(resp)
-            self.assertEqual(flask.session['user'],
+            self.assertEqual(
+                    flask.session['user'],
                     self.authenticated_client.user.uid)
-            self.assertEqual(flask.session['team'],
+            self.assertEqual(
+                    flask.session['team'],
                     self.authenticated_client.team.tid)
             self.assertFalse(flask.session['admin'])
-            self.assertEqual(flask.g.user.email,
+            self.assertEqual(
+                    flask.g.user.email,
                     self.authenticated_client.user.email)
 
     @base.authenticated_test
@@ -935,7 +955,8 @@ class AnswerTest(base.RestTestCase):
         cat = models.Category.create('test', 'test')
         self.answer = 'foobar'
         self.points = 100
-        self.chall = models.Challenge.create('test', 'test', self.points,
+        self.chall = models.Challenge.create(
+                'test', 'test', self.points,
                 self.answer, cat.slug, unlocked=True)
         self.cid = self.chall.cid
         models.db.session.commit()
@@ -1028,7 +1049,8 @@ class NewsTest(base.RestTestCase):
     def setUp(self):
         super(NewsTest, self).setUp()
         models.News.broadcast('test', 'Test message.')
-        models.News.unicast(self.authenticated_client.team.tid,
+        models.News.unicast(
+                self.authenticated_client.team.tid,
                 'test', 'Test team message.')
         models.commit()
 

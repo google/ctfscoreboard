@@ -25,7 +25,8 @@ class BaseValidator(object):
 
     def validate_answer(self, answer, team):
         """Validate the answer for the team."""
-        raise NotImplementedError('%s does not implement validate_answer.' %
+        raise NotImplementedError(
+                '%s does not implement validate_answer.' %
                 type(self).__name__)
 
     def change_answer(self, answer):

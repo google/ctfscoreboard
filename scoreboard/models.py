@@ -425,7 +425,7 @@ class Challenge(db.Model):
     description = db.Column(db.Text, nullable=False)
     points = db.Column(db.Integer, nullable=False)
     validator = db.Column(db.String(24), nullable=False,
-            default='static_pbkdf2')
+                          default='static_pbkdf2')
     answer_hash = db.Column(db.String(48))  # Protect answers
     unlocked = db.Column(db.Boolean, default=False)
     weight = db.Column(db.Integer, nullable=False)  # Order for display
