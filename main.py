@@ -18,7 +18,8 @@ import sys
 def main(argv):
     if argv[1] == 'runtests':
         from scoreboard.tests import base
-        base.run_all_tests()
+        if not base.run_all_tests():
+            sys.exit(1)
         return
 
     # This needs to only be imported when not testing
