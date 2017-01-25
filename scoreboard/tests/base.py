@@ -226,7 +226,8 @@ def run_all_tests():
     suite = unittest.defaultTestLoader.discover(
             test_dir, pattern='*_test.py',
             top_level_dir=top_dir)
-    unittest.TextTestRunner().run(suite)
+    result = unittest.TextTestRunner().run(suite)
+    return result.wasSuccessful()
 
 
 def json_monkeypatch():
