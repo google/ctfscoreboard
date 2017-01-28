@@ -15,11 +15,17 @@
 
 from . import static_pbkdf2
 from . import per_team
+from . import nonce
 
 _Validators = {
         'static_pbkdf2': static_pbkdf2.StaticPBKDF2Validator,
         'per_team': per_team.PerTeamValidator,
+        'nonce_166432': nonce.Nonce_16_64_Base32_Validator,
         }
+
+
+def GetDefaultValidator():
+    return 'static_pbkdf2'
 
 
 def GetValidatorForChallenge(challenge):

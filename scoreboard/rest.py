@@ -388,6 +388,7 @@ class Challenge(flask_restful.Resource):
         'weight': fields.Integer,
         'prerequisite': PrerequisiteField,
         'teaser': fields.Boolean,
+        'validator': fields.String,
     }
     attachment_fields = {
         'aid': fields.String,
@@ -425,7 +426,7 @@ class Challenge(flask_restful.Resource):
         old_unlocked = challenge.unlocked
         for field in (
                 'name', 'description', 'points',
-                'cat_slug', 'unlocked', 'weight'):
+                'cat_slug', 'unlocked', 'weight', 'validator'):
             setattr(
                 challenge, field, data.get(field, getattr(challenge, field)))
         if 'answer' in data and data['answer']:
@@ -480,9 +481,12 @@ class ChallengeList(flask_restful.Resource):
             data['name'],
             data['description'],
             data['points'],
-            answer,
+            '',
             data['cat_slug'],
-            unlocked)
+            unlocked,
+            data.get('validator', validators.GetDefaultValidator()))
+        validator = validators.GetValidatorForChallenge(chall)
+        validator.change_answer(answer)
         if 'attachments' in data:
             chall.set_attachments(data['attachments'])
         if 'prerequisite' in data:
