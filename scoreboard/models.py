@@ -770,6 +770,7 @@ class NonceFlagUsed(db.Model):
         entity.team_tid = team.tid
         db.session.add(entity)
 
+
 # Shortcut for commiting
 def commit():
     db.session.commit()

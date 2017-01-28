@@ -18,6 +18,7 @@ from scoreboard import errors
 from scoreboard import models
 from scoreboard import validators
 
+
 class ChallengeStub(object):
 
     def __init__(self, answer, validator='static_pbkdf2'):
