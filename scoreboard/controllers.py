@@ -146,7 +146,7 @@ def submit_answer(cid, answer):
                 return ans.current_points
         else:
             raise errors.InvalidAnswerError('Really?  Haha no....')
-    except:
+    except errors.IntegrityError:
         models.db.session.rollback()
         raise
     finally:
