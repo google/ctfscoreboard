@@ -146,6 +146,9 @@ def submit_answer(cid, answer):
                 return ans.current_points
         else:
             raise errors.InvalidAnswerError('Really?  Haha no....')
+    except:
+        models.db.session.rollback()
+        raise
     finally:
         user = models.User.current()
         app.challenge_log.info(

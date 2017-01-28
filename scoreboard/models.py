@@ -502,15 +502,17 @@ class Challenge(db.Model):
         return chall.is_answered(team=team, answers=team.answers)
 
     @classmethod
-    def create(cls, name, description, points, answer, slug, unlocked=False):
+    def create(cls, name, description, points, answer, slug, unlocked=False,
+               validator='static_pbkdf2'):
         challenge = cls()
         challenge.name = name
         challenge.description = description
         challenge.cid = utils.generate_id()
         challenge.points = points
-        challenge.answer_hash = pbkdf2.crypt(answer)
+        challenge.answer_hash = answer
         challenge.cat_slug = slug
         challenge.unlocked = unlocked
+        challenge.validator = validator
         weight = db.session.query(db.func.max(Challenge.weight)).scalar()
         challenge.weight = (weight + 1) if weight else 1
         challenge.prerequisite = ''
@@ -751,6 +753,22 @@ class Page(db.Model):
     title = db.Column(db.String(100), nullable=False)
     contents = db.Column(db.Text, nullable=False)
 
+
+class NonceFlagUsed(db.Model):
+    """Single-time used flags."""
+
+    challenge_cid = db.Column(db.BigInteger, db.ForeignKey('challenge.cid'),
+                              primary_key=True)
+    nonce = db.Column(db.BigInteger, primary_key=True)
+    team_tid = db.Column(db.Integer, db.ForeignKey('team.tid'))
+
+    @classmethod
+    def create(cls, challenge, nonce, team):
+        entity = cls()
+        entity.challenge_cid = challenge.cid
+        entity.nonce = nonce
+        entity.team_tid = team.tid
+        db.session.add(entity)
 
 # Shortcut for commiting
 def commit():
