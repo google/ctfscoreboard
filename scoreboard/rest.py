@@ -696,7 +696,11 @@ class Answer(flask_restful.Resource):
     def post(self):
         data = flask.request.get_json()
         answer = utils.normalize_input(data['answer'])
-        points = controllers.submit_answer(data['cid'], answer)
+        try:
+            points = controllers.submit_answer(data['cid'], answer)
+        except errors.IntegrityError:
+            raise errors.AccessDeniedError(
+                    'Previously solved or flag already used.')
         try:
             models.commit()
         except (errors.IntegrityError, errors.FlushError):

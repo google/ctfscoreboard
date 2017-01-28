@@ -51,7 +51,11 @@ class BaseNonceValidator(base.BaseValidator):
 
     def validate_answer(self, answer, team):
         """Validate the nonce-based flag."""
-        decoded_answer = self._decode(answer)
+        try:
+            decoded_answer = self._decode(answer)
+        except TypeError:
+            app.logger.error('Invalid padding for answer.')
+            return False
         if len(decoded_answer) != (
                 self.NONCE_BITS + self.AUTHENTICATOR_BITS) / 8:
             app.logger.error('Invalid length of decoded answer in %s',
@@ -106,4 +110,6 @@ class Nonce_16_64_Base32_Validator(BaseNonceValidator):
 
     @staticmethod
     def _decode(buf):
+        if isinstance(buf, unicode):
+            buf = buf.encode('utf-8')
         return base64.b32decode(buf, casefold=True, map01='I')
