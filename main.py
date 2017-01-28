@@ -16,7 +16,7 @@ import sys
 
 
 def main(argv):
-    if argv[1] == 'runtests':
+    if len(argv) > 1 and argv[1] == 'runtests':
         from scoreboard.tests import base
         if not base.run_all_tests():
             sys.exit(1)
