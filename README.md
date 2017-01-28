@@ -76,6 +76,9 @@ users API.
 [![Build Status](https://travis-ci.org/google/ctfscoreboard.svg?branch=master)](https://travis-ci.org/google/ctfscoreboard)
 [![codecov](https://codecov.io/gh/google/ctfscoreboard/branch/master/graph/badge.svg)](https://codecov.io/gh/google/ctfscoreboard)
 
+**Use hooks**
+
+    ln -s ../../.hooks/pre-commit.sh .git/hooks/pre-commit
 
 **Test Cases**
 
