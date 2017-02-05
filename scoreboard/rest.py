@@ -711,6 +711,23 @@ class Answer(flask_restful.Resource):
         return dict(points=points)
 
 
+class Validator(flask_restful.Resource):
+    """Allow admins to test an answer."""
+
+    decorators = [utils.admin_required]
+
+    def post(self):
+        data = flask.request.get_json()
+        answer = utils.normalize_input(data['answer'])
+        try:
+            correct = controllers.test_answer(data['cid'], answer)
+        except errors.IntegrityError:
+            raise errors.InvalidAnswerError('Invalid answer.')
+        if not correct:
+            raise errors.InvalidAnswerError('Invalid answer.')
+        return dict(message='Answer OK.')
+
+
 api.add_resource(Tag, '/api/tags/<string:tag_slug>')
 api.add_resource(TagList, '/api/tags')
 api.add_resource(Category, '/api/categories/<string:category_slug>')
@@ -718,6 +735,7 @@ api.add_resource(CategoryList, '/api/categories')
 api.add_resource(ChallengeList, '/api/challenges')
 api.add_resource(Challenge, '/api/challenges/<int:challenge_id>')
 api.add_resource(Answer, '/api/answers')
+api.add_resource(Validator, '/api/validator')
 
 
 class APIScoreboard(flask_restful.Resource):
