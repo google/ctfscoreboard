@@ -21,6 +21,7 @@ _Validators = {
         'static_pbkdf2': static_pbkdf2.StaticPBKDF2Validator,
         'per_team': per_team.PerTeamValidator,
         'nonce_166432': nonce.Nonce_16_64_Base32_Validator,
+        'nonce_328832': nonce.Nonce_32_88_Base32_Validator,
         }
 
 

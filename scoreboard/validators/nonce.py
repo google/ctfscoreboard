@@ -99,11 +99,12 @@ class BaseNonceValidator(base.BaseValidator):
         return struct.unpack('>Q', pad + nonce)[0]
 
 
-class Nonce_16_64_Base32_Validator(BaseNonceValidator):
+class Base32Validator(BaseNonceValidator):
 
-    name = 'Nonce: 16 bits, 64 bit validator, Base32 encoded'
-    NONCE_BITS = 16
-    AUTHENTICATOR_BITS = 64
+    def __init__(self, *args, **kwargs):
+        if (self.NONCE_BITS + self.AUTHENTICATOR_BITS) % 5 != 0:
+            raise ValueError('Length must be a mulitple of 5 bits.')
+        super(Base32Validator, self).__init__(*args, **kwargs)
 
     @staticmethod
     def _encode(buf):
@@ -114,3 +115,17 @@ class Nonce_16_64_Base32_Validator(BaseNonceValidator):
         if isinstance(buf, unicode):
             buf = buf.encode('utf-8')
         return base64.b32decode(buf, casefold=True, map01='I')
+
+
+class Nonce_16_64_Base32_Validator(Base32Validator):
+
+    name = 'Nonce: 16 bits, 64 bit validator, Base32 encoded'
+    NONCE_BITS = 16
+    AUTHENTICATOR_BITS = 64
+
+
+class Nonce_32_88_Base32_Validator(Base32Validator):
+
+    name = 'Nonce: 32 bits, 88 bit validator, Base32 encoded'
+    NONCE_BITS = 32
+    AUTHENTICATOR_BITS = 88
