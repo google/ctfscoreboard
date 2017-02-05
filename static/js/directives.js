@@ -431,7 +431,7 @@ sbDirectives.directive('challengeBox', [
               loadingService.stop();
               closeModal();
             };
-            if (scope.isAdmin) {
+            if (scope.isAdmin()) {
               validatorService.create(
                 {cid: scope.chall.cid, answer: scope.chall.answer},
                 function(resp) {
