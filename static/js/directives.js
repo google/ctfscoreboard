@@ -1,6 +1,6 @@
 /**
  * Copyright 2016 Google Inc. All Rights Reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -224,7 +224,7 @@ sbDirectives.directive('scoreChart', [
                 set.data.push({x: endPointDate, y: last.score});
               datasets.push(set);
             });
-            
+
             var options = {
               pointDot: false,
               scaleType: "date",
@@ -364,8 +364,9 @@ sbDirectives.directive('challengeBox', [
     'loadingService',
     'scoreService',
     'sessionService',
+    'validatorService',
     function($resource, $location, $rootscope, answerService, errorService,
-      loadingService, scoreService, sessionService) {
+      loadingService, scoreService, sessionService, validatorService) {
       return {
         restrict: 'AE',
         templateUrl: '/partials/components/challenge.html',
@@ -426,19 +427,35 @@ sbDirectives.directive('challengeBox', [
           scope.submitChallenge = function() {
             loadingService.start();
             errorService.clearErrors();
-            answerService.create({cid: scope.chall.cid, answer: scope.chall.answer},
+            var done = function() {
+              loadingService.stop();
+              closeModal();
+            };
+            if (scope.isAdmin) {
+              validatorService.create(
+                {cid: scope.chall.cid, answer: scope.chall.answer},
+                function(resp) {
+                  errorService.error(resp.message, 'success');
+                  done();
+                },
+                function(resp) {
+                  errorService.error(resp);
+                  done();
+                });
+              return;
+            }
+            answerService.create(
+                {cid: scope.chall.cid, answer: scope.chall.answer},
                 function(resp) {
                   scope.chall.answered = true;
                   errorService.error(
                       'Congratulations, ' + resp.points + ' points awarded!',
                       'success');
-                  loadingService.stop();
-                  closeModal();
+                  done();
                 },
                 function(resp){
                   errorService.error(resp);
-                  loadingService.stop();
-                  closeModal();
+                  done();
                 });
           };
 
