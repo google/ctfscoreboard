@@ -173,6 +173,22 @@ challengeServices.service('answerService', [
       };
     }]);
 
+challengeServices.service('validatorService', [
+    '$resource',
+    '$rootScope',
+    function($resource, $rootScope) {
+      this.res = $resource('/api/validator', {}, {
+        'create': {method: 'POST'}
+      });
+      this.create = function(what, success, failure) {
+        this.res.create(what,
+            function(resp) {
+              success(resp);
+            },
+            failure);
+      };
+    }]);
+
 challengeServices.service('scoreService', [
     'configService',
     function(configService) {

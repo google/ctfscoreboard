@@ -158,6 +158,16 @@ def submit_answer(cid, answer):
             challenge.name, challenge.cid, correct)
 
 
+def test_answer(cid, answer):
+    """Tests an answer, returns Truthiness of answer."""
+    try:
+        challenge = models.Challenge.query.get(cid)
+        validator = validators.GetValidatorForChallenge(challenge)
+        return validator.validate_answer(answer, None)
+    except errors.IntegrityError:
+        return False
+
+
 def offer_password_reset(user):
     token = user.get_token()
     token_url = utils.absolute_url('/pwreset/%s/%s' %

@@ -70,9 +70,10 @@ class BaseNonceValidator(base.BaseValidator):
         # At this point, it's a valid flag, but need to check for reuse.
         # We do this by inserting and primary key checks will fail in the
         # commit phase.
-        models.NonceFlagUsed.create(
-                self.challenge, self.unpack_nonce(nonce),
-                team)
+        if team:
+            models.NonceFlagUsed.create(
+                    self.challenge, self.unpack_nonce(nonce),
+                    team)
         return True
 
     def compute_authenticator(self, nonce):
