@@ -27,6 +27,8 @@ class PerTeamValidator(base.BaseValidator):
     per_team = True
 
     def validate_answer(self, answer, team):
+        if not team:
+            return False
         return utils.compare_digest(
                 self.construct_mac(team),
                 answer)

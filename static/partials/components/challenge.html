@@ -13,7 +13,7 @@
         <a href='/attachment/{{attachment.aid}}' target='_self'>{{attachment.filename}}</a>
       </li>
     </ul>
-    <div ng-hide='isAdmin()'>
+    <div>
       <!-- if solved -->
       <span class='alert alert-success solved ng-hide'
         ng-show='chall.answered'>Solved</span>
@@ -27,7 +27,8 @@
               id='answer-{{chall.cid}}' ng-model='chall.answer'
               required>
           </div>
-          <input type='submit' value='Submit' class='btn btn-primary'
+          <input type='submit' ng-value='isAdmin() ? "Validate" : "Submit"'
+            class='btn btn-primary'
             ng-disabled='challengeForm.$invalid'>
         </form>
       </div> <!-- end submission -->
