@@ -124,6 +124,13 @@ class Nonce_16_64_Base32_Validator(Base32Validator):
     AUTHENTICATOR_BITS = 64
 
 
+class Nonce_24_56_Base32_Validator(Base32Validator):
+
+    name = 'Nonce: 24 bits, 56 bit validator, Base32 encoded'
+    NONCE_BITS = 24
+    AUTHENTICATOR_BITS = 56
+
+
 class Nonce_32_88_Base32_Validator(Base32Validator):
 
     name = 'Nonce: 32 bits, 88 bit validator, Base32 encoded'
