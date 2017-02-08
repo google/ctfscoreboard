@@ -688,12 +688,39 @@ class Answer(flask_restful.Resource):
     """Submit an answer."""
 
     decorators = [utils.login_required,
-                  utils.team_required,
                   utils.require_submittable]
 
     # TODO: get answers for admin?
 
     def post(self):
+        if utils.is_admin():
+            return self.post_admin()
+        return self.post_player()
+
+    @utils.admin_required
+    def post_admin(self):
+        challenge = models.Challenge.query.get(data['cid'])
+        team = models.Team.query.get(data['tid'])
+        if not challenge or not team:
+            raise errors.ValidationError('Requires team and challenge.')
+        user = models.User.current()
+        app.challenge_log.info(
+                'Admin %s <%s> submitting flag for challenge %s <%d>, '
+                'team %s <%d>',
+                user.nick, user.email, challenge.name, challenge.cid,
+                team.name, team.tid)
+        try:
+            points = controllers.save_team_answer(challenge, team, None)
+        except (errors.IntegrityError, errors.FlushError) as ex:
+            app.logger.exception(
+                    'Unable to save answer for %s/%s: %s',
+                    str(data['tid']), str(data['tid']), str(ex))
+            models.db.session.rollback()
+            raise errors.AccessDeniedError(
+                'Unable to save answer for team. See log for details.')
+        return dict(points=points)
+
+    def post_player(self):
         data = flask.request.get_json()
         answer = utils.normalize_input(data['answer'])
         try:
