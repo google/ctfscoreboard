@@ -693,12 +693,17 @@ class Answer(flask_restful.Resource):
     # TODO: get answers for admin?
 
     def post(self):
+        data = flask.request.get_json()
         if utils.is_admin():
-            return self.post_admin()
-        return self.post_player()
+            return self.post_admin(data)
+        return self.post_player(data)
 
     @utils.admin_required
-    def post_admin(self):
+    def post_admin(self, data):
+        cid = data.get('cid', None)
+        tid = data.get('tid', None)
+        if not cid or not tid:
+            raise errors.ValidationError('Requires team and challenge.')
         challenge = models.Challenge.query.get(data['cid'])
         team = models.Team.query.get(data['tid'])
         if not challenge or not team:
@@ -718,10 +723,11 @@ class Answer(flask_restful.Resource):
             models.db.session.rollback()
             raise errors.AccessDeniedError(
                 'Unable to save answer for team. See log for details.')
+        cache.delete('cats/%d' % tid)
+        cache.delete('scoreboard')
         return dict(points=points)
 
-    def post_player(self):
-        data = flask.request.get_json()
+    def post_player(self, data):
         answer = utils.normalize_input(data['answer'])
         try:
             points = controllers.submit_answer(data['cid'], answer)

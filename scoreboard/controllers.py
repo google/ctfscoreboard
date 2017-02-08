@@ -132,7 +132,12 @@ def submit_answer(cid, answer):
             raise errors.AccessDeniedError('Challenge is locked!')
         validator = validators.GetValidatorForChallenge(challenge)
         if validator.validate_answer(answer, team):
-            save_team_answer(challenge, team, answer)
+            points = save_team_answer(challenge, team, answer)
+            if utils.GameTime.over():
+                correct = 'CORRECT (Game Over)'
+            else:
+                correct = 'CORRECT'
+            return points
         else:
             raise errors.InvalidAnswerError('Really?  Haha no....')
     except errors.IntegrityError:
@@ -152,20 +157,14 @@ def save_team_answer(challenge, team, answer):
     """Create the answer entry and update the scores."""
     ans = models.Answer.create(challenge, team, answer)
 
-    if utils.GameTime.over():
-        correct = 'CORRECT (Game Over)'
-    else:
-        team.score += ans.current_points
-        correct = 'CORRECT'
-
     team.last_solve = datetime.datetime.utcnow()
     models.ScoreHistory.add_entry(team)
     challenge.update_answers(exclude_team=team)
 
     if utils.GameTime.over():
         return 0
-    else:
-        return ans.current_points
+    team.score += ans.current_points
+    return ans.current_points
 
 
 def test_answer(cid, answer):

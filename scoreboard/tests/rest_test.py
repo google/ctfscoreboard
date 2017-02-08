@@ -971,12 +971,24 @@ class AnswerTest(base.RestTestCase):
             }))
 
     @base.admin_test
-    def testSubmitAdmin(self):
+    def testSubmitAdmin_Regular(self):
         with self.queryLimit(0):
             self.assert400(self.postJSON(self.PATH, {
                 'cid': self.cid,
                 'answer': self.answer,
             }))
+
+    @base.admin_test
+    def testSubmitAdmin_Override(self):
+        team = models.Team.create('crash_override')
+        models.db.session.commit()
+        with self.queryLimit(6):
+            resp = self.postJSON(self.PATH, {
+                'cid': self.cid,
+                'tid': team.tid,
+            })
+        self.assert200(resp)
+        self.assertEqual(self.points, resp.json['points'])
 
     @base.authenticated_test
     def testSubmitCorrect(self):
@@ -986,6 +998,7 @@ class AnswerTest(base.RestTestCase):
                 'answer': self.answer,
             })
         self.assert200(resp)
+        print resp.json
         self.assertEqual(self.points, resp.json['points'])
 
     @base.authenticated_test
@@ -1018,30 +1031,36 @@ class ConfigTest(base.RestTestCase):
 
     PATH = '/api/config'
 
-    def testGetConfig(self):
-        with self.queryLimit(0):
-            resp = self.client.get(self.PATH)
-        self.assert200(resp)
-        expected_keys = set((
-                'teams',
-                'sbname',
-                'news_mechanism',
-                'news_poll_interval',
-                'csrf_token',
-                'rules',
-                'game_start',
-                'game_end',
-                'login_url',
-                'register_url',
-                'login_method',
-                'scoring',
-                'validators',
-        ))
-        self.assertEqual(expected_keys, set(resp.json.keys()))
+    def makeTestGetConfig(extra_keys=None):
+        extra_keys = set(extra_keys or [])
 
+        def testGetConfig(self):
+            with self.queryLimit(0):
+                resp = self.client.get(self.PATH)
+            self.assert200(resp)
+            expected_keys = set((
+                    'teams',
+                    'sbname',
+                    'news_mechanism',
+                    'news_poll_interval',
+                    'csrf_token',
+                    'rules',
+                    'game_start',
+                    'game_end',
+                    'login_url',
+                    'register_url',
+                    'login_method',
+                    'scoring',
+            ))
+            expected_keys |= extra_keys
+            self.assertEqual(expected_keys, set(resp.json.keys()))
+        return testGetConfig
+
+    testGetConfig = makeTestGetConfig()
     testGetConfigAuthenticated = base.authenticated_test(
-            testGetConfig)
-    testGetConfigAdmin = base.authenticated_test(testGetConfig)
+            makeTestGetConfig())
+    testGetConfigAdmin = base.admin_test(
+            makeTestGetConfig(['validators']))
 
 
 class NewsTest(base.RestTestCase):
