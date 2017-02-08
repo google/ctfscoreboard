@@ -39,4 +39,15 @@ def ValidatorNames():
     return {k: getattr(v, 'name', k) for k, v in _Validators.iteritems()}
 
 
+def ValidatorMeta():
+    meta = {}
+    for k, v in _Validators.iteritems():
+        meta[k] = {
+                'name': v.name,
+                'per_team': v.per_team,
+                'flag_gen': v.flag_gen,
+                }
+    return meta
+
+
 __all__ = [GetValidatorForChallenge, ValidatorNames]

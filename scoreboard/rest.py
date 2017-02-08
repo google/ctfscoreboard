@@ -776,7 +776,7 @@ class Config(flask_restful.Resource):
 
     def get(self):
         datefmt = ISO8601DateTime()
-        return dict(
+        config = dict(
             teams=app.config.get('TEAMS'),
             sbname=app.config.get('TITLE'),
             news_mechanism='poll',
@@ -789,8 +789,11 @@ class Config(flask_restful.Resource):
             register_url=auth.get_register_uri(),
             login_method=app.config.get('LOGIN_METHOD'),
             scoring=app.config.get('SCORING'),
-            validators=validators.ValidatorNames(),
             )
+        # None of this should be secret, just keeping noise down
+        if utils.is_admin():
+            config['validators'] = validators.ValidatorMeta()
+        return config
 
 
 api.add_resource(Config, '/api/config')
