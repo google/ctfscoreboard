@@ -17,6 +17,7 @@
 var adminTeamCtrls = angular.module('adminTeamCtrls', [
     'ngResource',
     'ngRoute',
+    'challengeServices',
     'globalServices',
     'sessionServices',
     'teamServices',
@@ -26,16 +27,24 @@ var adminTeamCtrls = angular.module('adminTeamCtrls', [
 adminTeamCtrls.controller('AdminTeamsCtrl', [
     '$scope',
     '$routeParams',
+    'answerService',
+    'categoryService',
     'errorService',
     'sessionService',
     'teamService',
     'loadingService',
-    function($scope, $routeParams, errorService, sessionService, teamService,
-        loadingService) {
+    function($scope, $routeParams, answerService, categoryService, errorService,
+        sessionService, teamService, loadingService) {
       if (!sessionService.requireAdmin()) return;
 
       $scope.teams = [];
       $scope.team = null;
+      $scope.unsolved = [];
+      $scope.grantee = null;
+
+      $scope.updateTeamModal = function() {
+        $("#team-rename").modal("show");
+      };
 
       $scope.updateTeam = function() {
         errorService.clearErrors();
@@ -49,15 +58,54 @@ adminTeamCtrls.controller('AdminTeamsCtrl', [
           });
       };
 
+      $scope.grantFlag = function(chall) {
+        $scope.grantee = chall;
+        $("#team-grant").modal("show");
+      };
+
+      $scope.grantFlagConfirm = function() {
+        answerService.create(
+          { cid: $scope.grantee.cid,
+            tid: $scope.team.tid },
+          function() {
+            errorService.error('Flag granted.', 'success');
+            refreshTeam($scope.team.tid);
+          },
+          errorService.error);
+      };
+
+      var refreshTeam = function(tid) {
+        $scope.team = teamService.get({tid: tid},
+          teamLoaded,
+          function(data) {
+            errorService.error(data);
+            loadingService.stop();
+          });
+      };
+
+      var teamLoaded = function() {
+        $scope.unsolved = [];
+        var solved = [];
+        for (var i = $scope.team.solved_challenges.length; i--; ) {
+          solved.push($scope.team.solved_challenges[i].cid);
+        }
+        categoryService.getList(function(challs) {
+          for (var i = challs.categories.length; i--; ) {
+            var chlist = challs.categories[i].challenges;
+            for (var k = chlist.length; k--; ) {
+              if (solved.indexOf(chlist[k].cid) < 0) {
+                $scope.unsolved.push(chlist[k]);
+              }
+            }
+          }
+          loadingService.stop();
+        });
+      };
+
       sessionService.requireLogin(function() {
         var tid = $routeParams.tid;
         if (tid) {
-          $scope.team = teamService.get({tid: tid},
-              function(){loadingService.stop();},
-              function(data) {
-                  errorService.error(data);
-                  loadingService.stop();
-              });
+          refreshTeam(tid);
         } else {
           teamService.get(function(data) {
             $scope.teams = data.teams;

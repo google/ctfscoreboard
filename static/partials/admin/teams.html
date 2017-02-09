@@ -1,3 +1,4 @@
+<!-- All Teams -->
 <table class='table table-striped' ng-hide='!!team'>
   <thead>
     <tr>
@@ -13,21 +14,108 @@
     </tr>
   </tbody>
 </table>
-<div class='row ng-hide' ng-show='!!team'>
-  <div class='col-md-5 col-md-offset-2'>
-    <form ng-submit='updateTeam()'>
-      <div class='form-group'>
-        <label for='name'>Name</label>
-        <input id='name' name='name' class='form-control'
-          ng-model='team.name'>
-      </div>
-      <div class='form-group'>
-        <label for='score'>Score</label>
-        <input id='score' name='score' ng-model='team.score'
-          class='form-control' disabled>
-      </div>
-      <input type='submit' value='Save' class='btn btn-primary'>
-    </form>
-    <!-- TODO: solve table -->
+
+<!-- Single Team -->
+<div class='ng-hide' ng-show='!!team'>
+  <h2 ng-bind='team.name' ng-click='updateTeamModal()'></h2>
+  <div class='row'>
+    <div class='category-chart col-md-6' donut-chart chart-data='categoryData'></div>
+    <div class='team-score-chart col-md-6' score-chart chart-data='scoreHistory'></div>
+  </div>
+  <div class='row'>
+    <div class='col-md-8 col-md-offset-2 team-solved'>
+      <h4>Solved Challenges</h4>
+      <p ng-hide='team.solved_challenges'>This team has not solved any challenges.</p>
+      <table ng-show='team.solved_challenges'
+        class='team-challenges table table-striped table-responsive'>
+        <tr><th>Name</th><th>Points</th><th>Solved</th></tr>
+        <tr ng-repeat='chall in team.solved_challenges'>
+          <td ng-bind='chall.name'></td>
+          <td ng-bind='chall.points'></td>
+          <td ng-bind='chall.solved|date:"yy/MM/dd HH:mm"'></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <div class='row'>
+    <div class='col-md-8 col-md-offset-2 team-players'
+      ng-show='config.teams && team.players.length'>
+      <h4>Team Members</h4>
+      <table class='team-players table table-striped table-responsive'>
+        <tr><th>Handle</th><th>Email</th></tr>
+        <tr ng-repeat='player in team.players'>
+          <td ng-bind='player.nick'></td>
+          <td><a href='mailto:{{player.email}}' ng-bind='player.email'></a></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <div class='row'>
+    <div class='col-md-8 col-md-offset-2 team-unsolved'
+      ng-show='unsolved'>
+      <h4>Unsolved Challenges</h4>
+      <table
+        class='team-challenges-unsolved table table-striped table-responsive'>
+        <tr><th>Name</th><th>Points</th><th></th></tr>
+        <tr ng-repeat='chall in unsolved'>
+          <td ng-bind='chall.name'></td>
+          <td ng-bind='chall.points'></td>
+          <td><button ng-click='grantFlag(chall)'
+              class='btn btn-info btn-xs'>Grant</button></td>
+        </tr>
+      </table>
+    </div>
   </div>
 </div>
+<!-- rename modal -->
+<div class='modal fade' id='team-rename' tabindex='-1' role='dialog'
+  aria-labelledby='confirm-label'>
+  <div class='modal-dialog' role='document'>
+    <div class='modal-content'>
+      <div class='modal-header'>
+        <button type='button' class='close' data-dismiss='modal'
+          aria-label='Close'><span aria-hidden='true'>&#x2715;</span></button>
+        <h4 class='modal-title' id='confirm-label'>Rename Team</h4>
+      </div>
+      <div class='modal-body'>
+        <div class='form-group'>
+          <label for='name'>Name</label>
+          <input id='name' name='name' class='form-control'
+            ng-model='team.name'>
+        </div>
+      </div>
+      <div class='modal-footer'>
+        <button type='button' class='btn btn-default'
+          data-dismiss='modal'>Cancel</button>
+        <button type='button' class='btn btn-primary'
+          data-dismiss='modal'
+          ng-click='updateTeam()'>Rename</button>
+      </div>
+    </div>
+  </div>
+</div> <!-- end modal -->
+<!-- award modal -->
+<div class='modal fade' id='team-grant' tabindex='-1' role='dialog'
+  aria-labelledby='confirm-label'>
+  <div class='modal-dialog' role='document'>
+    <div class='modal-content'>
+      <div class='modal-header'>
+        <button type='button' class='close' data-dismiss='modal'
+          aria-label='Close'><span aria-hidden='true'>&#x2715;</span></button>
+        <h4 class='modal-title' id='confirm-label'>Grant Flag</h4>
+      </div>
+      <div class='modal-body'>
+        Grant team <b ng-bind='team.name'></b> the flag for challenge
+        <b ng-bind='grantee.name'></b>, worth <b ng-bind='grantee.points'></b>
+        points?
+      </div>
+      <div class='modal-footer'>
+        <button type='button' class='btn btn-default'
+          data-dismiss='modal'>Cancel</button>
+        <button type='button' class='btn btn-danger'
+          data-dismiss='modal'
+          ng-click='grantFlagConfirm()'>Grant Flag</button>
+      </div>
+    </div>
+  </div>
+</div> <!-- end modal -->

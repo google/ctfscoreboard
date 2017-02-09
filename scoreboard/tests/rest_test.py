@@ -982,7 +982,7 @@ class AnswerTest(base.RestTestCase):
     def testSubmitAdmin_Override(self):
         team = models.Team.create('crash_override')
         models.db.session.commit()
-        with self.queryLimit(6):
+        with self.queryLimit(7):
             resp = self.postJSON(self.PATH, {
                 'cid': self.cid,
                 'tid': team.tid,

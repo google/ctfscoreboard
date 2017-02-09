@@ -716,6 +716,7 @@ class Answer(flask_restful.Resource):
                 team.name, team.tid)
         try:
             points = controllers.save_team_answer(challenge, team, None)
+            models.commit()
         except (errors.IntegrityError, errors.FlushError) as ex:
             app.logger.exception(
                     'Unable to save answer for %s/%s: %s',
