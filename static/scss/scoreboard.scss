@@ -3,11 +3,16 @@ html {
 
     &,body,.full-height {
         height: 100%;
+        font-size: 12pt;
     }
 }
 
 body {
     padding-top: 40px;
+}
+
+table, .table {
+    font-size: 12pt;
 }
 
 .left-sidebar {
@@ -525,4 +530,8 @@ table.team-challenges-unsolved {
     .form-control {
         height:40px;
     }
+}
+
+.navbar {
+  font-size: 12pt;
 }
