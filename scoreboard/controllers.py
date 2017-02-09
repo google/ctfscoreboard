@@ -158,12 +158,12 @@ def save_team_answer(challenge, team, answer):
     ans = models.Answer.create(challenge, team, answer)
 
     team.last_solve = datetime.datetime.utcnow()
-    models.ScoreHistory.add_entry(team)
     challenge.update_answers(exclude_team=team)
 
     if utils.GameTime.over():
         return 0
     team.score += ans.current_points
+    models.ScoreHistory.add_entry(team)
     return ans.current_points
 
 
