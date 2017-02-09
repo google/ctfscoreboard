@@ -84,20 +84,28 @@ adminTeamCtrls.controller('AdminTeamsCtrl', [
       };
 
       var teamLoaded = function() {
-        $scope.unsolved = [];
+        var catData = {};
         var solved = [];
-        for (var i = $scope.team.solved_challenges.length; i--; ) {
-          solved.push($scope.team.solved_challenges[i].cid);
-        }
+        angular.forEach($scope.team.solved_challenges, function(chall) {
+          solved.push(chall.cid);
+          if (!(chall.cat_name in catData))
+            catData[chall.cat_name] = chall.points;
+          else
+            catData[chall.cat_name] += chall.points;
+        });
+        $scope.categoryData = catData;
+        $scope.scoreHistory = {};
+        $scope.scoreHistory[$scope.team.name] = $scope.team.score_history;
+        $scope.unsolved = [];
+
         categoryService.getList(function(challs) {
-          for (var i = challs.categories.length; i--; ) {
-            var chlist = challs.categories[i].challenges;
-            for (var k = chlist.length; k--; ) {
-              if (solved.indexOf(chlist[k].cid) < 0) {
-                $scope.unsolved.push(chlist[k]);
+          angular.forEach(challs.categories, function(cat) {
+            angular.forEach(cat.challenges, function(ch) {
+              if (solved.indexOf(ch.cid) < 0) {
+                $scope.unsolved.push(ch);
               }
-            }
-          }
+            });
+          });
           loadingService.stop();
         });
       };
