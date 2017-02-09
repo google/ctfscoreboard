@@ -27,16 +27,19 @@ class PerTeamValidator(base.BaseValidator):
     per_team = True
 
     def validate_answer(self, answer, team):
+        if not team:
+            return False
         return utils.compare_digest(
                 self.construct_mac(team),
                 answer)
-        
+
     def construct_mac(self, team):
         if not isinstance(team, str):
             if not isinstance(team, int):
                 team = team.tid
             team = str(team)
-        mac = hmac.new(self.challenge.answer_hash,
+        mac = hmac.new(
+                self.challenge.answer_hash,
                 team,
                 digestmod=hashlib.sha1)
         return mac.hexdigest()

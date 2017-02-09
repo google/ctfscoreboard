@@ -16,9 +16,10 @@ import sys
 
 
 def main(argv):
-    if argv[1] == 'runtests':
+    if len(argv) > 1 and argv[1] == 'runtests':
         from scoreboard.tests import base
-        base.run_all_tests()
+        if not base.run_all_tests():
+            sys.exit(1)
         return
 
     # This needs to only be imported when not testing
@@ -31,7 +32,8 @@ def main(argv):
         models.db.create_all()
         data.create_all()
     else:
-        wsgi.app.run(host='0.0.0.0', debug=True,
+        wsgi.app.run(
+                host='0.0.0.0', debug=True,
                 port=wsgi.app.config.get('PORT', 9999))
 
 

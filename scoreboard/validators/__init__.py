@@ -15,11 +15,19 @@
 
 from . import static_pbkdf2
 from . import per_team
+from . import nonce
 
 _Validators = {
         'static_pbkdf2': static_pbkdf2.StaticPBKDF2Validator,
         'per_team': per_team.PerTeamValidator,
+        'nonce_166432': nonce.Nonce_16_64_Base32_Validator,
+        'nonce_245632': nonce.Nonce_24_56_Base32_Validator,
+        'nonce_328832': nonce.Nonce_32_88_Base32_Validator,
         }
+
+
+def GetDefaultValidator():
+    return 'static_pbkdf2'
 
 
 def GetValidatorForChallenge(challenge):
@@ -28,7 +36,18 @@ def GetValidatorForChallenge(challenge):
 
 
 def ValidatorNames():
-    return {k: getattr(v, 'name', k) for k,v in _Validators.iteritems()}
+    return {k: getattr(v, 'name', k) for k, v in _Validators.iteritems()}
 
 
-__all__ = [GetValidatorForChallenge]
+def ValidatorMeta():
+    meta = {}
+    for k, v in _Validators.iteritems():
+        meta[k] = {
+                'name': v.name,
+                'per_team': v.per_team,
+                'flag_gen': v.flag_gen,
+                }
+    return meta
+
+
+__all__ = [GetValidatorForChallenge, ValidatorNames]

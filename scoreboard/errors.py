@@ -15,8 +15,8 @@
 # Custom error classes plus access to SQLAlchemy exceptions
 from werkzeug import exceptions
 
-from sqlalchemy.exc import *
-from sqlalchemy.orm.exc import *
+from sqlalchemy.exc import *      # noqa: F401,F403
+from sqlalchemy.orm.exc import *  # noqa: F401,F403
 
 
 class _MessageException(exceptions.HTTPException):
@@ -25,7 +25,7 @@ class _MessageException(exceptions.HTTPException):
     default_message = 'Error'
 
     def __init__(self, msg=None):
-        msg = msg or default_message
+        msg = msg or self.default_message
         super(_MessageException, self).__init__()
         self.data = {'message': msg}
 

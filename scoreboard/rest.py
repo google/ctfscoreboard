@@ -16,9 +16,7 @@ import datetime
 import flask
 import flask_restful
 from flask_restful import fields
-import hashlib
 import json
-import os
 import pytz
 from sqlalchemy import exc
 
@@ -155,7 +153,7 @@ class UserList(flask_restful.Resource):
     @utils.admin_required
     @flask_restful.marshal_with(resource_fields)
     def get(self):
-        return dict(users=models.User.query.all())
+        return dict(users=models.User.all())
 
     @flask_restful.marshal_with(User.resource_fields)
     def post(self):
@@ -361,6 +359,7 @@ class PasswordReset(flask_restful.Resource):
         controllers.user_login(email, data['password'])
         return {'message': 'Password reset.'}
 
+
 api.add_resource(UserList, '/api/users')
 api.add_resource(User, '/api/users/<int:user_id>')
 api.add_resource(TeamChange, '/api/teams/change')
@@ -389,6 +388,7 @@ class Challenge(flask_restful.Resource):
         'weight': fields.Integer,
         'prerequisite': PrerequisiteField,
         'teaser': fields.Boolean,
+        'validator': fields.String,
     }
     attachment_fields = {
         'aid': fields.String,
@@ -426,7 +426,7 @@ class Challenge(flask_restful.Resource):
         old_unlocked = challenge.unlocked
         for field in (
                 'name', 'description', 'points',
-                'cat_slug', 'unlocked', 'weight'):
+                'cat_slug', 'unlocked', 'weight', 'validator'):
             setattr(
                 challenge, field, data.get(field, getattr(challenge, field)))
         if 'answer' in data and data['answer']:
@@ -481,9 +481,12 @@ class ChallengeList(flask_restful.Resource):
             data['name'],
             data['description'],
             data['points'],
-            answer,
+            '',
             data['cat_slug'],
-            unlocked)
+            unlocked,
+            data.get('validator', validators.GetDefaultValidator()))
+        validator = validators.GetValidatorForChallenge(chall)
+        validator.change_answer(answer)
         if 'attachments' in data:
             chall.set_attachments(data['attachments'])
         if 'prerequisite' in data:
@@ -685,15 +688,53 @@ class Answer(flask_restful.Resource):
     """Submit an answer."""
 
     decorators = [utils.login_required,
-                  utils.team_required,
                   utils.require_submittable]
 
     # TODO: get answers for admin?
 
     def post(self):
         data = flask.request.get_json()
+        if utils.is_admin():
+            return self.post_admin(data)
+        return self.post_player(data)
+
+    @utils.admin_required
+    def post_admin(self, data):
+        cid = data.get('cid', None)
+        tid = data.get('tid', None)
+        if not cid or not tid:
+            raise errors.ValidationError('Requires team and challenge.')
+        challenge = models.Challenge.query.get(data['cid'])
+        team = models.Team.query.get(data['tid'])
+        if not challenge or not team:
+            raise errors.ValidationError('Requires team and challenge.')
+        user = models.User.current()
+        app.challenge_log.info(
+                'Admin %s <%s> submitting flag for challenge %s <%d>, '
+                'team %s <%d>',
+                user.nick, user.email, challenge.name, challenge.cid,
+                team.name, team.tid)
+        try:
+            points = controllers.save_team_answer(challenge, team, None)
+            models.commit()
+        except (errors.IntegrityError, errors.FlushError) as ex:
+            app.logger.exception(
+                    'Unable to save answer for %s/%s: %s',
+                    str(data['tid']), str(data['tid']), str(ex))
+            models.db.session.rollback()
+            raise errors.AccessDeniedError(
+                'Unable to save answer for team. See log for details.')
+        cache.delete('cats/%d' % tid)
+        cache.delete('scoreboard')
+        return dict(points=points)
+
+    def post_player(self, data):
         answer = utils.normalize_input(data['answer'])
-        points = controllers.submit_answer(data['cid'], answer)
+        try:
+            points = controllers.submit_answer(data['cid'], answer)
+        except errors.IntegrityError:
+            raise errors.AccessDeniedError(
+                    'Previously solved or flag already used.')
         try:
             models.commit()
         except (errors.IntegrityError, errors.FlushError):
@@ -703,6 +744,24 @@ class Answer(flask_restful.Resource):
         cache.delete('scoreboard')
         return dict(points=points)
 
+
+class Validator(flask_restful.Resource):
+    """Allow admins to test an answer."""
+
+    decorators = [utils.admin_required]
+
+    def post(self):
+        data = flask.request.get_json()
+        answer = utils.normalize_input(data['answer'])
+        try:
+            correct = controllers.test_answer(data['cid'], answer)
+        except errors.IntegrityError:
+            raise errors.InvalidAnswerError('Invalid answer.')
+        if not correct:
+            raise errors.InvalidAnswerError('Invalid answer.')
+        return dict(message='Answer OK.')
+
+
 api.add_resource(Tag, '/api/tags/<string:tag_slug>')
 api.add_resource(TagList, '/api/tags')
 api.add_resource(Category, '/api/categories/<string:category_slug>')
@@ -710,6 +769,7 @@ api.add_resource(CategoryList, '/api/categories')
 api.add_resource(ChallengeList, '/api/challenges')
 api.add_resource(Challenge, '/api/challenges/<int:challenge_id>')
 api.add_resource(Answer, '/api/answers')
+api.add_resource(Validator, '/api/validator')
 
 
 class APIScoreboard(flask_restful.Resource):
@@ -738,6 +798,7 @@ class APIScoreboard(flask_restful.Resource):
              'score': v.score, 'history': v.score_history}
             for i, v in models.Team.enumerate(**opts)])
 
+
 api.add_resource(APIScoreboard, '/api/scoreboard')
 
 
@@ -749,7 +810,7 @@ class Config(flask_restful.Resource):
 
     def get(self):
         datefmt = ISO8601DateTime()
-        return dict(
+        config = dict(
             teams=app.config.get('TEAMS'),
             sbname=app.config.get('TITLE'),
             news_mechanism='poll',
@@ -762,8 +823,12 @@ class Config(flask_restful.Resource):
             register_url=auth.get_register_uri(),
             login_method=app.config.get('LOGIN_METHOD'),
             scoring=app.config.get('SCORING'),
-            validators=validators.ValidatorNames(),
             )
+        # None of this should be secret, just keeping noise down
+        if utils.is_admin():
+            config['validators'] = validators.ValidatorMeta()
+        return config
+
 
 api.add_resource(Config, '/api/config')
 
@@ -860,6 +925,7 @@ class PageList(flask_restful.Resource):
     def get(self):
         return dict(pages=models.Page.query.all())
 
+
 api.add_resource(Page, '/api/page/<path:path>')
 api.add_resource(PageList, '/api/page')
 
@@ -932,6 +998,7 @@ class AttachmentList(flask_restful.Resource):
     @flask_restful.marshal_with(resource_fields)
     def get(self):
         return dict(attachments=list(models.Attachment.query.all()))
+
 
 api.add_resource(Attachment, '/api/attachments/<string:aid>')
 api.add_resource(AttachmentList, '/api/attachments')
@@ -1017,6 +1084,7 @@ class BackupRestore(flask_restful.Resource):
         return {'message': '%d Categories and %d Challenges imported.' %
                 (len(cats), challs)}
 
+
 api.add_resource(BackupRestore, '/api/backup')
 
 
@@ -1033,6 +1101,7 @@ class CTFTimeScoreFeed(flask_restful.Resource):
         data = {'standings': standings}
         return data, 200, {'X-No-XSSI': 1}
 
+
 api.add_resource(CTFTimeScoreFeed, '/api/ctftime/scoreboard')
 
 
@@ -1043,6 +1112,7 @@ class Configz(flask_restful.Resource):
 
     def get(self):
         return repr(app.config)
+
 
 api.add_resource(Configz, '/api/configz')
 
@@ -1061,5 +1131,6 @@ class ToolsRecalculate(flask_restful.Resource):
         models.commit()
         cache.clear()
         return {'message': ('Recalculated, %d changed.' % changed)}
+
 
 api.add_resource(ToolsRecalculate, '/api/tools/recalculate')

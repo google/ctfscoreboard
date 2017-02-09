@@ -5,10 +5,11 @@ python:
 
 install:
   - pip install -r requirements.txt
-  - pip install coverage codecov
+  - pip install coverage codecov flake8
 
 script:
   - coverage run main.py runtests
+  - flake8 .
 
 after_success:
   - codecov

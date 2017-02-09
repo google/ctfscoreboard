@@ -3,11 +3,16 @@ html {
 
     &,body,.full-height {
         height: 100%;
+        font-size: 12pt;
     }
 }
 
 body {
     padding-top: 40px;
+}
+
+table, .table {
+    font-size: 12pt;
 }
 
 .left-sidebar {
@@ -200,7 +205,8 @@ ul {
 }
 
 table.team-challenges,
-table.team-players{
+table.team-players,
+table.team-challenges-unsolved {
     font-size: 100%;
 }
 
@@ -244,13 +250,12 @@ table.team-players{
 
             .jeopardy-cat {
                 font-weight: bolder;
-                font-size: 1.8em;
+                font-size: 1.3em;
                 border-radius: 6px;
                 margin-bottom: 0px;
             }
 
             .jeopardy-chall {
-                font-size: 1.4em;
                 perspective: 1000px;
 
                 .flipper {
@@ -525,4 +530,8 @@ table.team-players{
     .form-control {
         height:40px;
     }
+}
+
+.navbar {
+  font-size: 12pt;
 }

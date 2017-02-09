@@ -25,7 +25,6 @@ import unittest
 
 import flask
 from flask import testing
-import flask_sqlalchemy
 import flask_testing
 from sqlalchemy import event
 
@@ -41,14 +40,14 @@ class BaseTestCase(flask_testing.TestCase):
     """
 
     TEST_CONFIG = dict(
-        PRESERVE_CONTEXT_ON_EXCEPTION = False,
-        SECRET_KEY = 'testing-session-key',
-        SQLALCHEMY_DATABASE_URI = "sqlite://",
-        TEAMS = True,
-        TEAM_SECRET_KEY = 'different-secret',
-        TESTING = True,
-        DEBUG = False,
-        ATTACHMENT_BACKEND = 'test://volatile',
+        PRESERVE_CONTEXT_ON_EXCEPTION=False,
+        SECRET_KEY='testing-session-key',
+        SQLALCHEMY_DATABASE_URI="sqlite://",
+        TEAMS=True,
+        TEAM_SECRET_KEY='different-secret',
+        TESTING=True,
+        DEBUG=False,
+        ATTACHMENT_BACKEND='test://volatile',
     )
 
     def create_app(self):
@@ -110,7 +109,6 @@ class RestTestCase(BaseTestCase):
         yield
         self.client = old_client
 
-
     @staticmethod
     def _pbkdf2_dummy(value, *unused_args):
         return value
@@ -123,7 +121,8 @@ class AuthenticatedClient(testing.FlaskClient):
         super(AuthenticatedClient, self).__init__(*args, **kwargs)
         self.team = models.Team.create('team')
         self.password = 'hunter2'
-        self.user = models.User.create('auth@example.com', 'Authenticated',
+        self.user = models.User.create(
+                'auth@example.com', 'Authenticated',
                 self.password, team=self.team)
         models.db.session.commit()
         self.uid = self.user.uid
@@ -161,7 +160,8 @@ class MaxQueryBlock(object):
     def __init__(self, test=None, max_count=None):
         self.max_count = max_count
         self.queries = []
-        self._sql_listen_args = (models.db.engine, 'before_cursor_execute',
+        self._sql_listen_args = (
+                models.db.engine, 'before_cursor_execute',
                 self._count_query)
         self.test_id = test.id() if test else ''
 
@@ -174,14 +174,18 @@ class MaxQueryBlock(object):
         if exc_type is not None:
             return False
         if self.test_id:
-            limit_msg = (' Limit: %d.' % self.max_count) if self.max_count is not None else ''
-            logging.info('%s executed %d queries.%s', self.test_id, len(self.queries), limit_msg)
+            limit_msg = ((' Limit: %d.' % self.max_count)
+                         if self.max_count is not None else '')
+            logging.info('%s executed %d queries.%s',
+                         self.test_id, len(self.queries), limit_msg)
         if self.max_count is None:
             return
         if len(self.queries) > self.max_count:
             message = ('Maximum query count exceeded: limit %d, executed %d.\n'
                        '----QUERIES----\n%s\n----END----') % (
-                            self.max_count, len(self.queries), '\n'.join(self.queries))
+                            self.max_count,
+                            len(self.queries),
+                            '\n'.join(self.queries))
             raise AssertionError(message)
 
     @property
@@ -189,8 +193,9 @@ class MaxQueryBlock(object):
         return len(self.queries)
 
     def _count_query(self, unused_conn, unused_cursor, statement, parameters,
-            unused_context, unused_executemany):
-        statement = '%s (%s)' % (statement, ', '.join(str(x) for x in parameters))
+                     unused_context, unused_executemany):
+        statement = '%s (%s)' % (
+                statement, ', '.join(str(x) for x in parameters))
         self.queries.append(statement)
         logging.debug('SQLAlchemy: %s', statement)
 
@@ -218,9 +223,11 @@ def run_all_tests():
     logging.getLogger().setLevel(logging.INFO)
     test_dir = os.path.dirname(os.path.realpath(__file__))
     top_dir = os.path.abspath(os.path.join(test_dir, '..'))
-    suite = unittest.defaultTestLoader.discover(test_dir, pattern='*_test.py',
+    suite = unittest.defaultTestLoader.discover(
+            test_dir, pattern='*_test.py',
             top_level_dir=top_dir)
-    unittest.TextTestRunner().run(suite)
+    result = unittest.TextTestRunner().run(suite)
+    return result.wasSuccessful()
 
 
 def json_monkeypatch():
@@ -234,5 +241,6 @@ def json_monkeypatch():
         except Exception as exc:
             logging.exception('JSON monkeypatch failed: ', exc)
     flask.json.loads = new_loads
+
 
 json_monkeypatch()

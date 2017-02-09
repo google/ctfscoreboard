@@ -2,17 +2,17 @@
 <div class='well' ng-repeat='c in categories'>
   <form ng-submit='updateCategory(c)' name='adminCategoryForm[$index]'>
     <div class='form-group'>
-      <label for='name-{{c.cid}}'>Title</label>
-      <input name='name' id='name-{{c.cid}}' class='form-control'
+      <label for='name-{{c.slug}}'>Title</label>
+      <input name='name' id='name-{{c.slug}}' class='form-control'
         ng-model='c.name' required>
     </div>
     <div class='form-group'>
-      <label for='description-{{c.cid}}'>Description</label>
-      <textarea id='description-{{c.cid}}' name='description'
+      <label for='description-{{c.slug}}'>Description</label>
+      <textarea id='description-{{c.slug}}' name='description'
         class='form-control' ng-model='c.description'></textarea>
     </div>
     <input type='submit' value='Edit' class='btn btn-primary'>
-    <a href='/admin/challenges/{{c.cid}}' class='btn btn-info'>Challenges</a>
+    <a href='/admin/challenges/{{c.slug}}' class='btn btn-info'>Challenges</a>
     <div>
       <input type='button' value='Delete' class='btn btn-danger btn-delete'
         ng-click='deleteCategory(c)' ng-disabled='invalidForm($index)'>

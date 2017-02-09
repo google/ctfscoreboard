@@ -19,9 +19,6 @@ Volatile filesystem backend for attachments.
 
 
 import hashlib
-import os
-import os.path
-import urlparse
 
 import flask
 import StringIO

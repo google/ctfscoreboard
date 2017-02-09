@@ -26,9 +26,7 @@ import sqlalchemy as sqlalchemy_base
 import time
 import utils
 from sqlalchemy import exc
-from sqlalchemy import func
 from sqlalchemy import orm
-from sqlalchemy.orm import exc as orm_exc
 
 from scoreboard import attachments
 from scoreboard import errors
@@ -110,6 +108,7 @@ class Team(db.Model):
         else:
             base = cls.query
         base = base.options(orm.joinedload(cls.answers))
+        base = base.order_by(cls.name)
         return base.all()
 
     @classmethod
@@ -147,7 +146,7 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     nick = db.Column(db.String(80), unique=True, nullable=False, index=True)
     pwhash = db.Column(db.String(48))  # pbkdf2.crypt == 48 bytes
-    admin = db.Column(db.Boolean, default=False)
+    admin = db.Column(db.Boolean, default=False, index=True)
     team_tid = db.Column(db.Integer, db.ForeignKey('team.tid'))
     create_ip = db.Column(db.String(45))     # max 45 bytes for IPv6
     last_login_ip = db.Column(db.String(45))
@@ -256,6 +255,12 @@ class User(db.Model):
                     # Bump expiration time on session
                     utils.session_for_user(user)
                 return user
+
+    @classmethod
+    def all(cls):
+        return cls.query.order_by(
+                cls.admin.desc(),
+                cls.nick).all()
 
 
 tag_challenge_association = db.Table(
@@ -425,7 +430,7 @@ class Challenge(db.Model):
     description = db.Column(db.Text, nullable=False)
     points = db.Column(db.Integer, nullable=False)
     validator = db.Column(db.String(24), nullable=False,
-            default='static_pbkdf2')
+                          default='static_pbkdf2')
     answer_hash = db.Column(db.String(48))  # Protect answers
     unlocked = db.Column(db.Boolean, default=False)
     weight = db.Column(db.Integer, nullable=False)  # Order for display
@@ -504,15 +509,17 @@ class Challenge(db.Model):
         return chall.is_answered(team=team, answers=team.answers)
 
     @classmethod
-    def create(cls, name, description, points, answer, slug, unlocked=False):
+    def create(cls, name, description, points, answer, slug, unlocked=False,
+               validator='static_pbkdf2'):
         challenge = cls()
         challenge.name = name
         challenge.description = description
         challenge.cid = utils.generate_id()
         challenge.points = points
-        challenge.answer_hash = pbkdf2.crypt(answer)
+        challenge.answer_hash = answer
         challenge.cat_slug = slug
         challenge.unlocked = unlocked
+        challenge.validator = validator
         weight = db.session.query(db.func.max(Challenge.weight)).scalar()
         challenge.weight = (weight + 1) if weight else 1
         challenge.prerequisite = ''
@@ -676,7 +683,8 @@ class Answer(db.Model):
         answer.challenge = challenge
         answer.team = team
         answer.timestamp = datetime.datetime.utcnow()
-        answer.answer_hash = pbkdf2.crypt(team.name + answer_text)
+        if answer_text:
+            answer.answer_hash = pbkdf2.crypt(team.name + answer_text)
         if flask.request:
             answer.submit_ip = flask.request.remote_addr
         db.session.add(answer)
@@ -752,6 +760,23 @@ class Page(db.Model):
     path = db.Column(db.String(100), primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     contents = db.Column(db.Text, nullable=False)
+
+
+class NonceFlagUsed(db.Model):
+    """Single-time used flags."""
+
+    challenge_cid = db.Column(db.BigInteger, db.ForeignKey('challenge.cid'),
+                              primary_key=True)
+    nonce = db.Column(db.BigInteger, primary_key=True)
+    team_tid = db.Column(db.Integer, db.ForeignKey('team.tid'))
+
+    @classmethod
+    def create(cls, challenge, nonce, team):
+        entity = cls()
+        entity.challenge_cid = challenge.cid
+        entity.nonce = nonce
+        entity.team_tid = team.tid
+        db.session.add(entity)
 
 
 # Shortcut for commiting

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
 import datetime
 import flask
 import re
@@ -116,6 +115,10 @@ def change_user_team(uid, team_tid, code):
 def submit_answer(cid, answer):
     """Submits an answer.
 
+    Args:
+      cid: The ID of the challenge.
+      answer: The answer to check.
+
     Returns:
       Number of points awarded for answer.
     """
@@ -129,24 +132,17 @@ def submit_answer(cid, answer):
             raise errors.AccessDeniedError('Challenge is locked!')
         validator = validators.GetValidatorForChallenge(challenge)
         if validator.validate_answer(answer, team):
-            ans = models.Answer.create(challenge, team, answer)
-
+            points = save_team_answer(challenge, team, answer)
             if utils.GameTime.over():
                 correct = 'CORRECT (Game Over)'
             else:
-                team.score += ans.current_points
                 correct = 'CORRECT'
-
-            team.last_solve = datetime.datetime.utcnow()
-            models.ScoreHistory.add_entry(team)
-            challenge.update_answers(exclude_team=team)
-
-            if utils.GameTime.over():
-                return 0
-            else:
-                return ans.current_points
+            return points
         else:
             raise errors.InvalidAnswerError('Really?  Haha no....')
+    except errors.IntegrityError:
+        models.db.session.rollback()
+        raise
     finally:
         user = models.User.current()
         app.challenge_log.info(
@@ -154,6 +150,31 @@ def submit_answer(cid, answer):
             '"%s" for Challenge %s<%d>: %s',
             user.nick, user.email, user.uid, team.name, team.tid, answer,
             challenge.name, challenge.cid, correct)
+
+
+@utils.require_submittable
+def save_team_answer(challenge, team, answer):
+    """Create the answer entry and update the scores."""
+    ans = models.Answer.create(challenge, team, answer)
+
+    team.last_solve = datetime.datetime.utcnow()
+    challenge.update_answers(exclude_team=team)
+
+    if utils.GameTime.over():
+        return 0
+    team.score += ans.current_points
+    models.ScoreHistory.add_entry(team)
+    return ans.current_points
+
+
+def test_answer(cid, answer):
+    """Tests an answer, returns Truthiness of answer."""
+    try:
+        challenge = models.Challenge.query.get(cid)
+        validator = validators.GetValidatorForChallenge(challenge)
+        return validator.validate_answer(answer, None)
+    except errors.IntegrityError:
+        return False
 
 
 def offer_password_reset(user):

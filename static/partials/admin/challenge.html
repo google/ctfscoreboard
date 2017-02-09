@@ -38,7 +38,7 @@
         <div class='form-group'>
             <label for='validator'>Validator</label>
             <select id='validator' name='validator' class='form-control'
-              ng-options='key as value for (key, value) in config.validators'
+              ng-options='key as value.name for (key, value) in config.validators'
               ng-model='challenge.validator' required>
             </select>
         </div>

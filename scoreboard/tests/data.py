@@ -27,7 +27,8 @@ def make_admin():
 
 def make_teams():
     teams = []
-    for name in ('QQQ', 'Light Cats', 'Siberian Nopsled', 'PPP', 'Raelly', 'Toast', 'csh', 'ByTeh', 'See Sure', 'Skinniest', '213374U'):
+    for name in ('QQQ', 'Light Cats', 'Siberian Nopsled', 'PPP', 'Raelly',
+                 'Toast', 'csh', 'ByTeh', 'See Sure', 'Skinniest', '213374U'):
         teams.append(models.Team.create(name))
     return teams
 
@@ -35,7 +36,8 @@ def make_teams():
 def make_players(teams):
     players = []
     for name in ('Ritam', 'Dr34dc0d3', 'alpha', 'beta', 'gamma', 'delta',
-                 'Dade', 'Kate', 'zwad3', 'strikerkid', 'redpichu', 'n0pe', '0xcdb'):
+                 'Dade', 'Kate', 'zwad3', 'strikerkid', 'redpichu', 'n0pe',
+                 '0xcdb'):
         team = random.choice(teams)
         players.append(models.User.create(
             name.lower() + '@example.com', name, 'password', team=team))
@@ -48,9 +50,10 @@ def make_categories():
         categories.append(models.Category.create(name, name + ' Category'))
     return categories
 
+
 def make_tags():
     tags = []
-    for name in ('x86','x64','MIPS','RISC','Fun'):
+    for name in ('x86', 'x64', 'MIPS', 'RISC', 'Fun'):
         tags.append(models.Tag.create(name, 'Problems involving '+name))
     return tags
 
@@ -71,12 +74,13 @@ def make_challenges(cats, tags):
         title = ' '.join(title)
         flag = '_'.join(random.sample(chall_words, 4)).lower()
         cat = random.choice(cats)
-        #Choose a random subset of tags
+        # Choose a random subset of tags
         numtags = random.randint(0, len(tags)-1)
         local_tags = random.sample(tags, numtags)
         points = random.randint(1, 20) * 100
         desc = 'Flag: ' + flag
-        ch = models.Challenge.create(title, desc, points, flag, cat.slug,
+        ch = models.Challenge.create(
+                title, desc, points, flag, cat.slug,
                 unlocked=True)
         ch.add_tags(local_tags)
         if len(challs) % 8 == 7:
@@ -90,7 +94,8 @@ def make_challenges(cats, tags):
 
 def make_answers(teams, challs):
     for team in teams:
-        times = sorted([random.randint(0, 24*60) for _ in xrange(16)],
+        times = sorted(
+                [random.randint(0, 24*60) for _ in xrange(16)],
                 reverse=True)
         for ch in random.sample(challs, random.randint(4, 16)):
             a = models.Answer.create(ch, team, '')
@@ -109,7 +114,7 @@ def create_all():
 
     # Teams and players
     teams = make_teams()
-    players = make_players(teams)
+    make_players(teams)
 
     # Categories and challenges
     cats = make_categories()

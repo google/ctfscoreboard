@@ -105,6 +105,7 @@ def api_error_handler(ex):
     except AttributeError:
         status_code = 500
     if flask.request.path.startswith('/api/'):
+        app = get_app()
         app.logger.error(str(ex))
         if app.config.get('DEBUG', False):
             resp = flask.jsonify(message=str(ex))

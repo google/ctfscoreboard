@@ -36,9 +36,9 @@ Author: David Tomaschik <dwt@google.com>
 
   If you are developing the scoreboard, the following settings may be useful for
   debugging purposes. Not useful for production usage, however.
-  
+
         COUNT_QUERIES = True
-        SQLALCHEMY_ECHO = True 
+        SQLALCHEMY_ECHO = True
 
 5. Create the database:
 
@@ -72,6 +72,13 @@ team.
 users API.
 
 ### Development ###
+
+[![Build Status](https://travis-ci.org/google/ctfscoreboard.svg?branch=master)](https://travis-ci.org/google/ctfscoreboard)
+[![codecov](https://codecov.io/gh/google/ctfscoreboard/branch/master/graph/badge.svg)](https://codecov.io/gh/google/ctfscoreboard)
+
+**Use hooks**
+
+    ln -s ../../.hooks/pre-commit.sh .git/hooks/pre-commit
 
 **Test Cases**
 

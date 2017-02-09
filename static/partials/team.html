@@ -5,7 +5,7 @@
 </div>
 <div class='row'>
   <div class='col-md-8 col-md-offset-2 team-solved'>
-    <h4>Solved Challenges</h4>
+    <h4>Solved Challenges ({{team.score}} Points)</h4>
     <p ng-hide='team.solved_challenges'>This team has not solved any challenges.</p>
     <table ng-show='team.solved_challenges'
       class='team-challenges table table-striped table-responsive'>
@@ -14,19 +14,6 @@
         <td ng-bind='chall.name'></td>
         <td ng-bind='chall.points'></td>
         <td ng-bind='chall.solved|date:"yy/MM/dd HH:mm"'></td>
-      </tr>
-    </table>
-  </div>
-</div>
-<div class='row'>
-  <div class='col-md-8 col-md-offset-2 team-players'
-    ng-show='config.teams && team.players.length'>
-    <h4>Team Members</h4>
-    <table class='team-players table table-striped table-responsive'>
-      <tr><th>Handle</th><th>Email</th></tr>
-      <tr ng-repeat='player in team.players'>
-        <td ng-bind='player.nick'></td>
-        <td><a href='mailto:{{player.email}}' ng-bind='player.email'></a></td>
       </tr>
     </table>
   </div>

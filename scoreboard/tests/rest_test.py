@@ -24,17 +24,22 @@ from scoreboard import rest
 from scoreboard import utils
 from scoreboard import views
 
+# Needed imports
+_ = (rest, views)
+
 
 def makeTestUser():
     u = models.User.create('email@example.com', 'Nick', 'hunter2')
     models.db.session.commit()
     return u
 
+
 def makeTestTeam(user):
     t = models.Team.create('Test')
     user.team = t
     models.db.session.commit()
     return t
+
 
 def makeTestChallenges():
     cats = data.make_categories()
@@ -150,7 +155,7 @@ class UpdateTeam(base.RestTestCase):
             'code': code
         })
 
-    def patchState(self, time = 'BEFORE'):
+    def patchState(self, time='BEFORE'):
         self._state = utils.GameTime.state
         utils.GameTime.state = staticmethod(lambda: time)
 
@@ -170,7 +175,7 @@ class UpdateTeam(base.RestTestCase):
     def testTeamChangeWorked(self):
         self.patchState()
         test_team = self.createTeam('test2')
-        resp = self.changeTeam(test_team.tid, test_team.code)
+        self.changeTeam(test_team.tid, test_team.code)
         tid = self.authenticated_client.user.team.tid
         self.assertEqual(tid, test_team.tid)
         self.restoreState()
@@ -181,7 +186,7 @@ class UpdateTeam(base.RestTestCase):
         test_team_first = self.createTeam('first')
         test_team_second = self.createTeam('second')
         self.changeTeam(test_team_first.tid, test_team_first.code)
-        resp = self.changeTeam(test_team_second.tid, test_team_second.code)
+        self.changeTeam(test_team_second.tid, test_team_second.code)
         tid = self.authenticated_client.user.team.tid
         self.assertEqual(tid, test_team_second.tid)
 
@@ -196,9 +201,9 @@ class UpdateTeam(base.RestTestCase):
         self.changeTeam(test_team_first.tid, test_team_first.code)
 
         chall = models.Challenge.create('Foo', 'Foo', 1, 'Foo', 'foo')
-        answer = models.Answer.create(chall, test_team_first, 'Foo')
+        models.Answer.create(chall, test_team_first, 'Foo')
 
-        resp = self.changeTeam(test_team_second.tid, test_team_second.code)
+        self.changeTeam(test_team_second.tid, test_team_second.code)
         tid = self.authenticated_client.user.team.tid
         self.assertEqual(tid, test_team_second.tid)
 
@@ -227,7 +232,7 @@ class AttachmentTest(base.RestTestCase):
             string = StringIO.StringIO()
             string.write(text)
             string.seek(0)
-            return c.post('/api/attachments', data = {
+            return c.post('/api/attachments', data={
                 'file': (string, filename)
             })
 
@@ -238,8 +243,11 @@ class AttachmentTest(base.RestTestCase):
     def testUploadFile(self):
         resp = self.uploadFile("test.txt", "This is a test")
         self.assert200(resp)
-        #Calculated using an external sha256 tool
-        self.assertEquals(resp.json['aid'], "c7be1ed902fb8dd4d48997c6452f5d7e509fbcdbe2808b16bcf4edce4c07d14e")
+        # Calculated using an external sha256 tool
+        self.assertEquals(
+                resp.json['aid'],
+                "c7be1ed902fb8dd4d48997c6452f5d7e"
+                "509fbcdbe2808b16bcf4edce4c07d14e")
 
     def testQueryFile(self):
         postresp = self.uploadFile(self.name, self.text)
@@ -282,7 +290,7 @@ class AttachmentTest(base.RestTestCase):
     def testDeletionRemovesFile(self):
         postresp = self.uploadFile(self.name, self.text)
         with self.admin_client as c:
-            delresp = c.delete('/api/attachments/%s' % postresp.json['aid'])
+            c.delete('/api/attachments/%s' % postresp.json['aid'])
         with self.admin_client as c:
             getresp = c.get('/api/attachments/%s' % postresp.json['aid'])
             self.assert404(getresp)
@@ -291,22 +299,25 @@ class AttachmentTest(base.RestTestCase):
         new_name = "file.png"
         postresp = self.uploadFile(self.name, self.text)
         with self.admin_client as c:
-            putresp = c.put('/api/attachments/%s' % postresp.json['aid'], data = json.dumps({
-                'filename': new_name,
-                'aid': postresp.json['aid'],
-                'challenges': [],
-            }), content_type = "application/json")
+            putresp = c.put(
+                    '/api/attachments/%s' % postresp.json['aid'],
+                    data=json.dumps({
+                        'filename': new_name,
+                        'aid': postresp.json['aid'],
+                        'challenges': [],
+                        }), content_type="application/json")
             self.assert200(putresp)
 
     def testUpdateChangesName(self):
         new_name = "file.png"
         postresp = self.uploadFile(self.name, self.text)
         with self.admin_client as c:
-            putresp = c.put('/api/attachments/%s' % postresp.json['aid'], data = json.dumps({
-                'filename': new_name,
-                'aid': postresp.json['aid'],
-                'challenges': [],
-            }), content_type = "application/json")
+            c.put('/api/attachments/%s' % postresp.json['aid'],
+                  data=json.dumps({
+                        'filename': new_name,
+                        'aid': postresp.json['aid'],
+                        'challenges': [],
+                        }), content_type="application/json")
             getresp = c.get('/api/attachments/%s' % postresp.json['aid'])
             self.assertEqual(getresp.json['filename'], new_name)
 
@@ -350,9 +361,10 @@ class UserTest(base.RestTestCase):
     @base.authenticated_test
     def testUpdateUser(self):
         user = self.authenticated_client.user
-        data = {'password': 'hunter3'} # for security
+        data = {'password': 'hunter3'}  # for security
         with self.queryLimit(2):
-            self.assert200(self.putJSON(self.PATH % user.uid,
+            self.assert200(self.putJSON(
+                self.PATH % user.uid,
                 data))
 
     @base.authenticated_test
@@ -371,7 +383,8 @@ class UserTest(base.RestTestCase):
             resp = self.putJSON(self.PATH % uid, data)
         self.assert200(resp)
         self.assertEqual('Lame', resp.json['nick'])
-        self.assertNotEqual('Lame',
+        self.assertNotEqual(
+                'Lame',
                 self.authenticated_client.user.team.name)
 
     @base.admin_test
@@ -418,7 +431,7 @@ class UserTest(base.RestTestCase):
         user = self.authenticated_client.user
         team = self.authenticated_client.user.team
         chall = models.Challenge.create('Foo', 'Foo', 1, 'Foo', 'foo')
-        answer = models.Answer.create(chall, team, 'Foo')
+        models.Answer.create(chall, team, 'Foo')
         models.db.session.commit()
         data = {'nick': user.nick, 'admin': True}
         with self.queryLimit(3):
@@ -435,7 +448,7 @@ class UserTest(base.RestTestCase):
 
     @base.admin_test
     def testGetUsers(self):
-        user = self.admin_client.user
+        self.admin_client.user
         with self.queryLimit(1):
             resp = self.client.get('/api/users')
         self.assert200(resp)
@@ -496,7 +509,7 @@ class UserTest(base.RestTestCase):
             'team_name': None,
             'team_code': 'xxx',
         })
-        with self.client as c:
+        with self.client:
             with self.queryLimit(1):
                 resp = self.postJSON('/api/users', data)
             self.assert400(resp)
@@ -589,9 +602,11 @@ class SessionTest(base.RestTestCase):
         with self.queryLimit(1):
             resp = self.client.get(self.PATH)
         self.assert200(resp)
-        self.assertEqual(self.authenticated_client.user.nick,
+        self.assertEqual(
+                self.authenticated_client.user.nick,
                 resp.json['user']['nick'])
-        self.assertEqual(self.authenticated_client.team.name,
+        self.assertEqual(
+                self.authenticated_client.team.name,
                 resp.json['team']['name'])
 
     @base.admin_test
@@ -599,7 +614,8 @@ class SessionTest(base.RestTestCase):
         with self.queryLimit(1):
             resp = self.client.get(self.PATH)
         self.assert200(resp)
-        self.assertEqual(self.admin_client.user.nick,
+        self.assertEqual(
+                self.admin_client.user.nick,
                 resp.json['user']['nick'])
         self.assertTrue(resp.json['user']['admin'])
         self.assertItemsEqual(
@@ -616,12 +632,15 @@ class SessionTest(base.RestTestCase):
             with self.queryLimit(4):
                 resp = self.postJSON(self.PATH, data)
             self.assert200(resp)
-            self.assertEqual(flask.session['user'],
+            self.assertEqual(
+                    flask.session['user'],
                     self.authenticated_client.user.uid)
-            self.assertEqual(flask.session['team'],
+            self.assertEqual(
+                    flask.session['team'],
                     self.authenticated_client.team.tid)
             self.assertFalse(flask.session['admin'])
-            self.assertEqual(flask.g.user.email,
+            self.assertEqual(
+                    flask.g.user.email,
                     self.authenticated_client.user.email)
 
     def testSessionLoginFailsBadPassword(self):
@@ -642,7 +661,7 @@ class SessionTest(base.RestTestCase):
             'email': 'no@example.com',
             'password': 'wrong',
         }
-        with self.client as c:
+        with self.client:
             with self.queryLimit(1):
                 resp = self.postJSON(self.PATH, data)
             self.assert403(resp)
@@ -657,16 +676,19 @@ class SessionTest(base.RestTestCase):
             'password': self.authenticated_client.password,
         }
         # This makes sure admin->non-admin downgrades properly
-        with self.client as c:
+        with self.client:
             with self.queryLimit(4):
                 resp = self.postJSON(self.PATH, data)
             self.assert200(resp)
-            self.assertEqual(flask.session['user'],
+            self.assertEqual(
+                    flask.session['user'],
                     self.authenticated_client.user.uid)
-            self.assertEqual(flask.session['team'],
+            self.assertEqual(
+                    flask.session['team'],
                     self.authenticated_client.team.tid)
             self.assertFalse(flask.session['admin'])
-            self.assertEqual(flask.g.user.email,
+            self.assertEqual(
+                    flask.g.user.email,
                     self.authenticated_client.user.email)
 
     @base.authenticated_test
@@ -935,7 +957,8 @@ class AnswerTest(base.RestTestCase):
         cat = models.Category.create('test', 'test')
         self.answer = 'foobar'
         self.points = 100
-        self.chall = models.Challenge.create('test', 'test', self.points,
+        self.chall = models.Challenge.create(
+                'test', 'test', self.points,
                 self.answer, cat.slug, unlocked=True)
         self.cid = self.chall.cid
         models.db.session.commit()
@@ -948,12 +971,24 @@ class AnswerTest(base.RestTestCase):
             }))
 
     @base.admin_test
-    def testSubmitAdmin(self):
+    def testSubmitAdmin_Regular(self):
         with self.queryLimit(0):
             self.assert400(self.postJSON(self.PATH, {
                 'cid': self.cid,
                 'answer': self.answer,
             }))
+
+    @base.admin_test
+    def testSubmitAdmin_Override(self):
+        team = models.Team.create('crash_override')
+        models.db.session.commit()
+        with self.queryLimit(7):
+            resp = self.postJSON(self.PATH, {
+                'cid': self.cid,
+                'tid': team.tid,
+            })
+        self.assert200(resp)
+        self.assertEqual(self.points, resp.json['points'])
 
     @base.authenticated_test
     def testSubmitCorrect(self):
@@ -963,6 +998,7 @@ class AnswerTest(base.RestTestCase):
                 'answer': self.answer,
             })
         self.assert200(resp)
+        print resp.json
         self.assertEqual(self.points, resp.json['points'])
 
     @base.authenticated_test
@@ -995,30 +1031,36 @@ class ConfigTest(base.RestTestCase):
 
     PATH = '/api/config'
 
-    def testGetConfig(self):
-        with self.queryLimit(0):
-            resp = self.client.get(self.PATH)
-        self.assert200(resp)
-        expected_keys = set((
-                'teams',
-                'sbname',
-                'news_mechanism',
-                'news_poll_interval',
-                'csrf_token',
-                'rules',
-                'game_start',
-                'game_end',
-                'login_url',
-                'register_url',
-                'login_method',
-                'scoring',
-                'validators',
-        ))
-        self.assertEqual(expected_keys, set(resp.json.keys()))
+    def makeTestGetConfig(extra_keys=None):
+        extra_keys = set(extra_keys or [])
 
+        def testGetConfig(self):
+            with self.queryLimit(0):
+                resp = self.client.get(self.PATH)
+            self.assert200(resp)
+            expected_keys = set((
+                    'teams',
+                    'sbname',
+                    'news_mechanism',
+                    'news_poll_interval',
+                    'csrf_token',
+                    'rules',
+                    'game_start',
+                    'game_end',
+                    'login_url',
+                    'register_url',
+                    'login_method',
+                    'scoring',
+            ))
+            expected_keys |= extra_keys
+            self.assertEqual(expected_keys, set(resp.json.keys()))
+        return testGetConfig
+
+    testGetConfig = makeTestGetConfig()
     testGetConfigAuthenticated = base.authenticated_test(
-            testGetConfig)
-    testGetConfigAdmin = base.authenticated_test(testGetConfig)
+            makeTestGetConfig())
+    testGetConfigAdmin = base.admin_test(
+            makeTestGetConfig(['validators']))
 
 
 class NewsTest(base.RestTestCase):
@@ -1028,7 +1070,8 @@ class NewsTest(base.RestTestCase):
     def setUp(self):
         super(NewsTest, self).setUp()
         models.News.broadcast('test', 'Test message.')
-        models.News.unicast(self.authenticated_client.team.tid,
+        models.News.unicast(
+                self.authenticated_client.team.tid,
                 'test', 'Test team message.')
         models.commit()
 

@@ -18,8 +18,8 @@ app = main.get_app()
 main.load_config_file(app)
 
 # These must be after config loading
-from scoreboard import rest   # nopep8
-from scoreboard import views  # nopep8
+from scoreboard import rest   # noqa: E402
+from scoreboard import views  # noqa: E402
 
 # Used here to catch accidental removal
 _modules_for_views = (rest, views)
