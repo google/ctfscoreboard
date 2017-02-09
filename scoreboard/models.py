@@ -676,7 +676,8 @@ class Answer(db.Model):
         answer.challenge = challenge
         answer.team = team
         answer.timestamp = datetime.datetime.utcnow()
-        answer.answer_hash = pbkdf2.crypt(team.name + answer_text)
+        if answer_text:
+            answer.answer_hash = pbkdf2.crypt(team.name + answer_text)
         if flask.request:
             answer.submit_ip = flask.request.remote_addr
         db.session.add(answer)

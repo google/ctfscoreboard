@@ -688,13 +688,47 @@ class Answer(flask_restful.Resource):
     """Submit an answer."""
 
     decorators = [utils.login_required,
-                  utils.team_required,
                   utils.require_submittable]
 
     # TODO: get answers for admin?
 
     def post(self):
         data = flask.request.get_json()
+        if utils.is_admin():
+            return self.post_admin(data)
+        return self.post_player(data)
+
+    @utils.admin_required
+    def post_admin(self, data):
+        cid = data.get('cid', None)
+        tid = data.get('tid', None)
+        if not cid or not tid:
+            raise errors.ValidationError('Requires team and challenge.')
+        challenge = models.Challenge.query.get(data['cid'])
+        team = models.Team.query.get(data['tid'])
+        if not challenge or not team:
+            raise errors.ValidationError('Requires team and challenge.')
+        user = models.User.current()
+        app.challenge_log.info(
+                'Admin %s <%s> submitting flag for challenge %s <%d>, '
+                'team %s <%d>',
+                user.nick, user.email, challenge.name, challenge.cid,
+                team.name, team.tid)
+        try:
+            points = controllers.save_team_answer(challenge, team, None)
+            models.commit()
+        except (errors.IntegrityError, errors.FlushError) as ex:
+            app.logger.exception(
+                    'Unable to save answer for %s/%s: %s',
+                    str(data['tid']), str(data['tid']), str(ex))
+            models.db.session.rollback()
+            raise errors.AccessDeniedError(
+                'Unable to save answer for team. See log for details.')
+        cache.delete('cats/%d' % tid)
+        cache.delete('scoreboard')
+        return dict(points=points)
+
+    def post_player(self, data):
         answer = utils.normalize_input(data['answer'])
         try:
             points = controllers.submit_answer(data['cid'], answer)
@@ -776,7 +810,7 @@ class Config(flask_restful.Resource):
 
     def get(self):
         datefmt = ISO8601DateTime()
-        return dict(
+        config = dict(
             teams=app.config.get('TEAMS'),
             sbname=app.config.get('TITLE'),
             news_mechanism='poll',
@@ -789,8 +823,11 @@ class Config(flask_restful.Resource):
             register_url=auth.get_register_uri(),
             login_method=app.config.get('LOGIN_METHOD'),
             scoring=app.config.get('SCORING'),
-            validators=validators.ValidatorNames(),
             )
+        # None of this should be secret, just keeping noise down
+        if utils.is_admin():
+            config['validators'] = validators.ValidatorMeta()
+        return config
 
 
 api.add_resource(Config, '/api/config')
