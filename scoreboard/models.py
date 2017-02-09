@@ -108,6 +108,7 @@ class Team(db.Model):
         else:
             base = cls.query
         base = base.options(orm.joinedload(cls.answers))
+        base = base.order_by(cls.name)
         return base.all()
 
     @classmethod
@@ -145,7 +146,7 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     nick = db.Column(db.String(80), unique=True, nullable=False, index=True)
     pwhash = db.Column(db.String(48))  # pbkdf2.crypt == 48 bytes
-    admin = db.Column(db.Boolean, default=False)
+    admin = db.Column(db.Boolean, default=False, index=True)
     team_tid = db.Column(db.Integer, db.ForeignKey('team.tid'))
     create_ip = db.Column(db.String(45))     # max 45 bytes for IPv6
     last_login_ip = db.Column(db.String(45))
@@ -254,6 +255,12 @@ class User(db.Model):
                     # Bump expiration time on session
                     utils.session_for_user(user)
                 return user
+
+    @classmethod
+    def all(cls):
+        return cls.query.order_by(
+                cls.admin.desc(),
+                cls.nick).all()
 
 
 tag_challenge_association = db.Table(

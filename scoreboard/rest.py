@@ -153,7 +153,7 @@ class UserList(flask_restful.Resource):
     @utils.admin_required
     @flask_restful.marshal_with(resource_fields)
     def get(self):
-        return dict(users=models.User.query.all())
+        return dict(users=models.User.all())
 
     @flask_restful.marshal_with(User.resource_fields)
     def post(self):
