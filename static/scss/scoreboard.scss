@@ -9,6 +9,7 @@ html {
 
 body {
     padding-top: 40px;
+    font-weight:400;
 }
 
 table, .table {
@@ -95,7 +96,6 @@ a.btn {
 }
 
 .close-button{
-    display: initial;
     padding: 0px 10px;
 }
 
@@ -106,7 +106,6 @@ a.btn {
     margin: auto;
     width: 40px;
     height: 40px;
-    display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -304,8 +303,6 @@ table.team-challenges-unsolved {
                         .chall-tag, #{$dummy} {
                             flex-grow: 1;
                             font-size: 16px;
-                            border-top: 2px solid #42A5F5;
-                            background-color: #1E88E5;
 
                             &:nth-child(2), #{$dummy} {
                                 border-bottom-left-radius: 6px;
