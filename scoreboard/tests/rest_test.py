@@ -744,7 +744,8 @@ class ChallengeTest(base.RestTestCase):
             'points': 200,
             'answer': 'abc',
             'cat_slug': self.chall.cat_slug,
-            'unlocked': True
+            'unlocked': True,
+            'validator': 'static_pbkdf2',
         }
 
     def testCreateChallengeAnonymous(self):
@@ -1051,6 +1052,7 @@ class ConfigTest(base.RestTestCase):
                     'register_url',
                     'login_method',
                     'scoring',
+                    'validators',
             ))
             expected_keys |= extra_keys
             self.assertEqual(expected_keys, set(resp.json.keys()))
@@ -1060,7 +1062,7 @@ class ConfigTest(base.RestTestCase):
     testGetConfigAuthenticated = base.authenticated_test(
             makeTestGetConfig())
     testGetConfigAdmin = base.admin_test(
-            makeTestGetConfig(['validators']))
+            makeTestGetConfig())
 
 
 class NewsTest(base.RestTestCase):

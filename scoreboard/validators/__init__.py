@@ -50,4 +50,8 @@ def ValidatorMeta():
     return meta
 
 
+def IsValidator(name):
+    return name in _Validators
+
+
 __all__ = [GetValidatorForChallenge, ValidatorNames]

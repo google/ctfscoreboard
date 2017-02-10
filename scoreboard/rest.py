@@ -426,9 +426,13 @@ class Challenge(flask_restful.Resource):
         old_unlocked = challenge.unlocked
         for field in (
                 'name', 'description', 'points',
-                'cat_slug', 'unlocked', 'weight', 'validator'):
+                'cat_slug', 'unlocked', 'weight'):
             setattr(
                 challenge, field, data.get(field, getattr(challenge, field)))
+        if 'validator' in data:
+            if not validators.IsValidator(data['validator']):
+                raise errors.ValidationError('Invalid validator.')
+            challenge.validator = data['validator']
         if 'answer' in data and data['answer']:
             answer = utils.normalize_input(data['answer'])
             validator = validators.GetValidatorForChallenge(challenge)
@@ -477,6 +481,8 @@ class ChallengeList(flask_restful.Resource):
         data = flask.request.get_json()
         unlocked = data.get('unlocked', False)
         answer = utils.normalize_input(data['answer'])
+        if not validators.IsValidator(data.get('validator', None)):
+            raise errors.ValidationError('Invalid validator.')
         chall = models.Challenge.create(
             data['name'],
             data['description'],
@@ -823,10 +829,8 @@ class Config(flask_restful.Resource):
             register_url=auth.get_register_uri(),
             login_method=app.config.get('LOGIN_METHOD'),
             scoring=app.config.get('SCORING'),
+            validators=validators.ValidatorMeta(),
             )
-        # None of this should be secret, just keeping noise down
-        if utils.is_admin():
-            config['validators'] = validators.ValidatorMeta()
         return config
 
 
