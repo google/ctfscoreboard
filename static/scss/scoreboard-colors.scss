@@ -12,6 +12,9 @@ $tag-border: #42a5f5;
 $tag-bkg: #1e88e5;
 $panel-heading-bkg:#27326d;
 $panel-body-bkg: #4e5d6c;
+$chall-text: #ffffff;
+$sidebar-text: #ffffff;
+$sidebar-active-text: #ffffff;
 
 body {
   background-color: $body-bkg;
@@ -27,6 +30,7 @@ body {
 a {
     &.list-group-item {
       background-color: $nav-bkg;
+      color: $sidebar-text;
     }
 
     &.list-group-item.active,
@@ -34,6 +38,7 @@ a {
     &.list-group-item.active:focus {
       background-color: $link;
       border-color: $link;
+      color: $sidebar-active-text;
     }
 }
 
@@ -75,6 +80,7 @@ input.form-control[readonly] {
     & .front,
     & .back {
       background: $chall-bkg;
+      color: $chall-text;
     }
     & .front{
       $dummy: '.chall-dummy:first-child:last-child';
