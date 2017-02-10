@@ -377,13 +377,8 @@ sbDirectives.directive('challengeBox', [
           var isModal = iElement.parents('.modal').length > 0;
 
           scope.isModal = isModal;
-          scope.timer = 0;
           scope.minteams = 4
           scope.numteams = scope.minteams;
-
-          setInterval(function() {
-            scope.timer ++
-          }, 1000)
 
           var closeModal = function(href) {
             if (isModal) {
@@ -459,21 +454,18 @@ sbDirectives.directive('challengeBox', [
                 });
           };
 
-          scope.$watch('timer', function() {
-            // Format time nicely
-            scope.timeFormat = function(timestamp) {
-              var time = moment(timestamp);
-              var duration = moment.duration(time.diff(moment.now()))
-              //Time ago in ms
-              var msdiff = duration.valueOf()
-              var week = 60 * 60 * 24 * 7 * 1000
-              if (msdiff < week) {
-                return duration.humanize(true);
-              } else {
-                return time.format("ddd, MMM Do")
-              }
+          scope.timeFormat = function(timestamp) {
+            var time = moment(timestamp);
+            var duration = moment.duration(time.diff(moment.now()))
+            //Time ago in ms
+            var msdiff = duration.valueOf()
+            var week = 60 * 60 * 24 * 7 * 1000
+            if (msdiff < week) {
+              return duration.humanize(true);
+            } else {
+              return time.format("ddd, MMM Do")
             }
-          })
+          };
 
           // isAdmin, similar to global controller
           scope.isAdmin = function() {
