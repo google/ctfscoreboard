@@ -1,6 +1,6 @@
 <div class='ng-hide' ng-show='!!category'>
   <h2>{{category.name}}</h2>
-  <div class='well' ng-bind-html='category.description|linky'></div>
+  <div class='chall-well well' ng-bind-html='category.description|linky'></div>
   <div ng-repeat='chall in challenges|filter:filterUnlocked'>
     <div challenge-box challenge="chall" />
   </div> <!-- repeat outer -->

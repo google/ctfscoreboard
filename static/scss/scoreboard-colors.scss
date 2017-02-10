@@ -1,5 +1,6 @@
 
 $body-bkg: #2f343a;
+$body-text: #ffffff;
 $nav-bkg: #27326d;
 $sidebar-bkg: #cbcbcb;
 $link: #8899b7;
@@ -7,9 +8,14 @@ $news-bkg: #4e5d6c;
 $cat-bkg: #3e5edb;
 $chall-bkg: #2444c1;
 $solved-bkg: #1c3596;
+$tag-border: #42a5f5;
+$tag-bkg: #1e88e5;
+$panel-heading-bkg:#27326d;
+$panel-body-bkg: #4e5d6c;
 
 body {
   background-color: $body-bkg;
+  color: $body-text;
 }
 .navbar-default {
   background-color: $nav-bkg;
@@ -43,6 +49,23 @@ input.form-control[readonly] {
     background-color: #000;
 }
 
+#scoreboard>tbody>tr:nth-child(odd)>td{
+  background-color: $panel-body-bkg;
+}
+
+/* Challenge submission */
+.panel-primary>.panel-heading{
+  background-color: $panel-heading-bkg;
+}
+
+.chall-submit[disabled], .chall-submit{
+  background-color: $panel-heading-bkg;
+}
+
+.chall-well, .chall-panel, .chall-panel-body{
+  background-color: $panel-body-bkg;
+}
+
 /* Jeopardy grid */
 .jeopardy-cat {
   background: $cat-bkg;
@@ -52,6 +75,13 @@ input.form-control[readonly] {
     & .front,
     & .back {
       background: $chall-bkg;
+    }
+    & .front{
+      $dummy: '.chall-dummy:first-child:last-child';
+      .chall-tag, #{$dummy} {
+        border: 2px solid $tag-border;
+        background-color: $tag-bkg;
+      }
     }
 
     &.solved .card {
