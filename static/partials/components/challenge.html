@@ -25,7 +25,7 @@
             <label for='answer-{{chall.cid}}'>Answer</label>
             <input name='answer' class='form-control'
               id='answer-{{chall.cid}}' ng-model='chall.answer'
-              required>
+              required autocomplete='off'>
           </div>
           <input type='submit' ng-value='isAdmin() ? "Validate" : "Submit"'
             class='chall-submit btn btn-primary'
