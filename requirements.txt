@@ -1,6 +1,7 @@
 Flask
 Flask-RESTful
 Flask-SQLAlchemy
+GoogleAppEngineCloudStorageClient
 Jinja2
 MarkupSafe
 SQLAlchemy
