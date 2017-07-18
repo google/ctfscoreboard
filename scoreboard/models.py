@@ -59,7 +59,9 @@ class Team(db.Model):
 
     @property
     def code(self):
-        return hmac.new(app.config.get('TEAM_SECRET_KEY'),
+        secret_key = (app.config.get('TEAM_SECRET_KEY') or
+            app.config.get('SECRET_KEY'))
+        return hmac.new(secret_key,
                         self.name.encode('utf-8')).hexdigest()[:12]
 
     @property
