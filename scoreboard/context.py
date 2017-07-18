@@ -37,7 +37,6 @@ DEFAULT_CSP_POLICY = {
             'data:',
         ],
         'object-src': ["'none'"],
-        'reflected-xss': ['block'],
         'font-src': [
             "'self'",
             'fonts.gstatic.com',
