@@ -8,6 +8,24 @@ This is not an official Google product.
 
 Author: David Tomaschik <dwt@google.com>
 
+
+### Installation using Docker###
+1. Navigate to the folder where the Dockerfile is located.
+
+2. Run the command below to build a docker image for the scoreboard and tag it as "scoreboard".
+  docker build -t "scoreboard" .
+
+3. Run the command below to create the docker container.
+  docker create -p 80:80 scoreboard
+
+
+4. Find the name of the container you created for the scoreboard.
+  docker ls -a
+
+5. Run the command below to start the docker container for the scoreboard.
+  docker start "container_name"
+
+
 ### Installation ###
 1. Install Python with PIP and setuptools.  If you'd like to use a virtualenv,
    set one up and activate it now.
