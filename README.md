@@ -12,17 +12,17 @@ Author: David Tomaschik <dwt@google.com>
 ### Installation using Docker###
 1. Navigate to the folder where the Dockerfile is located.
 
-2. Run the command below to build a docker image for the scoreboard and tag it as "scoreboard".
+2. Run the command below to build a docker image for the scoreboard and tag it as "scoreboard". <br/>
   docker build -t "scoreboard" .
 
-3. Run the command below to create the docker container.
+3. Run the command below to create the docker container.<br />
   docker create -p 80:80 scoreboard
 
 
-4. Find the name of the container you created for the scoreboard.
+4. Find the name of the container you created for the scoreboard. <br />
   docker ls -a
 
-5. Run the command below to start the docker container for the scoreboard.
+5. Run the command below to start the docker container for the scoreboard. <br />
   docker start "container_name"
 
 
