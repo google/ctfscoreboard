@@ -362,11 +362,13 @@ sbDirectives.directive('challengeBox', [
     'answerService',
     'errorService',
     'loadingService',
+    'proofOfWorkService',
     'scoreService',
     'sessionService',
     'validatorService',
     function($resource, $location, $rootscope, answerService, errorService,
-      loadingService, scoreService, sessionService, validatorService) {
+      loadingService, proofOfWorkService, scoreService, sessionService,
+      validatorService) {
       return {
         restrict: 'AE',
         templateUrl: '/partials/components/challenge.html',

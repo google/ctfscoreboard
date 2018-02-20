@@ -1,6 +1,6 @@
 /**
- * Copyright 2016 Google Inc. All Rights Reserved.
- * 
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -63,6 +63,99 @@ globalServices.service('errorService',
     });
 
 
+globalServices.service('proofOfWorkService', [
+  'configService',
+  function(configService) {
+    //angular.injector(['globalServices']).get('proofOfWorkService')
+    var subtle = window.crypto.subtle;
+
+    // Returns a promise with the key
+    this.proofOfWork = function(instr) {
+      return new Promise(function(resolve, reject) {
+        configService.get(function(cfg) {
+          var nbits = cfg.proof_of_work_bits;
+          if (nbits == 0) {
+            resolve('');
+            return;
+          }
+          this._proofOfWork(instr, nbits)
+          .then(resolve)
+          .catch(reject);
+        });
+      });
+    };
+
+    // Internal implementation
+    this._proofOfWork = function(instr, nbits) {
+      return new Promise(function(resolve, reject) {
+        // Need to make this loop properly!
+        var callTry = function() {
+          return this._tryProofOfWork(instr, nbits).then(resolve);
+        };
+        callTry().catch(callTry)
+      });
+    };
+
+    // HMAC with random key
+    // Promise is fulfilled with args (key, signature)
+    this._hmacRandom = function(instr) {
+      var buf = new TextEncoder("utf-8").encode(instr);
+      return new Promise(function(resolve, reject) {
+        subtle.generateKey(
+          {
+            name: 'HMAC',
+            hash: {name: 'SHA-256'},
+            length: 256
+          },
+          true,
+          ['sign'])
+          .then(function(key) {
+            subtle.sign(
+              {name: 'HMAC'},
+              key,
+              buf
+            )
+            .then(function(signature) {
+              console.log(key);
+              console.log(signature);
+              resolve({key: key, signature: new Uint32Array(signature)});
+            })
+            .catch(reject);
+          })
+          .catch(reject);
+      });
+    };
+
+    // Try to find a key with low bits set to 0
+    this._tryProofOfWork = function(instr, nbits) {
+      if (nbits > 32) {
+        console.log('May not work with nbits values > 32.');
+      }
+      var mask = 2**nbits - 1;
+      return new Promise(function(resolve, reject) {
+        this._hmacRandom(instr)
+        .then(function(params) {
+          var low = params.signature[params.signature.length-1];
+          if ((low & mask) == 0) {
+            subtle.exportKey('jwk', params.key)
+            .then(function(k) {
+              resolve(k.k);
+            })
+            .catch(reject);
+          } else {
+            reject('');
+          }
+        })
+        .catch(reject);
+      });
+    };
+
+    window._hmacRandom = this._hmacRandom;
+    window._tryProofOfWork = this._tryProofOfWork;
+    window._proofOfWork = this._proofOfWork;
+  }]);
+
+
 globalServices.service('loadingService', [
     '$timeout',
     function($timeout) {
@@ -118,14 +211,14 @@ globalServices.service('gameTimeService', [
                 return null;
             return Math.round((this.start - Date.now()) / 1000);
         };
-        
+
         this.toEnd = function() {
             // Time in seconds to end of game, or null if no end specified
             if (!this.end)
                 return null;
             return Math.round((this.end - Date.now()) / 1000);
         };
-        
+
         this.duringGame = function(opt_callback) {
             // Return true or execute callback if in the game
             if (this.start != null && this.toStart() > 0)

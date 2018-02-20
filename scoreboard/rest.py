@@ -830,6 +830,7 @@ class Config(flask_restful.Resource):
             login_method=app.config.get('LOGIN_METHOD'),
             scoring=app.config.get('SCORING'),
             validators=validators.ValidatorMeta(),
+            proof_of_work_bits=int(app.config.get('PROOF_OF_WORK_BITS')),
             )
         return config
 

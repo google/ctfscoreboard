@@ -30,6 +30,7 @@ class Defaults(object):
         MAIL_FROM_NAME = None
         MAIL_HOST = 'localhost'
         NEWS_POLL_INTERVAL = 60000
+        PROOF_OF_WORK_BITS = 0
         RULES = '/rules'
         SCOREBOARD_ZEROS = True
         SCORING = 'plain'
