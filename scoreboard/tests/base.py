@@ -15,6 +15,7 @@
 """Base test module, MUST be imported first."""
 
 import contextlib
+import copy
 import functools
 import json
 import logging
@@ -51,6 +52,7 @@ class BaseTestCase(flask_testing.TestCase):
     )
 
     def create_app(self):
+        """Called by flask_testing."""
         app = main.get_app()
         app.config.update(self.TEST_CONFIG)
         attachments.patch("test")
@@ -60,7 +62,13 @@ class BaseTestCase(flask_testing.TestCase):
     def setUp(self):
         """Re-setup the DB to ensure a fresh instance."""
         super(BaseTestCase, self).setUp()
-        models.db.init_app(main.get_app())
+        # Reset config on each call
+        app = main.get_app()
+        try:
+            app.config = copy.deepcopy(self._SAVED_CONFIG)
+        except AttributeError:
+            self._SAVED_CONFIG = copy.deepcopy(app.config)
+        models.db.init_app(app)
         models.db.create_all()
 
     def tearDown(self):
