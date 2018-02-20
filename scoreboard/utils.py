@@ -154,6 +154,8 @@ def validate_proof_of_work(val, key, nbits):
     The key should be urlsafe-base64 encoded.
     """
     key = urlsafe_b64decode_nopadding(key)
+    if len(key) < 32:
+        return False
     if isinstance(val, unicode):
         val = val.encode('utf-8')
     mac = hmac.new(key, val, digestmod=hashlib.sha256).digest()
