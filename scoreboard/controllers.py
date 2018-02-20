@@ -126,7 +126,7 @@ def submit_answer(cid, answer, token):
     correct = 'WRONG'
     nbits = app.config.get('PROOF_OF_WORK_BITS', 0)
     if nbits and not utils.validate_proof_of_work(answer, token, nbits):
-      raise errors.InvalidAnswerError('Bad proof of work token!')
+        raise errors.InvalidAnswerError('Bad proof of work token!')
     team = models.Team.current()
     if not team:
         raise errors.AccessDeniedError('No team!')

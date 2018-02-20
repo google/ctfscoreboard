@@ -155,24 +155,25 @@ def validate_proof_of_work(val, key, nbits):
     """
     key = urlsafe_b64decode_nopadding(key)
     if isinstance(val, unicode):
-      val = val.encode('utf-8')
+        val = val.encode('utf-8')
     mac = hmac.new(key, val, digestmod=hashlib.sha256).digest()
     while nbits >= 8:
-      if ord(mac[0]) != 0:
-        return False
-      nbits -= 8
-      mac = mac[1:]
+        if ord(mac[0]) != 0:
+            return False
+        nbits -= 8
+        mac = mac[1:]
     if nbits:
-      mask = 2**nbits - 1
-      if ord(mac[0]) & nbits:
-        return False
+        mask = 2**nbits - 1
+        if ord(mac[0]) & mask:
+            return False
     return True
 
 
 def urlsafe_b64decode_nopadding(val):
-  """Deal with unpadded urlsafe base64."""
-  # Yes, it accepts extra = characters.
-  return base64.urlsafe_b64decode(str(val) + '===')
+    """Deal with unpadded urlsafe base64."""
+    # Yes, it accepts extra = characters.
+    return base64.urlsafe_b64decode(str(val) + '===')
+
 
 class GameTime(object):
     """Manage start/end times for the game."""
