@@ -999,7 +999,6 @@ class AnswerTest(base.RestTestCase):
                 'answer': self.answer,
             })
         self.assert200(resp)
-        print resp.json
         self.assertEqual(self.points, resp.json['points'])
 
     @base.authenticated_test
@@ -1026,6 +1025,54 @@ class AnswerTest(base.RestTestCase):
         self.assert403(resp)
         team = models.Team.query.get(self.client.team.tid)
         self.assertEqual(old_score, team.score)
+
+    @base.authenticated_test
+    def testSubmit_ProofOfWork(self):
+        test_nbits = 12
+
+        def MockValidate(val, key, nbits):
+            self.assertEqual(val, self.answer)
+            self.assertEqual(key, 'foo')
+            self.assertEqual(nbits, test_nbits)
+            return True
+        self.app.config['PROOF_OF_WORK_BITS'] = test_nbits
+        # TODO: switch to mock framework
+        old_pow_test = utils.validate_proof_of_work
+        utils.validate_proof_of_work = MockValidate
+        with self.queryLimit(6):
+            resp = self.postJSON(self.PATH, {
+                'cid': self.cid,
+                'answer': self.answer,
+                'token': 'foo'
+            })
+        self.assert200(resp)
+        self.assertEqual(self.points, resp.json['points'])
+        utils.validate_proof_of_work = old_pow_test
+
+    @base.authenticated_test
+    def testSubmit_ProofOfWorkFails(self):
+        test_nbits = 12
+
+        def MockValidate(val, key, nbits):
+            self.assertEqual(val, self.answer)
+            self.assertEqual(key, 'foo')
+            self.assertEqual(nbits, test_nbits)
+            return False
+        self.app.config['PROOF_OF_WORK_BITS'] = test_nbits
+        # TODO: switch to mock framework
+        old_pow_test = utils.validate_proof_of_work
+        utils.validate_proof_of_work = MockValidate
+        old_score = self.client.team.score
+        with self.queryLimit(2):
+            resp = self.postJSON(self.PATH, {
+                'cid': self.cid,
+                'answer': self.answer,
+                'token': 'foo'
+            })
+        self.assert403(resp)
+        team = models.Team.query.get(self.client.team.tid)
+        self.assertEqual(old_score, team.score)
+        utils.validate_proof_of_work = old_pow_test
 
 
 class ConfigTest(base.RestTestCase):
