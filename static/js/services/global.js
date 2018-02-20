@@ -87,18 +87,28 @@ globalServices.service('proofOfWorkService', [
 
     // Internal implementation
     this._proofOfWork = function(instr, nbits) {
+      var start = Date.now();
       return new Promise(function(resolve, reject) {
-        // Need to make this loop properly!
-        var callTry = function() {
-          return this._tryProofOfWork(instr, nbits).then(resolve);
+        var resolver = function(k) {
+          var end = Date.now();
+          console.log('Proof of work took ' + (end - start) + ' ms');
+          resolve(k);
         };
-        callTry().catch(callTry)
+        // Sortof recursive -- not great, but best I can come up.
+        // Patches welcome.
+        var callTry = function() {
+          console.log('Calling _tryProofOfWork');
+          return this._tryProofOfWork(instr, nbits)
+              .then(resolver).catch(callTry);
+        };
+        callTry();
       });
     };
 
     // HMAC with random key
     // Promise is fulfilled with args (key, signature)
     this._hmacRandom = function(instr) {
+      console.log('In _hmacRandom');
       var buf = new TextEncoder("utf-8").encode(instr);
       return new Promise(function(resolve, reject) {
         subtle.generateKey(
@@ -128,6 +138,7 @@ globalServices.service('proofOfWorkService', [
 
     // Try to find a key with low bits set to 0
     this._tryProofOfWork = function(instr, nbits) {
+      console.log('In _tryProofOfWork');
       if (nbits > 32) {
         console.log('May not work with nbits values > 32.');
       }
@@ -150,8 +161,7 @@ globalServices.service('proofOfWorkService', [
       });
     };
 
-    window._hmacRandom = this._hmacRandom;
-    window._tryProofOfWork = this._tryProofOfWork;
+    // Useful for tuning
     window._proofOfWork = this._proofOfWork;
   }]);
 
