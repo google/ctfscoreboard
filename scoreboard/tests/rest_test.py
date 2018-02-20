@@ -1053,6 +1053,7 @@ class ConfigTest(base.RestTestCase):
                     'login_method',
                     'scoring',
                     'validators',
+                    'proof_of_work_bits',
             ))
             expected_keys |= extra_keys
             self.assertEqual(expected_keys, set(resp.json.keys()))

@@ -78,15 +78,13 @@ globalServices.service('proofOfWorkService', [
             resolve('');
             return;
           }
-          this._proofOfWork(instr, nbits)
-          .then(resolve)
-          .catch(reject);
+          _proofOfWork(instr, nbits).then(resolve).catch(reject);
         });
       });
     };
 
     // Internal implementation
-    this._proofOfWork = function(instr, nbits) {
+    var _proofOfWork = function(instr, nbits) {
       var start = Date.now();
       return new Promise(function(resolve, reject) {
         var resolver = function(k) {
@@ -97,8 +95,7 @@ globalServices.service('proofOfWorkService', [
         // Sortof recursive -- not great, but best I can come up.
         // Patches welcome.
         var callTry = function() {
-          console.log('Calling _tryProofOfWork');
-          return this._tryProofOfWork(instr, nbits)
+          return _tryProofOfWork(instr, nbits)
               .then(resolver).catch(callTry);
         };
         callTry();
@@ -107,8 +104,7 @@ globalServices.service('proofOfWorkService', [
 
     // HMAC with random key
     // Promise is fulfilled with args (key, signature)
-    this._hmacRandom = function(instr) {
-      console.log('In _hmacRandom');
+    var _hmacRandom = function(instr) {
       var buf = new TextEncoder("utf-8").encode(instr);
       return new Promise(function(resolve, reject) {
         subtle.generateKey(
@@ -126,9 +122,7 @@ globalServices.service('proofOfWorkService', [
               buf
             )
             .then(function(signature) {
-              console.log(key);
-              console.log(signature);
-              resolve({key: key, signature: new Uint32Array(signature)});
+              resolve({key: key, signature: new Uint8Array(signature)});
             })
             .catch(reject);
           })
@@ -136,18 +130,23 @@ globalServices.service('proofOfWorkService', [
       });
     };
 
-    // Try to find a key with low bits set to 0
-    this._tryProofOfWork = function(instr, nbits) {
-      console.log('In _tryProofOfWork');
-      if (nbits > 32) {
-        console.log('May not work with nbits values > 32.');
+    var testbits = function(arr, nbits) {
+      while (nbits >= 8) {
+        if (arr[0] != 0)
+          return false;
+        nbits -= 8;
+        arr = arr.slice(1);
       }
       var mask = 2**nbits - 1;
+      return ((arr[0] & mask) == 0);
+    };
+
+    // Try to find a key with low bits set to 0
+    var _tryProofOfWork = function(instr, nbits) {
       return new Promise(function(resolve, reject) {
-        this._hmacRandom(instr)
+        _hmacRandom(instr)
         .then(function(params) {
-          var low = params.signature[params.signature.length-1];
-          if ((low & mask) == 0) {
+          if (testbits(params.signature, nbits)) {
             subtle.exportKey('jwk', params.key)
             .then(function(k) {
               resolve(k.k);
@@ -162,7 +161,7 @@ globalServices.service('proofOfWorkService', [
     };
 
     // Useful for tuning
-    window._proofOfWork = this._proofOfWork;
+    window._proofOfWork = _proofOfWork;
   }]);
 
 

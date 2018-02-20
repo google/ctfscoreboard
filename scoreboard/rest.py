@@ -321,11 +321,11 @@ class Session(flask_restful.Resource):
             flask.session.clear()
         try:
             del flask.g.user
-        except:
+        except:  # noqa: E722
             pass
         try:
             del flask.g.team
-        except:
+        except:  # noqa: E722
             pass
         return {'message': 'OK'}
 
@@ -737,7 +737,8 @@ class Answer(flask_restful.Resource):
     def post_player(self, data):
         answer = utils.normalize_input(data['answer'])
         try:
-            points = controllers.submit_answer(data['cid'], answer)
+            points = controllers.submit_answer(
+                data['cid'], answer, data.get('token'))
         except errors.IntegrityError:
             raise errors.AccessDeniedError(
                     'Previously solved or flag already used.')

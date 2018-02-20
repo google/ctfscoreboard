@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import base64
 import datetime
 import errors
 import flask
@@ -91,7 +92,7 @@ def is_admin():
     """Check if current user is an admin."""
     try:
         return flask.g.admin
-    except:
+    except AttributeError:
         return False
 
 
@@ -143,9 +144,35 @@ def generate_id():
 
 
 def normalize_input(answer):
-    """"Take a string and normalize it to a standard format."""
-    return answer.strip().lower()
+    """Take a string and normalize it to a standard format."""
+    return answer.strip()
 
+
+def validate_proof_of_work(val, key, nbits):
+    """Assert that the proof of work function has nbits 0s.
+
+    The key should be urlsafe-base64 encoded.
+    """
+    key = urlsafe_b64decode_nopadding(key)
+    if isinstance(val, unicode):
+      val = val.encode('utf-8')
+    mac = hmac.new(key, val, digestmod=hashlib.sha256).digest()
+    while nbits >= 8:
+      if ord(mac[0]) != 0:
+        return False
+      nbits -= 8
+      mac = mac[1:]
+    if nbits:
+      mask = 2**nbits - 1
+      if ord(mac[0]) & nbits:
+        return False
+    return True
+
+
+def urlsafe_b64decode_nopadding(val):
+  """Deal with unpadded urlsafe base64."""
+  # Yes, it accepts extra = characters.
+  return base64.urlsafe_b64decode(str(val) + '===')
 
 class GameTime(object):
     """Manage start/end times for the game."""
