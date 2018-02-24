@@ -1,6 +1,6 @@
 /**
- * Copyright 2016 Google Inc. All Rights Reserved.
- * 
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,4 +34,12 @@ adminServices.service('adminToolsService', [
     '$resource',
     function($resource) {
       this.recalculateScores = $resource('/api/tools/recalculate').save;
+      this.resetScores = function(cb, err) {
+        return $resource('/api/tools/reset').save(
+          {op: "scores", ack: "ack"}, cb, err);
+      };
+      this.resetPlayers = function(cb, err) {
+        return $resource('/api/tools/reset').save(
+          {op: "players", ack: "ack"}, cb, err);
+      };
     }]);

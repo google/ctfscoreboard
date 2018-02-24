@@ -1097,7 +1097,7 @@ api.add_resource(BackupRestore, '/api/backup')
 class CTFTimeScoreFeed(flask_restful.Resource):
     """Provide a JSON feed to CTFTime.
 
-    At this time, it is only intended to cover the manditory fields in the
+    At this time, it is only intended to cover the mandatory fields in the
     feed: https://ctftime.org/json-scoreboard-feed
     """
 
@@ -1140,3 +1140,37 @@ class ToolsRecalculate(flask_restful.Resource):
 
 
 api.add_resource(ToolsRecalculate, '/api/tools/recalculate')
+
+
+class DBReset(flask_restful.Resource):
+    """Reset various parts of the database."""
+
+    decorators = [utils.admin_required]
+
+    def post(self):
+        data = flask.request.get_json()
+        if data.get('ack') != 'ack':
+            raise ValueError('Requires ack!')
+        op = data.get('op', '')
+        if op == 'scores':
+            app.logger.info('Score reset requested by %r.',
+                            models.User.current())
+            models.ScoreHistory.query.delete()
+            models.Answer.query.delete()
+            models.NonceFlagUsed.query.delete()
+            for team in models.Team.query.all():
+                team.score = 0
+        elif op == 'players':
+            app.logger.info('Player reset requested by %r.',
+                            models.User.current())
+            models.User.query.filter(
+                    models.User.admin == False).delete()  # noqa: E712
+            models.Team.query.delete()
+        else:
+            raise ValueError('Unknown operation %s' % op)
+        models.commit()
+        cache.clear()
+        return {'message': 'Done'}
+
+
+api.add_resource(DBReset, '/api/tools/reset')

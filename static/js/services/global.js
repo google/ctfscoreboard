@@ -31,35 +31,35 @@ globalServices.service('errorService',
       var inhibit = false;
       this.errors = [];
 
-      this.clearErrors = function() {
+      this.clearErrors = angular.bind(this, function() {
         if (inhibit) {
           inhibit = false;
           return;
         }
         this.errors.length = 0;
-      };
+      });
 
-      this.error = function(msg, severity) {
+      this.error = angular.bind(this, function(msg, severity) {
         severity = severity || 'danger';
         if (typeof msg == "object") {
           msg = (msg.data && msg.data.message) || msg.message || "Request Error";
         }
         this.errors.push({severity: severity, msg: msg});
-      };
+      });
 
-      this.success = function(msg) {
+      this.success = angular.bind(this, function(msg) {
         this.error(msg, 'success');
-      };
+      });
 
       this.inhibitClear = function() {
         inhibit = true;
       };
 
-      this.clearAndInhibit = function() {
+      this.clearAndInhibit = angular.bind(this, function() {
         inhibit = false;
         this.clearErrors();
         this.inhibitClear();
-      };
+      });
     });
 
 
