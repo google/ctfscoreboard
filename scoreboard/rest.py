@@ -1153,12 +1153,16 @@ class DBReset(flask_restful.Resource):
             raise ValueError('Requires ack!')
         op = data.get('op', '')
         if op == 'scores':
+            app.logger.info('Score reset requested by %r.',
+                            models.User.current())
             models.ScoreHistory.query.delete()
             models.Answer.query.delete()
             models.NonceFlagUsed.query.delete()
             for team in models.Team.query.all():
                 team.score = 0
         elif op == 'players':
+            app.logger.info('Player reset requested by %r.',
+                            models.User.current())
             models.User.query.filter(
                     models.User.admin == False).delete()  # noqa: E712
             models.Team.query.delete()
