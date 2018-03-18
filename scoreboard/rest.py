@@ -166,11 +166,16 @@ class UserList(flask_restful.Resource):
         if (app.config.get('TEAMS') and
                 not data.get('team_name', '') and
                 not data.get('team_id', 0)):
+            app.logger.warning('User attempted to register without team.')
             raise errors.ValidationError('Need a team name.')
         if (app.config.get('INVITE_KEY') and
                 data.get('invite_key', '').strip() !=
                 app.config.get('INVITE_KEY')):
+            app.logger.warning(
+                    'Attempted invite-only registration with invalid '
+                    'invite key: %s', data.get('invite_key', ''))
             raise errors.ValidationError('Invalid invite key!')
+        app.logger.debug('Passed registration validation for new user.')
         user = auth.register(flask.request)
         utils.session_for_user(user)
         return user
