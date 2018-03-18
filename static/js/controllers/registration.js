@@ -48,7 +48,7 @@ regCtrls.controller('LoginCtrl', [
 
       $scope.email = '';
       $scope.password = '';
-      
+
       $scope.login = function() {
         errorService.clearErrors();
         sessionService.login($scope.email, $scope.password,
@@ -98,7 +98,8 @@ regCtrls.controller('RegistrationCtrl', [
           password: $scope.password,
           team_id: $scope.team,
           team_name: $scope.team_name,
-          team_code: $scope.team_code
+          team_code: $scope.team_code,
+          invite_key: $scope.invite_key
         }, function(data) {
           sessionService.refresh();
           $location.path('/challenges');

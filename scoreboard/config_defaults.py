@@ -25,6 +25,7 @@ class Defaults(object):
         ERROR_404_HELP = False
         FIRST_BLOOD = 0
         GAME_TIME = (None, None)
+        INVITE_KEY = None
         LOGIN_METHOD = 'local'
         MAIL_FROM = 'ctf@scoreboard'
         MAIL_FROM_NAME = None

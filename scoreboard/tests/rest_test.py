@@ -1101,9 +1101,11 @@ class ConfigTest(base.RestTestCase):
                     'scoring',
                     'validators',
                     'proof_of_work_bits',
+                    'invite_only',
             ))
             expected_keys |= extra_keys
             self.assertEqual(expected_keys, set(resp.json.keys()))
+            self.assertIsInstance(resp.json['invite_only'], bool)
         return testGetConfig
 
     testGetConfig = makeTestGetConfig()
