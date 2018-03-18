@@ -19,6 +19,7 @@ import copy
 import functools
 import json
 import logging
+import os
 import os.path
 import pbkdf2
 import time
@@ -63,11 +64,11 @@ class BaseTestCase(flask_testing.TestCase):
         """Re-setup the DB to ensure a fresh instance."""
         super(BaseTestCase, self).setUp()
         # Reset config on each call
-        app = main.get_app()
         try:
-            app.config = copy.deepcopy(self._SAVED_CONFIG)
+            app = main.get_app()
+            app.config = copy.deepcopy(self.app._SAVED_CONFIG)
         except AttributeError:
-            self._SAVED_CONFIG = copy.deepcopy(app.config)
+            self.app._SAVED_CONFIG = copy.deepcopy(app.config)
         models.db.init_app(app)
         models.db.create_all()
 
@@ -228,7 +229,10 @@ def admin_test(f):
 
 def run_all_tests():
     """This loads and runs all tests in scoreboard.tests."""
-    logging.getLogger().setLevel(logging.INFO)
+    if os.getenv("DEBUG_TESTS"):
+        logging.getLogger().setLevel(logging.DEBUG)
+    else:
+        logging.getLogger().setLevel(logging.INFO)
     test_dir = os.path.dirname(os.path.realpath(__file__))
     top_dir = os.path.abspath(os.path.join(test_dir, '..'))
     suite = unittest.defaultTestLoader.discover(
