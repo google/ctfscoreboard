@@ -1127,6 +1127,7 @@ class ConfigTest(base.RestTestCase):
                     'validators',
                     'proof_of_work_bits',
                     'invite_only',
+                    'tags_only',
             ))
             expected_keys |= extra_keys
             self.assertEqual(expected_keys, set(resp.json.keys()))

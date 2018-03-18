@@ -14,13 +14,16 @@ all: $(MIN_JS) scss
 $(MIN_JS): $(JS_SRC)
 	$(MINIFY) $^ > $@
 
+dev: scss
+	python main.py
+
 scss:
-	if [ "$(PYSCSS)" = "" ]; then\
+	@if [ "$(PYSCSS)" = "" ]; then\
 		echo "pyscss not found, exiting";\
 		exit -1;\
 	fi;\
 	for i in $$(ls static/scss/); do\
-		echo "Making $$i";\
+		echo "Making $${i%.scss}.css";\
 		$(PYSCSS) -o static/css/$${i%.scss}.css static/scss/$$i;\
 	done
 
