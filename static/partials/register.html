@@ -61,6 +61,15 @@
       </div>
     </div>
     <!-- /Teams only -->
+    <!-- Invite only -->
+    <div class='form-group ng-hide' ng-show='config.invite_only'>
+      <label for='invite_key'>Invite Key</label>
+      <input id='invite_key' name='invite_key' class='form-control'
+        ng-model='invite_key', placeholder='Invite Key'
+        ng-required='config.invite_only'
+        ng-show='config.invite_only'>
+    </div>
+    <!-- /Invite only -->
     <input type='submit' value='Register' class='btn btn-primary'
       ng-disabled='registerForm.$invalid'>
   </form>

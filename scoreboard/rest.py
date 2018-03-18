@@ -163,9 +163,19 @@ class UserList(flask_restful.Resource):
         data = flask.request.get_json()
         if not data.get('nick', ''):
             raise errors.ValidationError('Need a player nick.')
-        if (app.config.get('TEAMS') and not data.get('team_name', '') and not
-                data.get('team_id', 0)):
+        if (app.config.get('TEAMS') and
+                not data.get('team_name', '') and
+                not data.get('team_id', 0)):
+            app.logger.warning('User attempted to register without team.')
             raise errors.ValidationError('Need a team name.')
+        if (app.config.get('INVITE_KEY') and
+                data.get('invite_key', '').strip() !=
+                app.config.get('INVITE_KEY')):
+            app.logger.warning(
+                    'Attempted invite-only registration with invalid '
+                    'invite key: %s', data.get('invite_key', ''))
+            raise errors.ValidationError('Invalid invite key!')
+        app.logger.debug('Passed registration validation for new user.')
         user = auth.register(flask.request)
         utils.session_for_user(user)
         return user
@@ -832,6 +842,7 @@ class Config(flask_restful.Resource):
             scoring=app.config.get('SCORING'),
             validators=validators.ValidatorMeta(),
             proof_of_work_bits=int(app.config.get('PROOF_OF_WORK_BITS')),
+            invite_only=app.config.get('INVITE_KEY') is not None,
             )
         return config
 

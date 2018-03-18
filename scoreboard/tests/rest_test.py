@@ -501,7 +501,7 @@ class UserTest(base.RestTestCase):
             self.assertEqual(resp.json['team_tid'], flask.session['team'])
             self.assertEqual(team.tid, resp.json['team_tid'])
 
-    def testRegisterUserTeamNoCode(self):
+    def testRegisterUserTeamWrongCode(self):
         team = self.authenticated_client.team
         data = self.default_data()
         data.update({
@@ -533,6 +533,31 @@ class UserTest(base.RestTestCase):
         del data['team_id']
         with self.queryLimit(0):
             self.assert400(self.postJSON('/api/users', data))
+
+    def testRegisterUserInviteKey(self):
+        self.app.config['INVITE_KEY'] = 'foobar'
+        data = self.default_data()
+        data['invite_key'] = self.app.config['INVITE_KEY']
+        with self.client:
+            resp = self.postJSON('/api/users', data)
+        self.assert200(resp)
+
+    def testRegisterUserNoInviteKey(self):
+        self.app.config['INVITE_KEY'] = 'foobar'
+        data = self.default_data()
+        with self.client:
+            with self.queryLimit(0):
+                resp = self.postJSON('/api/users', data)
+        self.assert400(resp)
+
+    def testRegisterUserWrongInviteKey(self):
+        self.app.config['INVITE_KEY'] = 'foobar'
+        data = self.default_data()
+        data['invite_key'] = 'notright'
+        with self.client:
+            with self.queryLimit(0):
+                resp = self.postJSON('/api/users', data)
+        self.assert400(resp)
 
 
 class TeamTest(base.RestTestCase):
@@ -1101,9 +1126,11 @@ class ConfigTest(base.RestTestCase):
                     'scoring',
                     'validators',
                     'proof_of_work_bits',
+                    'invite_only',
             ))
             expected_keys |= extra_keys
             self.assertEqual(expected_keys, set(resp.json.keys()))
+            self.assertIsInstance(resp.json['invite_only'], bool)
         return testGetConfig
 
     testGetConfig = makeTestGetConfig()
