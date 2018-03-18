@@ -26,3 +26,4 @@ ATTACHMENT_BACKEND = 'file:///tmp/attachments'
 LOGIN_METHOD = 'local'
 SESSION_COOKIE_SECURE = False
 PROOF_OF_WORK_BITS = 12
+TAGS_ONLY = True

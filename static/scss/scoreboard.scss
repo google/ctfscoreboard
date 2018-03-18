@@ -232,117 +232,124 @@ table.team-challenges-unsolved {
     display: flex;
     width: 100%;
 
+    &.jeopardy-tags-container {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
     &.row {
         margin: 0;
 
         .jeopardy-col {
             flex-grow: 1;
+        }
 
-            .jeopardy-box {
-                height: 120px;
-                text-align: center;
-                margin: 10px 5px;
+        .jeopardy-box {
+            height: 120px;
+            text-align: center;
+            margin: 10px 5px;
+            position: relative;
+            display: inline-block;
+            min-width: 120px;
+
+            & p {
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                position: absolute;
+            }
+        }
+
+        .jeopardy-cat {
+            font-weight: bolder;
+            font-size: 1.3em;
+            border-radius: 6px;
+            margin-bottom: 0px;
+        }
+
+        .jeopardy-chall {
+            perspective: 1000px;
+
+            .flipper {
+                transition: 0.8s;
+                transform-style: preserve-3d;
                 position: relative;
-
-                & p {
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    position: absolute;
-                }
+                height: 100%;
+                width: 100%;
             }
 
-            .jeopardy-cat {
-                font-weight: bolder;
-                font-size: 1.3em;
+            &:hover .flipper,
+            &.hover .flipper {
+                transform: rotateY(180deg);
+            }
+
+            & .front,
+            & .back {
+                position: absolute;
+                backface-visibility: hidden;
+                height: 100%;
+                width: 100%;
                 border-radius: 6px;
-                margin-bottom: 0px;
             }
 
-            .jeopardy-chall {
-                perspective: 1000px;
+            & .front {
+                z-index: 2;
+                transform: rotateY(0deg);
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
 
-                .flipper {
-                    transition: 0.8s;
-                    transform-style: preserve-3d;
-                    position: relative;
-                    height: 100%;
-                    width: 100%;
-                }
-
-                &:hover .flipper,
-                &.hover .flipper {
-                    transform: rotateY(180deg);
-                }
-
-                & .front,
-                & .back {
-                    position: absolute;
-                    backface-visibility: hidden;
-                    height: 100%;
-                    width: 100%;
-                    border-radius: 6px;
-                }
-
-                & .front {
-                    z-index: 2;
-                    transform: rotateY(0deg);
+                .chall-tags {
                     display: flex;
-                    flex-direction: column;
-                    justify-content: space-between;
+                    justify-content: space-around;
+                    align-items: flex-end;
+                    width: 100%;
+                    height: 30px;
 
-                    .chall-tags {
-                        display: flex;
-                        justify-content: space-around;
-                        align-items: flex-end;
+                    $dummy: '.chall-dummy:first-child:last-child';
+
+                    .chall-tag, #{$dummy} {
+                        flex-grow: 1;
+                        font-size: 16px;
+
+                        &:nth-child(2), #{$dummy} {
+                            border-bottom-left-radius: 6px;
+                        }
+
+                        &:last-child, #{$dummy} {
+                            border-bottom-right-radius: 6px;
+                        }
+
+                        &:not(:last-child) {
+                            border-right: 2px solid #42A5F5;
+                        }
+
+                        height: 24px
+                    }
+
+                    #{$dummy} {
                         width: 100%;
-                        height: 30px;
-
-                        $dummy: '.chall-dummy:first-child:last-child';
-
-                        .chall-tag, #{$dummy} {
-                            flex-grow: 1;
-                            font-size: 16px;
-
-                            &:nth-child(2), #{$dummy} {
-                                border-bottom-left-radius: 6px;
-                            }
-
-                            &:last-child, #{$dummy} {
-                                border-bottom-right-radius: 6px;
-                            }
-
-                            &:not(:last-child) {
-                                border-right: 2px solid #42A5F5;
-                            }
-
-                            height: 24px
-                        }
-
-                        #{$dummy} {
-                            width: 100%;
-                        }
                     }
+                }
 
-                    .chall-num {
-                        display: flex;
+                .chall-num {
+                    display: flex;
 
-                        .chall-num-val {
-                            font-size: 16px;
-                            padding-left: 10px;
-                            padding-top: 4px;
-                        }
-                    }
-
-                    .chall-name {
+                    .chall-num-val {
+                        font-size: 16px;
                         padding-left: 10px;
-                        padding-right: 10px;
+                        padding-top: 4px;
                     }
                 }
 
-                & .back {
-                    transform: rotateY(180deg);
+                .chall-name {
+                    padding-left: 10px;
+                    padding-right: 10px;
                 }
+            }
+
+            & .back {
+                transform: rotateY(180deg);
             }
         }
     }
