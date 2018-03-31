@@ -374,7 +374,7 @@ class PasswordReset(flask_restful.Resource):
         user.set_password(data['password'])
         app.logger.info('Password reset for %r.', user)
         models.commit()
-        controllers.user_login(email, data['password'])
+        utils.session_for_user(user)
         return {'message': 'Password reset.'}
 
 
