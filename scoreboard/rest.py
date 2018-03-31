@@ -359,8 +359,16 @@ class PasswordReset(flask_restful.Resource):
         user = models.User.get_by_email(email)
         if not user:
             flask.abort(404)
-        if not user.verify_token(data.get('token', '')):
-            raise errors.AccessDeniedError('Invalid token.')
+        token = data.get('token', '')
+        try:
+            user.verify_token(token)
+        except errors.ValidationError as ex:
+            app.logger.warning('Error validating password reset: %s', str(ex))
+            raise
+        except Exception as ex:
+            app.logger.exception(
+                    'Unhandled exception during password reset: %s', str(ex))
+            raise
         if data['password'] != data['password2']:
             raise errors.ValidationError("Passwords don't match.")
         user.set_password(data['password'])
