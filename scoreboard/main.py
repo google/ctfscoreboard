@@ -16,6 +16,7 @@ import flask
 import logging
 import os
 from werkzeug import exceptions
+from werkzeug import utils as werkzeug_utils
 import flask_scss
 
 from scoreboard import logger
@@ -56,7 +57,11 @@ def create_app(config=None):
 
 def load_config_file(app=None):
     app = app or get_app()
-    app.config.from_object('config')
+    try:
+        app.config.from_object('config')
+    except werkzeug_utils.ImportStringError:
+        pass
+    app.config.from_envvar('SCOREBOARD_CONFIG', silent=True)
     setup_logging(app)  # reset logs
 
 
