@@ -89,6 +89,8 @@ def _send_appengine(message, subject, to, to_name, sender, sender_name):
             body=message)
     message.to = email.utils.formataddr((to_name, to))
     message.sender = email.utils.formataddr((sender_name, sender))
+    app.logger.info('Sending email from: %s, to: %s, subject: %s',
+            message.sender, message.sender, subject)
     try:
         message.send()
     except mail_errors.Error as ex:

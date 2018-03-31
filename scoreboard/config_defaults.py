@@ -27,7 +27,7 @@ class Defaults(object):
         GAME_TIME = (None, None)
         INVITE_KEY = None
         LOGIN_METHOD = 'local'
-        MAIL_FROM = 'ctf@scoreboard'
+        MAIL_FROM = None
         MAIL_FROM_NAME = None
         MAIL_HOST = 'localhost'
         NEWS_POLL_INTERVAL = 60000
