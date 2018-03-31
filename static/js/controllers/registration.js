@@ -87,8 +87,9 @@ regCtrls.controller('RegistrationCtrl', [
     function($scope, $location, configService, errorService, sessionService,
         teamService, userService, loadingService) {
       $scope.config = configService.get();
-      $scope.teams = teamService.get(function() {
-        $scope.teams = $scope.teams.teams;
+      $scope.teams = [];
+      teamService.get(function(resp) {
+        $scope.teams = resp.teams;
       });
       var search = $location.search();
       if (search['team'] && search['code']) {
