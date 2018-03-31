@@ -20,7 +20,7 @@ import socket
 try:
     from google.appengine.api import mail as aemail
     from google.appengine.api import app_identity
-    from google.appengine.api.mail import mail_errors
+    from google.appengine.api import mail_errors
 except ImportError:
     pass
 
