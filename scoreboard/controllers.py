@@ -191,5 +191,5 @@ def offer_password_reset(user):
     subject = '%s Password Reset' % app.config.get('TITLE')
     try:
         mail.send(message, subject, user.email, to_name=user.nick)
-    except mail.MailFailure:
-        raise errors.ServerError('Could not send mail.')
+    except mail.MailFailure as ex:
+        raise errors.ServerError('Could not send mail: ' + str(ex))
