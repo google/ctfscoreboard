@@ -44,6 +44,8 @@ def verify_csrf_token(token, user=None):
     """Verify a token for a user."""
     token = base64.b64decode(str(token), '_-')
     expires = struct.unpack('<I', token[:4])[0]
+    if expires < time.time():
+        return False
     return token == _get_csrf_token(user, expires)
 
 
