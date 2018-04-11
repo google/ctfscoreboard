@@ -14,15 +14,15 @@
 
 import re
 
-from scoreboard import utils
 from scoreboard.validators import base
 
 
 class RegexValidator(base.BaseValidator):
     """Regex-based validator.
 
-    Note that validation based on a regex is inherently subject to timing attacks.
-    If this is important to you, you should use a validator like static_pbkdf2.
+    Note that validation based on a regex is inherently subject to timing
+    attacks.  If this is important to you, you should use a validator like
+    static_pbkdf2.
     """
 
     name = 'Regular Expression'
