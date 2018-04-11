@@ -1,4 +1,7 @@
 [run]
 source = scoreboard
-omit = scoreboard/tests/*
+omit =
+  scoreboard/tests/*
+  main.py
+  setup.py
 branch = True
