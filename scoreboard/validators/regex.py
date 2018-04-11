@@ -26,9 +26,17 @@ class RegexValidator(base.BaseValidator):
     """
 
     name = 'Regular Expression'
+    re_flags = 0
 
     def validate_answer(self, answer, unused_team):
-        m = re.match(self.challenge.answer_hash, answer)
+        m = re.match(self.challenge.answer_hash, answer, flags=self.re_flags)
         if m:
             return m.group(0) == answer
         return False
+
+
+class RegexCaseValidator(RegexValidator):
+    """Case-insensitive regex match."""
+
+    name = 'Regular Expression (Case Insensitive)'
+    re_flags = re.IGNORECASE

@@ -25,6 +25,7 @@ _Validators = {
         'nonce_245632': nonce.Nonce_24_56_Base32_Validator,
         'nonce_328832': nonce.Nonce_32_88_Base32_Validator,
         'regex': regex.RegexValidator,
+        'regex_ci': regex.RegexCaseValidator,
         }
 
 
