@@ -137,7 +137,7 @@ globalServices.service('proofOfWorkService', [
         nbits -= 8;
         arr = arr.slice(1);
       }
-      var mask = 2**nbits - 1;
+      var mask = Math.round(Math.pow(2, nbits)) - 1;
       return ((arr[0] & mask) == 0);
     };
 
