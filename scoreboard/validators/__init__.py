@@ -20,6 +20,7 @@ from . import regex
 
 _Validators = {
         'static_pbkdf2': static_pbkdf2.StaticPBKDF2Validator,
+        'static_pbkdf2_ci': static_pbkdf2.CaseStaticPBKDF2Validator,
         'per_team': per_team.PerTeamValidator,
         'nonce_166432': nonce.Nonce_16_64_Base32_Validator,
         'nonce_245632': nonce.Nonce_24_56_Base32_Validator,
