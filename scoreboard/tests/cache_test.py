@@ -143,6 +143,11 @@ class BaseCacheTest(base.BaseTestCase):
         self.assertEqual(404, rv[1])
         self.assertTrue('X-Cache-Hit' in rv[2])
 
+        rv = cache._rest_add_cache_header((foo, 404, None))
+        self.assertEqual(foo, rv[0])
+        self.assertEqual(404, rv[1])
+        self.assertTrue('X-Cache-Hit' in rv[2])
+
         rv = cache._rest_add_cache_header((foo, 404, {foo: foo}))
         self.assertEqual(foo, rv[0])
         self.assertEqual(404, rv[1])
@@ -152,3 +157,16 @@ class BaseCacheTest(base.BaseTestCase):
         self.assertTrue(foo in rv[0])
         self.assertEqual(200, rv[1])
         self.assertTrue('X-Cache-Hit' in rv[2])
+
+        rv = cache._rest_add_cache_header(foo)
+        self.assertEqual(foo, rv[0])
+        self.assertEqual(200, rv[1])
+        self.assertTrue('X-Cache-Hit' in rv[2])
+
+        # Passthrough cases
+        bar = mock.Mock()
+        self.assertEqual(bar, cache._rest_add_cache_header(bar))
+        baz = (1, 2, 3, 4)
+        self.assertEqual(baz, cache._rest_add_cache_header(baz))
+        bang = (1, 2, 3)
+        self.assertEqual(bang, cache._rest_add_cache_header(bang))

@@ -140,8 +140,10 @@ def _rest_cache_caller(f, cache_key, *args, **kwargs):
 
 
 def _rest_add_cache_header(rv, hit=False):
-    # Cache is always a 200 answer
+    # TODO: check status codes?
     headers = {'X-Cache-Hit': str(hit)}
+    if isinstance(rv, basestring):
+        return (rv, 200, headers)
     if isinstance(rv, tuple):
         if len(rv) == 1:
             return (rv[0], 200, headers)
