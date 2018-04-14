@@ -132,6 +132,7 @@ def _rest_cache_caller(f, cache_key, *args, **kwargs):
             pass
     value = f(*args, **kwargs)
     try:
+        # TODO: only cache on success
         global_cache.set(cache_key, json.dumps(value))
     except TypeError:
         pass
@@ -139,6 +140,7 @@ def _rest_cache_caller(f, cache_key, *args, **kwargs):
 
 
 def _rest_add_cache_header(rv, hit=False):
+    # Cache is always a 200 answer
     headers = {'X-Cache-Hit': str(hit)}
     if isinstance(rv, tuple):
         if len(rv) == 1:

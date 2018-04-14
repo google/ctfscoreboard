@@ -121,3 +121,34 @@ class BaseCacheTest(base.BaseTestCase):
         m.return_value = mock.Mock()
         m.return_value.foo = 5
         self.assertEqual(5, cache._rest_cache_caller(m, 'foo').foo)
+        m.assert_called_once()
+
+    def testRestCacheCaller_NonLoadable(self):
+        cache.global_cache.set('foo', '{ not valid json')
+        m = mock.Mock()
+        m.return_value = 5
+        self.assertEqual(5, cache._rest_cache_caller(m, 'foo'))
+        self.assertEqual(5, cache._rest_cache_caller(m, 'foo'))
+        m.assert_called_once()
+
+    def testRestAddCacheHeader(self):
+        foo = 'foo'
+        rv = cache._rest_add_cache_header((foo,))
+        self.assertEqual(foo, rv[0])
+        self.assertEqual(200, rv[1])
+        self.assertTrue('X-Cache-Hit' in rv[2])
+
+        rv = cache._rest_add_cache_header((foo, 404))
+        self.assertEqual(foo, rv[0])
+        self.assertEqual(404, rv[1])
+        self.assertTrue('X-Cache-Hit' in rv[2])
+
+        rv = cache._rest_add_cache_header((foo, 404, {foo: foo}))
+        self.assertEqual(foo, rv[0])
+        self.assertEqual(404, rv[1])
+        self.assertTrue('X-Cache-Hit' in rv[2])
+
+        rv = cache._rest_add_cache_header({foo: foo})
+        self.assertTrue(foo in rv[0])
+        self.assertEqual(200, rv[1])
+        self.assertTrue('X-Cache-Hit' in rv[2])
