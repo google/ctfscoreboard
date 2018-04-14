@@ -1,0 +1,4 @@
+# Additional requirements for development
+unittest2
+flake8
+gae_installer
