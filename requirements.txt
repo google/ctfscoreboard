@@ -14,4 +14,3 @@ pytz
 six
 wsgiref
 Flask-Scss
-Flask-Testing
