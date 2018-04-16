@@ -362,11 +362,13 @@ sbDirectives.directive('challengeBox', [
     'answerService',
     'errorService',
     'loadingService',
+    'proofOfWorkService',
     'scoreService',
     'sessionService',
     'validatorService',
     function($resource, $location, $rootscope, answerService, errorService,
-      loadingService, scoreService, sessionService, validatorService) {
+      loadingService, proofOfWorkService, scoreService, sessionService,
+      validatorService) {
       return {
         restrict: 'AE',
         templateUrl: '/partials/components/challenge.html',
@@ -426,9 +428,10 @@ sbDirectives.directive('challengeBox', [
               loadingService.stop();
               closeModal();
             };
+            var answer = $.trim(scope.chall.answer);
             if (scope.isAdmin()) {
               validatorService.create(
-                {cid: scope.chall.cid, answer: scope.chall.answer},
+                {cid: scope.chall.cid, answer: answer},
                 function(resp) {
                   errorService.error(resp.message, 'success');
                   done();
@@ -439,17 +442,28 @@ sbDirectives.directive('challengeBox', [
                 });
               return;
             }
-            answerService.create(
-                {cid: scope.chall.cid, answer: scope.chall.answer},
-                function(resp) {
-                  scope.chall.answered = true;
-                  errorService.error(
-                      'Congratulations, ' + resp.points + ' points awarded!',
-                      'success');
-                  done();
-                },
-                function(resp){
-                  errorService.error(resp);
+            proofOfWorkService.proofOfWork(answer)
+                .then(function (k) {
+                  answerService.create(
+                      {
+                        cid: scope.chall.cid,
+                        answer: answer,
+                        token: k
+                      },
+                      function(resp) {
+                        scope.chall.answered = true;
+                        errorService.error(
+                            'Congratulations, ' + resp.points + ' points awarded!',
+                            'success');
+                        done();
+                      },
+                      function(resp){
+                        errorService.error(resp);
+                        done();
+                      });
+                })
+                .catch(function (e) {
+                  errorService.error('Error in proof of work: '+e);
                   done();
                 });
           };

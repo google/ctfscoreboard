@@ -1,6 +1,6 @@
 /**
- * Copyright 2016 Google Inc. All Rights Reserved.
- * 
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -29,6 +29,14 @@ adminToolCtrls.controller('AdminToolCtrl', [
         if (!sessionService.requireAdmin()) return;
 
         $scope.recalculateScores = adminToolsService.recalculateScores;
+        $scope.resetScores = function() {
+          adminToolsService.resetScores(
+            errorService.success, errorService.error);
+        };
+        $scope.resetPlayers = function() {
+          adminToolsService.resetPlayers(
+            errorService.success, errorService.error);
+        };
 
         loadingService.stop();
     }]);

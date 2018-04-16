@@ -24,9 +24,27 @@ class StaticPBKDF2Validator(base.BaseValidator):
     name = 'Static'
 
     def validate_answer(self, answer, unused_team):
+        if not self.challenge.answer_hash:
+            return False
         return utils.compare_digest(
                 pbkdf2.crypt(answer, self.challenge.answer_hash),
                 self.challenge.answer_hash)
 
     def change_answer(self, answer):
         self.challenge.answer_hash = pbkdf2.crypt(answer)
+
+
+class CaseStaticPBKDF2Validator(StaticPBKDF2Validator):
+    """PBKDF2-based secrets, case insensitive."""
+
+    name = 'Static (Case Insensitive)'
+
+    def validate_answer(self, answer, team):
+        if not isinstance(answer, basestring):
+            return False
+        return super(CaseStaticPBKDF2Validator, self).validate_answer(
+                answer.lower(), team)
+
+    def change_answer(self, answer):
+        return super(CaseStaticPBKDF2Validator, self).change_answer(
+                answer.lower())

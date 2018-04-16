@@ -5,9 +5,9 @@ git stash -q --keep-index >/dev/null 2>&1
 
 RESULT=0
 
-if git ls-files -m . | grep -q '^scoreboard/' ; then
+if git status --porcelain | awk '{print $2}' | grep -q '^scoreboard/' ; then
   # Run tests and flake8 if any files in scoreboard/... changed.
-  python main.py runtests && flake8 .
+  python main.py runtests && flake8 scoreboard main.py
   RESULT=$?
 fi
 

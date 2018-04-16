@@ -15,9 +15,11 @@
 """Base test module, MUST be imported first."""
 
 import contextlib
+import copy
 import functools
 import json
 import logging
+import os
 import os.path
 import pbkdf2
 import time
@@ -28,9 +30,10 @@ from flask import testing
 import flask_testing
 from sqlalchemy import event
 
+from scoreboard import attachments
+from scoreboard import cache
 from scoreboard import main
 from scoreboard import models
-from scoreboard import attachments
 
 
 class BaseTestCase(flask_testing.TestCase):
@@ -51,6 +54,7 @@ class BaseTestCase(flask_testing.TestCase):
     )
 
     def create_app(self):
+        """Called by flask_testing."""
         app = main.get_app()
         app.config.update(self.TEST_CONFIG)
         attachments.patch("test")
@@ -60,8 +64,15 @@ class BaseTestCase(flask_testing.TestCase):
     def setUp(self):
         """Re-setup the DB to ensure a fresh instance."""
         super(BaseTestCase, self).setUp()
-        models.db.init_app(main.get_app())
+        # Reset config on each call
+        try:
+            app = main.get_app()
+            app.config = copy.deepcopy(self.app._SAVED_CONFIG)
+        except AttributeError:
+            self.app._SAVED_CONFIG = copy.deepcopy(app.config)
+        models.db.init_app(app)
         models.db.create_all()
+        cache.global_cache = cache.cache.NullCache()  # Reset cache
 
     def tearDown(self):
         models.db.session.remove()
@@ -218,13 +229,16 @@ def admin_test(f):
     return wrapped_test
 
 
-def run_all_tests():
+def run_all_tests(pattern='*_test.py'):
     """This loads and runs all tests in scoreboard.tests."""
-    logging.getLogger().setLevel(logging.INFO)
+    if os.getenv("DEBUG_TESTS"):
+        logging.getLogger().setLevel(logging.DEBUG)
+    else:
+        logging.getLogger().setLevel(logging.INFO)
     test_dir = os.path.dirname(os.path.realpath(__file__))
     top_dir = os.path.abspath(os.path.join(test_dir, '..'))
     suite = unittest.defaultTestLoader.discover(
-            test_dir, pattern='*_test.py',
+            test_dir, pattern=pattern,
             top_level_dir=top_dir)
     result = unittest.TextTestRunner().run(suite)
     return result.wasSuccessful()

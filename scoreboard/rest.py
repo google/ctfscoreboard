@@ -163,9 +163,19 @@ class UserList(flask_restful.Resource):
         data = flask.request.get_json()
         if not data.get('nick', ''):
             raise errors.ValidationError('Need a player nick.')
-        if (app.config.get('TEAMS') and not data.get('team_name', '') and not
-                data.get('team_id', 0)):
+        if (app.config.get('TEAMS') and
+                not data.get('team_name', '') and
+                not data.get('team_id', 0)):
+            app.logger.warning('User attempted to register without team.')
             raise errors.ValidationError('Need a team name.')
+        if (app.config.get('INVITE_KEY') and
+                data.get('invite_key', '').strip() !=
+                app.config.get('INVITE_KEY')):
+            app.logger.warning(
+                    'Attempted invite-only registration with invalid '
+                    'invite key: %s', data.get('invite_key', ''))
+            raise errors.ValidationError('Invalid invite key!')
+        app.logger.debug('Passed registration validation for new user.')
         user = auth.register(flask.request)
         utils.session_for_user(user)
         return user
@@ -321,11 +331,11 @@ class Session(flask_restful.Resource):
             flask.session.clear()
         try:
             del flask.g.user
-        except:
+        except:  # noqa: E722
             pass
         try:
             del flask.g.team
-        except:
+        except:  # noqa: E722
             pass
         return {'message': 'OK'}
 
@@ -349,14 +359,22 @@ class PasswordReset(flask_restful.Resource):
         user = models.User.get_by_email(email)
         if not user:
             flask.abort(404)
-        if not user.verify_token(data.get('token', '')):
-            raise errors.AccessDeniedError('Invalid token.')
+        token = data.get('token', '')
+        try:
+            user.verify_token(token)
+        except errors.ValidationError as ex:
+            app.logger.warning('Error validating password reset: %s', str(ex))
+            raise
+        except Exception as ex:
+            app.logger.exception(
+                    'Unhandled exception during password reset: %s', str(ex))
+            raise
         if data['password'] != data['password2']:
             raise errors.ValidationError("Passwords don't match.")
         user.set_password(data['password'])
         app.logger.info('Password reset for %r.', user)
         models.commit()
-        controllers.user_login(email, data['password'])
+        utils.session_for_user(user)
         return {'message': 'Password reset.'}
 
 
@@ -737,7 +755,8 @@ class Answer(flask_restful.Resource):
     def post_player(self, data):
         answer = utils.normalize_input(data['answer'])
         try:
-            points = controllers.submit_answer(data['cid'], answer)
+            points = controllers.submit_answer(
+                data['cid'], answer, data.get('token'))
         except errors.IntegrityError:
             raise errors.AccessDeniedError(
                     'Previously solved or flag already used.')
@@ -830,6 +849,9 @@ class Config(flask_restful.Resource):
             login_method=app.config.get('LOGIN_METHOD'),
             scoring=app.config.get('SCORING'),
             validators=validators.ValidatorMeta(),
+            proof_of_work_bits=int(app.config.get('PROOF_OF_WORK_BITS')),
+            invite_only=app.config.get('INVITE_KEY') is not None,
+            tags_only=app.config.get('TAGS_ONLY'),
             )
         return config
 
@@ -887,6 +909,7 @@ class Page(flask_restful.Resource):
         'contents': fields.String,
     }
 
+    @cache.rest_cache_path
     @flask_restful.marshal_with(resource_fields)
     def get(self, path):
         app.logger.info('Path: %s', path)
@@ -1095,7 +1118,7 @@ api.add_resource(BackupRestore, '/api/backup')
 class CTFTimeScoreFeed(flask_restful.Resource):
     """Provide a JSON feed to CTFTime.
 
-    At this time, it is only intended to cover the manditory fields in the
+    At this time, it is only intended to cover the mandatory fields in the
     feed: https://ctftime.org/json-scoreboard-feed
     """
 
@@ -1138,3 +1161,37 @@ class ToolsRecalculate(flask_restful.Resource):
 
 
 api.add_resource(ToolsRecalculate, '/api/tools/recalculate')
+
+
+class DBReset(flask_restful.Resource):
+    """Reset various parts of the database."""
+
+    decorators = [utils.admin_required]
+
+    def post(self):
+        data = flask.request.get_json()
+        if data.get('ack') != 'ack':
+            raise ValueError('Requires ack!')
+        op = data.get('op', '')
+        if op == 'scores':
+            app.logger.info('Score reset requested by %r.',
+                            models.User.current())
+            models.ScoreHistory.query.delete()
+            models.Answer.query.delete()
+            models.NonceFlagUsed.query.delete()
+            for team in models.Team.query.all():
+                team.score = 0
+        elif op == 'players':
+            app.logger.info('Player reset requested by %r.',
+                            models.User.current())
+            models.User.query.filter(
+                    models.User.admin == False).delete()  # noqa: E712
+            models.Team.query.delete()
+        else:
+            raise ValueError('Unknown operation %s' % op)
+        models.commit()
+        cache.clear()
+        return {'message': 'Done'}
+
+
+api.add_resource(DBReset, '/api/tools/reset')

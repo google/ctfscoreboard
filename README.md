@@ -3,14 +3,16 @@
 This is a basic CTF Scoreboard, with support for teams or individual
 competitors, and a handful of other features.
 
-Copyright 2016 Google, Inc.
+Copyright 2018 Google, Inc.
 This is not an official Google product.
 
-Author: David Tomaschik <dwt@google.com>
+Author: Please see the AUTHORS file.
+
 
 ### Installation ###
 1. Install Python with PIP and setuptools.  If you'd like to use a virtualenv,
-   set one up and activate it now.
+   set one up and activate it now.  Please note that only Python 2.7 is
+   supported at the present time.
 
 2. Install the dependencies:
    pip install -r requirements.txt
@@ -18,7 +20,8 @@ Author: David Tomaschik <dwt@google.com>
 3. Install a database library.  For MySQL, consider mysql-python.  For Postgres,
    use psycopg2.  (Others may work; untested.)
 
-4. Write a config.py for your relevant installation.
+4. Write a config.py for your relevant installation.  An example is provided in
+   config.example.py.
 
         SQLALCHEMY_DATABASE_URI = 'mysql://username:password@server/db'
         #SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://username:password@server/db'
@@ -53,6 +56,27 @@ Author: David Tomaschik <dwt@google.com>
    You probably want to register your user before your players get access.
 
 8. Have fun!  Maybe set up some challenges.  Players might like that more.
+
+
+### Installation using Docker ###
+
+1. Navigate to the folder where the Dockerfile is located.
+
+2. Run the command below to build a docker image for the scoreboard and tag it as "scoreboard".
+
+       docker build -t "scoreboard" .
+
+3. Run the command below to create the docker container.
+
+       docker create -p 80:80 scoreboard
+
+4. Find the name of the container you created for the scoreboard.
+
+       docker ls -a
+
+5. Run the command below to start the docker container for the scoreboard.
+
+       docker start "container_name"
 
 ### Options ###
 

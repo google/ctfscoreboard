@@ -112,17 +112,21 @@ def change_user_team(uid, team_tid, code):
 
 
 @utils.require_submittable
-def submit_answer(cid, answer):
+def submit_answer(cid, answer, token):
     """Submits an answer.
 
     Args:
       cid: The ID of the challenge.
       answer: The answer to check.
+      token: Provided proof of work token.
 
     Returns:
       Number of points awarded for answer.
     """
     correct = 'WRONG'
+    nbits = app.config.get('PROOF_OF_WORK_BITS', 0)
+    if nbits and not utils.validate_proof_of_work(answer, token, nbits):
+        raise errors.InvalidAnswerError('Bad proof of work token!')
     team = models.Team.current()
     if not team:
         raise errors.AccessDeniedError('No team!')
@@ -187,5 +191,5 @@ def offer_password_reset(user):
     subject = '%s Password Reset' % app.config.get('TITLE')
     try:
         mail.send(message, subject, user.email, to_name=user.nick)
-    except mail.MailFailure:
-        raise errors.ServerError('Could not send mail.')
+    except mail.MailFailure as ex:
+        raise errors.ServerError('Could not send mail: ' + str(ex))

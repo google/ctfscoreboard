@@ -1,0 +1,6 @@
+# Additional requirements for development
+coverage
+flake8
+flask-testing
+gae_installer
+mock

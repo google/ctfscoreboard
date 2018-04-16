@@ -1,6 +1,6 @@
 /**
- * Copyright 2016 Google Inc. All Rights Reserved.
- * 
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -48,7 +48,7 @@ regCtrls.controller('LoginCtrl', [
 
       $scope.email = '';
       $scope.password = '';
-      
+
       $scope.login = function() {
         errorService.clearErrors();
         sessionService.login($scope.email, $scope.password,
@@ -87,9 +87,16 @@ regCtrls.controller('RegistrationCtrl', [
     function($scope, $location, configService, errorService, sessionService,
         teamService, userService, loadingService) {
       $scope.config = configService.get();
-      $scope.teams = teamService.get(function() {
-        $scope.teams = $scope.teams.teams;
+      $scope.teams = [];
+      teamService.get(function(resp) {
+        $scope.teams = resp.teams;
       });
+      var search = $location.search();
+      if (search['team'] && search['code']) {
+        $scope.team_code = search['code'];
+        $scope.team = search['team'];
+      }
+
       $scope.register = function() {
         errorService.clearErrors();
         userService.create({
@@ -98,10 +105,11 @@ regCtrls.controller('RegistrationCtrl', [
           password: $scope.password,
           team_id: $scope.team,
           team_name: $scope.team_name,
-          team_code: $scope.team_code
+          team_code: $scope.team_code,
+          invite_key: $scope.invite_key
         }, function(data) {
           sessionService.refresh();
-          $location.path('/challenges');
+          $location.url('/challenges');
         }, function(errData) {
           // TODO: more verbose
           errorService.error(errData);
@@ -112,6 +120,7 @@ regCtrls.controller('RegistrationCtrl', [
 
 regCtrls.controller('ProfileCtrl', [
     '$scope',
+    '$location',
     'configService',
     'errorService',
     'sessionService',
@@ -119,7 +128,7 @@ regCtrls.controller('ProfileCtrl', [
     'loadingService',
     'gameTimeService',
     'teamService',
-    function($scope, configService, errorService, sessionService,
+    function($scope, $location, configService, errorService, sessionService,
         userService, loadingService, gameTimeService, teamService) {
       $scope.user = null;
 
@@ -162,6 +171,12 @@ regCtrls.controller('ProfileCtrl', [
         })
       }
 
+      var build_team_link = function(team) {
+        var link = $location.absUrl().replace($location.url(), '');
+        return link + '/register?' + $.param(
+          {team: team.tid, code: team.code});
+      };
+
       sessionService.requireLogin(function() {
         $scope.user = sessionService.session.user;
         configService.get(function(c) {
@@ -169,6 +184,7 @@ regCtrls.controller('ProfileCtrl', [
                 $scope.team = sessionService.session.team;
                 $scope.team.originalname = $scope.team.name;
                 $scope.team.originalcode = $scope.team.code;
+                $scope.team_link = build_team_link($scope.team);
             }
             loadingService.stop();
         });

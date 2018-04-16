@@ -106,23 +106,33 @@ challengeCtrls.controller('ChallengeGridCtrl', [
     '$scope',
     '$location',
     'categoryService',
+    'configService',
     'loadingService',
     'scoreService',
     'sessionService',
     'tagService',
-    function($scope, $location, categoryService, loadingService, scoreService,
-      sessionService, tagService) {
+    function($scope, $location, categoryService, configService, loadingService,
+      scoreService, sessionService, tagService) {
       $scope.categories = {};
       $scope.currChall = null;
       $scope.shownTags = {};
+      $scope.config = configService.get();
+      $scope.challenges = [];
+
+      var compareChallenges = function(a, b) {
+        return (a.weight - b.weight);
+      };
+
       var refresh = function() {
           categoryService.getList(function(data) {
+              var allChallenges = [];
               $scope.categories = data.categories;
               angular.forEach($scope.categories, function(c) {
-                c.challenges.sort(function(a, b) {
-                  return (a.weight - b.weight);
-                });
+                c.challenges.sort(compareChallenges);
+                Array.prototype.push.apply(allChallenges, c.challenges);
               });
+              allChallenges.sort(compareChallenges);
+              $scope.challenges = allChallenges;
           });
       };
 

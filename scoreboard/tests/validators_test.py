@@ -26,14 +26,80 @@ class ChallengeStub(object):
         self.validator = validator
 
 
-class BasicValidatorTest(base.BaseTestCase):
+class StaticValidatorTest(base.BaseTestCase):
 
     def testStaticValidator(self):
         chall = ChallengeStub(None)
         validator = validators.GetValidatorForChallenge(chall)
+        self.assertFalse(validator.validate_answer('fooabc', None))
         validator.change_answer('fooabc')
         self.assertTrue(validator.validate_answer('fooabc', None))
         self.assertFalse(validator.validate_answer('abcfoo', None))
+
+
+class CaseStaticValidatorTest(base.BaseTestCase):
+
+    def testCaseStaticValidator(self):
+        chall = ChallengeStub(None, validator='static_pbkdf2_ci')
+        validator = validators.GetValidatorForChallenge(chall)
+        self.assertFalse(validator.validate_answer('foo', None))
+        validator.change_answer('FooBar')
+        for test in ('FooBar', 'foobar', 'FOOBAR', 'fooBAR'):
+            self.assertTrue(
+                    validator.validate_answer(test, None),
+                    msg='Case failed: {}'.format(test))
+        for test in ('barfoo', 'bar', 'foo', None):
+            self.assertFalse(
+                    validator.validate_answer(test, None),
+                    msg='Case failed: {}'.format(test))
+
+
+class RegexValidatorTest(base.BaseTestCase):
+
+    def makeValidator(self, regex):
+        """Construct a validator."""
+        chall = ChallengeStub(regex, validator='regex')
+        return validators.GetValidatorForChallenge(chall)
+
+    def testRegexWorks(self):
+        v = self.makeValidator('[abc]+')
+        self.assertTrue(v.validate_answer('aaa', None))
+        self.assertTrue(v.validate_answer('abc', None))
+        self.assertFalse(v.validate_answer('ddd', None))
+        self.assertFalse(v.validate_answer('aaad', None))
+        self.assertFalse(v.validate_answer('AAA', None))
+
+    def testRegexChangeWorks(self):
+        v = self.makeValidator('[abc]+')
+        self.assertTrue(v.validate_answer('a', None))
+        self.assertFalse(v.validate_answer('foo', None))
+        v.change_answer('fo+')
+        self.assertTrue(v.validate_answer('foo', None))
+        self.assertFalse(v.validate_answer('a', None))
+
+
+class RegexCaseValidatorTest(base.BaseTestCase):
+
+    def makeValidator(self, regex):
+        """Construct a validator."""
+        chall = ChallengeStub(regex, validator='regex_ci')
+        return validators.GetValidatorForChallenge(chall)
+
+    def testRegexWorks(self):
+        v = self.makeValidator('[abc]+')
+        self.assertTrue(v.validate_answer('aaa', None))
+        self.assertTrue(v.validate_answer('abc', None))
+        self.assertFalse(v.validate_answer('ddd', None))
+        self.assertFalse(v.validate_answer('aaad', None))
+        self.assertTrue(v.validate_answer('AAA', None))
+
+    def testRegexChangeWorks(self):
+        v = self.makeValidator('[abc]+')
+        self.assertTrue(v.validate_answer('a', None))
+        self.assertFalse(v.validate_answer('foo', None))
+        v.change_answer('fo+')
+        self.assertTrue(v.validate_answer('Foo', None))
+        self.assertFalse(v.validate_answer('a', None))
 
 
 class NonceValidatorTest(base.BaseTestCase):

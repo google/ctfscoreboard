@@ -501,7 +501,7 @@ class UserTest(base.RestTestCase):
             self.assertEqual(resp.json['team_tid'], flask.session['team'])
             self.assertEqual(team.tid, resp.json['team_tid'])
 
-    def testRegisterUserTeamNoCode(self):
+    def testRegisterUserTeamWrongCode(self):
         team = self.authenticated_client.team
         data = self.default_data()
         data.update({
@@ -533,6 +533,31 @@ class UserTest(base.RestTestCase):
         del data['team_id']
         with self.queryLimit(0):
             self.assert400(self.postJSON('/api/users', data))
+
+    def testRegisterUserInviteKey(self):
+        self.app.config['INVITE_KEY'] = 'foobar'
+        data = self.default_data()
+        data['invite_key'] = self.app.config['INVITE_KEY']
+        with self.client:
+            resp = self.postJSON('/api/users', data)
+        self.assert200(resp)
+
+    def testRegisterUserNoInviteKey(self):
+        self.app.config['INVITE_KEY'] = 'foobar'
+        data = self.default_data()
+        with self.client:
+            with self.queryLimit(0):
+                resp = self.postJSON('/api/users', data)
+        self.assert400(resp)
+
+    def testRegisterUserWrongInviteKey(self):
+        self.app.config['INVITE_KEY'] = 'foobar'
+        data = self.default_data()
+        data['invite_key'] = 'notright'
+        with self.client:
+            with self.queryLimit(0):
+                resp = self.postJSON('/api/users', data)
+        self.assert400(resp)
 
 
 class TeamTest(base.RestTestCase):
@@ -999,7 +1024,6 @@ class AnswerTest(base.RestTestCase):
                 'answer': self.answer,
             })
         self.assert200(resp)
-        print resp.json
         self.assertEqual(self.points, resp.json['points'])
 
     @base.authenticated_test
@@ -1027,6 +1051,54 @@ class AnswerTest(base.RestTestCase):
         team = models.Team.query.get(self.client.team.tid)
         self.assertEqual(old_score, team.score)
 
+    @base.authenticated_test
+    def testSubmit_ProofOfWork(self):
+        test_nbits = 12
+
+        def MockValidate(val, key, nbits):
+            self.assertEqual(val, self.answer)
+            self.assertEqual(key, 'foo')
+            self.assertEqual(nbits, test_nbits)
+            return True
+        self.app.config['PROOF_OF_WORK_BITS'] = test_nbits
+        # TODO: switch to mock framework
+        old_pow_test = utils.validate_proof_of_work
+        utils.validate_proof_of_work = MockValidate
+        with self.queryLimit(6):
+            resp = self.postJSON(self.PATH, {
+                'cid': self.cid,
+                'answer': self.answer,
+                'token': 'foo'
+            })
+        self.assert200(resp)
+        self.assertEqual(self.points, resp.json['points'])
+        utils.validate_proof_of_work = old_pow_test
+
+    @base.authenticated_test
+    def testSubmit_ProofOfWorkFails(self):
+        test_nbits = 12
+
+        def MockValidate(val, key, nbits):
+            self.assertEqual(val, self.answer)
+            self.assertEqual(key, 'foo')
+            self.assertEqual(nbits, test_nbits)
+            return False
+        self.app.config['PROOF_OF_WORK_BITS'] = test_nbits
+        # TODO: switch to mock framework
+        old_pow_test = utils.validate_proof_of_work
+        utils.validate_proof_of_work = MockValidate
+        old_score = self.client.team.score
+        with self.queryLimit(2):
+            resp = self.postJSON(self.PATH, {
+                'cid': self.cid,
+                'answer': self.answer,
+                'token': 'foo'
+            })
+        self.assert403(resp)
+        team = models.Team.query.get(self.client.team.tid)
+        self.assertEqual(old_score, team.score)
+        utils.validate_proof_of_work = old_pow_test
+
 
 class ConfigTest(base.RestTestCase):
 
@@ -1053,9 +1125,13 @@ class ConfigTest(base.RestTestCase):
                     'login_method',
                     'scoring',
                     'validators',
+                    'proof_of_work_bits',
+                    'invite_only',
+                    'tags_only',
             ))
             expected_keys |= extra_keys
             self.assertEqual(expected_keys, set(resp.json.keys()))
+            self.assertIsInstance(resp.json['invite_only'], bool)
         return testGetConfig
 
     testGetConfig = makeTestGetConfig()
