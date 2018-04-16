@@ -909,6 +909,7 @@ class Page(flask_restful.Resource):
         'contents': fields.String,
     }
 
+    @cache.rest_cache_path
     @flask_restful.marshal_with(resource_fields)
     def get(self, path):
         app.logger.info('Path: %s', path)

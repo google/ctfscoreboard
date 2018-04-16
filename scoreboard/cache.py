@@ -68,6 +68,16 @@ def rest_cache(f_or_key):
     return wrap_func(f_or_key)
 
 
+def rest_cache_path(f):
+    """Cache a result based on the path received."""
+
+    @functools.wraps(f)
+    def wrapped(*args, **kwargs):
+        cache_key = flask.request.path.encode('utf-8')
+        return _rest_cache_caller(f, cache_key, *args, **kwargs)
+    return wrapped
+
+
 def rest_team_cache(f_or_key):
     """Mark a function for per-team caching."""
     override_cache_key = None
@@ -90,6 +100,8 @@ def rest_team_cache(f_or_key):
         return wrapped
     if isinstance(f_or_key, basestring):
         override_cache_key = f_or_key
+        if '%d' not in override_cache_key:
+            raise ValueError('No way to override the key per team!')
         return wrap_func
     return wrap_func(f_or_key)
 
@@ -120,6 +132,7 @@ def _rest_cache_caller(f, cache_key, *args, **kwargs):
             pass
     value = f(*args, **kwargs)
     try:
+        # TODO: only cache on success
         global_cache.set(cache_key, json.dumps(value))
     except TypeError:
         pass
@@ -127,7 +140,10 @@ def _rest_cache_caller(f, cache_key, *args, **kwargs):
 
 
 def _rest_add_cache_header(rv, hit=False):
+    # TODO: check status codes?
     headers = {'X-Cache-Hit': str(hit)}
+    if isinstance(rv, basestring):
+        return (rv, 200, headers)
     if isinstance(rv, tuple):
         if len(rv) == 1:
             return (rv[0], 200, headers)

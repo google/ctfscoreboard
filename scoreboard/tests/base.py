@@ -30,9 +30,10 @@ from flask import testing
 import flask_testing
 from sqlalchemy import event
 
+from scoreboard import attachments
+from scoreboard import cache
 from scoreboard import main
 from scoreboard import models
-from scoreboard import attachments
 
 
 class BaseTestCase(flask_testing.TestCase):
@@ -71,6 +72,7 @@ class BaseTestCase(flask_testing.TestCase):
             self.app._SAVED_CONFIG = copy.deepcopy(app.config)
         models.db.init_app(app)
         models.db.create_all()
+        cache.global_cache = cache.cache.NullCache()  # Reset cache
 
     def tearDown(self):
         models.db.session.remove()
@@ -227,7 +229,7 @@ def admin_test(f):
     return wrapped_test
 
 
-def run_all_tests():
+def run_all_tests(pattern='*_test.py'):
     """This loads and runs all tests in scoreboard.tests."""
     if os.getenv("DEBUG_TESTS"):
         logging.getLogger().setLevel(logging.DEBUG)
@@ -236,7 +238,7 @@ def run_all_tests():
     test_dir = os.path.dirname(os.path.realpath(__file__))
     top_dir = os.path.abspath(os.path.join(test_dir, '..'))
     suite = unittest.defaultTestLoader.discover(
-            test_dir, pattern='*_test.py',
+            test_dir, pattern=pattern,
             top_level_dir=top_dir)
     result = unittest.TextTestRunner().run(suite)
     return result.wasSuccessful()
