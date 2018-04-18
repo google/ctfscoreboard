@@ -20,9 +20,8 @@
         name='replace' ng-model='replace'>Replace instead of merging.</label>
     </div>
     <div class='ng-hide' ng-show='ready'>
-      <ul class='catlist'>
-        <li ng-repeat='(cid, cat) in fileData.categories'>{{cat.name}}
-        ({{cat.challenges.length}})</li>
+      <ul class='challlist'>
+        <li ng-repeat='(cid, chall) in fileData.challenges'>{{chall.name}}</li>
       </ul>
     </div>
     <input type='submit' value='Restore' class='btn btn-primary'

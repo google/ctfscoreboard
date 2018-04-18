@@ -58,10 +58,6 @@ scoreboardApp.config([
           templateUrl: '/partials/profile.html',
           controller: 'ProfileCtrl'
         }).
-        when('/challenges/:slug', {
-          templateUrl: '/partials/challenges.html',
-          controller: 'CategoryCtrl'
-        }).
         when('/challenges/', {
           templateUrl: '/partials/challenge_grid.html',
           controller: 'ChallengeGridCtrl'
@@ -77,10 +73,6 @@ scoreboardApp.config([
         when('/pwreset/:email/:token', {
           templateUrl: '/partials/pwreset.html',
           controller: 'PasswordResetCtrl'
-        }).
-        when('/admin/categories', {
-          templateUrl: '/partials/admin/categories.html',
-          controller: 'AdminCategoryCtrl'
         }).
         when('/admin/tags', {
           templateUrl: '/partials/admin/tags.html',

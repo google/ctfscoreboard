@@ -1,6 +1,6 @@
 /**
- * Copyright 2016 Google Inc. All Rights Reserved.
- * 
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,82 +17,11 @@
 var adminChallengeCtrls = angular.module('adminChallengeCtrls', [
     'ngResource',
     'ngRoute',
-    'adminServices',
     'challengeServices',
     'globalServices',
     'sessionServices',
     'uploadServices',
     ]);
-
-adminChallengeCtrls.controller('AdminCategoryCtrl', [
-    '$scope',
-    'categoryService',
-    'errorService',
-    'sessionService',
-    'loadingService',
-    function($scope, categoryService, errorService, sessionService, loadingService) {
-      if (!sessionService.requireAdmin()) return;
-
-      $scope.categories = [];
-
-      $scope.updateCategory = function(cat) {
-        errorService.clearErrors();
-        categoryService.save({slug: cat.slug}, cat,
-          function(data) {
-            errorService.error(cat.name + ' updated.', 'success');
-          },
-          function(data) {
-            errorService.error(data);
-          });
-      };
-
-      $scope.deleteCategory = function(cat) {
-        errorService.clearErrors();
-        var name = cat.name;
-        categoryService.delete({slug: cat.slug},
-          function(data) {
-            // remove from scope
-            var idx = $scope.categories.indexOf(cat);
-            $scope.categories.splice(idx, 1);
-            errorService.error(name + ' deleted.', 'success');
-          },
-          function(data) {
-            errorService.error(data);
-          });
-      };
-
-      $scope.addCategory = function() {
-        errorService.clearErrors();
-        categoryService.create({}, $scope.newCategory,
-          function(data) {
-            $scope.categories.push(data);
-            $scope.newCategory = {};
-          },
-          function(data) {
-            errorService.error(data);
-          });
-      };
-
-      $scope.newCategory = {};
-
-      $scope.invalidForm = function(idx) {
-          var form = $(document.getElementsByName('adminCategoryForm[' + idx + ']'));
-          return form.hasClass('ng-invalid');
-      };
-
-      sessionService.requireLogin(function() {
-        errorService.clearErrors();
-        categoryService.get(
-          function(data) {
-            $scope.categories = data.categories;
-            loadingService.stop();
-          },
-          function(data) {
-            errorService.error(data);
-            loadingService.stop();
-          });
-      });
-    }]);
 
 adminChallengeCtrls.controller('AdminTagCtrl', [
     '$scope',
@@ -306,22 +235,9 @@ adminChallengeCtrls.controller('AdminChallengesCtrl', [
     'errorService',
     'sessionService',
     'loadingService',
-    'adminStateService',
     function($scope, $filter, $location, $routeParams, challengeService,
-        errorService, sessionService, loadingService, adminStateService) {
+        errorService, sessionService, loadingService) {
       if (!sessionService.requireAdmin()) return;
-
-      var filterChallenges = function(challenges) {
-        if (!$routeParams.cid)
-          return challenges;
-        var filtered = [];
-        angular.forEach(challenges, function(ch) {
-          if (ch.cat_slug == $routeParams.cid)
-            filtered.push(ch);
-        });
-        return filtered;
-      };
-
 
       var updateChallenges = function(challenges) {
         $scope.challenges = $filter('orderBy')(challenges,
@@ -329,9 +245,6 @@ adminChallengeCtrls.controller('AdminChallengesCtrl', [
               return item.weight;
             });
       };
-
-      $scope.catid = parseInt($routeParams.cid) || undefined;
-      $scope.categoryPage = !!$routeParams.cid;
 
       $scope.lockChallenge = function(challenge, locked) {
         var copy = {};
@@ -363,7 +276,6 @@ adminChallengeCtrls.controller('AdminChallengesCtrl', [
       };
 
       $scope.newChallenge = function() {
-        adminStateService.saveCategory($scope.catid);
         $location.path('/admin/challenge');
       };
 
@@ -400,7 +312,7 @@ adminChallengeCtrls.controller('AdminChallengesCtrl', [
         challengeService.get(function(data) {
           angular.forEach($scope.challenges, function(mod_chall) {
             weight += 1;
-            angular.forEach(filterChallenges(data.challenges), function(chall) {
+            angular.forEach(data.challenges, function(chall) {
               if (mod_chall.cid == chall.cid) {
                 if (weight == chall.weight)
                   return;
@@ -440,19 +352,17 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
     '$scope',
     '$location',
     '$routeParams',
-    'categoryService',
     'challengeService',
     'errorService',
     'sessionService',
     'uploadService',
     'loadingService',
-    'adminStateService',
     'tagService',
     'attachService',
     'configService',
-    function($scope, $location, $routeParams, categoryService, challengeService,
-      errorService, sessionService, uploadService, loadingService, adminStateService,
-      tagService, attachService, configService) {
+    function($scope, $location, $routeParams, challengeService, errorService,
+      sessionService, uploadService, loadingService, tagService, attachService,
+      configService) {
       if (!sessionService.requireAdmin()) return;
 
       $scope.cid = $routeParams.cid;
@@ -528,7 +438,8 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
 
       $scope.updateAttachments = function () {
         if (!$scope.challenge) return;
-        $scope.attachments = setSubtract($scope.challenge.attachments, $scope.allAttachments, 'aid');
+        $scope.attachments = setSubtract(
+          $scope.challenge.attachments, $scope.allAttachments, 'aid');
         $scope.attachmentType = 'new';
       };
 
@@ -615,6 +526,7 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
       /* Setup on load */
       sessionService.requireLogin(function() {
         if ($routeParams.cid) {
+          // Editing
           challengeService.get({cid: $routeParams.cid},
             function(data) {
                 $scope.challenge = data;
@@ -627,6 +539,7 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
                 loadingService.stop();
             });
         } else {
+            // New
             $scope.challenge = {
                 'tags': [],
                 'attachments': [],
@@ -635,19 +548,11 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
                 },
                 'validator': 'static_pbkdf2'
             };
-            var slug = adminStateService.getCategory();
-            if (typeof slug === "string") {
-              $scope.challenge.cat_slug = slug;
-            }
         }
         tagService.getList(function(data) {
           $scope.tags = data.tags;
-        })
-        categoryService.get(function(data) {
-          $scope.categories = data.categories;
-          if (!$routeParams.cid)
-            loadingService.stop();
         });
+        loadingService.stop();
       });
 
     }]);
@@ -710,7 +615,7 @@ adminChallengeCtrls.controller('AdminRestoreCtrl', [
           return;
         }
         $resource('/api/backup').save({}, {
-          categories: $scope.fileData.categories,
+          challenges: $scope.fileData.challenges,
           replace: $scope.replace
         },
         function(data) {
