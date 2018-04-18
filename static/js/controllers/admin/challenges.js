@@ -327,7 +327,7 @@ adminChallengeCtrls.controller('AdminChallengesCtrl', [
               }
             });
           });
-          updateChallenges(filterChallenges(data.challenges));
+          updateChallenges(data.challenges);
           loadingService.stop();
         },
         function (data) {
@@ -338,7 +338,7 @@ adminChallengeCtrls.controller('AdminChallengesCtrl', [
 
       sessionService.requireLogin(function() {
         challengeService.get(function(data) {
-          updateChallenges(filterChallenges(data.challenges));
+          updateChallenges(data.challenges);
           loadingService.stop();
         },
         function(data) {

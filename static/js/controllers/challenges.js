@@ -48,7 +48,7 @@ challengeCtrls.controller('ChallengeGridCtrl', [
           challengeService.get(function(data) {
               data.challenges.sort(compareChallenges);
               $scope.challenges = data.challenges;
-          }, true);
+          });
       };
 
       tagService.getList(function(tags) {
