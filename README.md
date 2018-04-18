@@ -3,6 +3,10 @@
 This is a basic CTF Scoreboard, with support for teams or individual
 competitors, and a handful of other features.
 
+This a 1.x branch, which is just before a major refactoring.  Bug fixes may be
+supported on this branch, but all new features will go into master, which has
+removed categories in favor of tags.
+
 Copyright 2018 Google, Inc.
 This is not an official Google product.
 
