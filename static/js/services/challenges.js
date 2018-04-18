@@ -110,6 +110,7 @@ challengeServices.service('attachService', [
 
     }
 ])
+
 challengeServices.service('categoryService', [
     '$resource',
     '$rootScope',
@@ -130,9 +131,11 @@ challengeServices.service('categoryService', [
       this.save = this.res.save;
       this.delete = this.res.delete;
 
-      this.getList = function(callback) {
+      this.getList = function(callback, force) {
         // TODO: rewrite this to maintain binding in scopes
-        if (this.catlist) {
+        if (force) {
+          categoryCache.removeAll();
+        } else if (this.catlist) {
           callback(this.catlist);
           return;
         }
@@ -152,6 +155,14 @@ challengeServices.service('categoryService', [
       $rootScope.$on('$locationChangeSuccess', function() {
           // Clear cache on navigation
           categoryCache.removeAll();
+      });
+
+      angular.bind(this, function() {
+        $rootScope.$on('correctAnswer', function() {
+            categoryCache.removeAll();
+            console.log('Refreshing cache.');
+            this.getList(function(){}, true);
+        });
       });
 
     }]);

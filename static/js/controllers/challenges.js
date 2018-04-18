@@ -99,10 +99,13 @@ challengeCtrls.controller('CategoryCtrl', [
       } else {
         loadingService.stop();
       }
+
+      $rootScope.$on('correctAnswer', refresh);
     }]);
 
 
 challengeCtrls.controller('ChallengeGridCtrl', [
+    '$rootScope',
     '$scope',
     '$location',
     'categoryService',
@@ -111,8 +114,8 @@ challengeCtrls.controller('ChallengeGridCtrl', [
     'scoreService',
     'sessionService',
     'tagService',
-    function($scope, $location, categoryService, configService, loadingService,
-      scoreService, sessionService, tagService) {
+    function($rootScope, $scope, $location, categoryService, configService,
+      loadingService, scoreService, sessionService, tagService) {
       $scope.categories = {};
       $scope.currChall = null;
       $scope.shownTags = {};
@@ -124,6 +127,7 @@ challengeCtrls.controller('ChallengeGridCtrl', [
       };
 
       var refresh = function() {
+          console.log('Refresh grid.');
           categoryService.getList(function(data) {
               var allChallenges = [];
               $scope.categories = data.categories;
@@ -133,7 +137,7 @@ challengeCtrls.controller('ChallengeGridCtrl', [
               });
               allChallenges.sort(compareChallenges);
               $scope.challenges = allChallenges;
-          });
+          }, true);
       };
 
       tagService.getList(function(tags) {
@@ -200,4 +204,6 @@ challengeCtrls.controller('ChallengeGridCtrl', [
         refresh();
         loadingService.stop();
       });
+
+      $rootScope.$on('correctAnswer', refresh);
   }]);
