@@ -761,7 +761,6 @@ class Config(flask_restful.Resource):
             validators=validators.ValidatorMeta(),
             proof_of_work_bits=int(app.config.get('PROOF_OF_WORK_BITS')),
             invite_only=app.config.get('INVITE_KEY') is not None,
-            tags_only=app.config.get('TAGS_ONLY'),
             )
         return config
 

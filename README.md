@@ -108,7 +108,6 @@ users API.
 
 - Setup database
 - Create user, verify admin
-- Create category
 - Create challenge
   - With, without attachment
 - Edit challenges
