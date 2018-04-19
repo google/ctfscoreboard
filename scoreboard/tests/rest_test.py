@@ -42,11 +42,10 @@ def makeTestTeam(user):
 
 
 def makeTestChallenges():
-    cats = data.make_categories()
     tags = data.make_tags()
-    challs = data.make_challenges(cats, tags)
+    challs = data.make_challenges(tags)
     models.db.session.commit()
-    return challs, cats
+    return challs
 
 
 class ConfigzTest(base.RestTestCase):
@@ -200,7 +199,7 @@ class UpdateTeam(base.RestTestCase):
         test_team_second = self.createTeam('second')
         self.changeTeam(test_team_first.tid, test_team_first.code)
 
-        chall = models.Challenge.create('Foo', 'Foo', 1, 'Foo', 'foo')
+        chall = models.Challenge.create('Foo', 'Foo', 1, 'Foo')
         models.Answer.create(chall, test_team_first, 'Foo')
 
         self.changeTeam(test_team_second.tid, test_team_second.code)
@@ -430,7 +429,7 @@ class UserTest(base.RestTestCase):
     def testUpdateUserNoAnswers(self):
         user = self.authenticated_client.user
         team = self.authenticated_client.user.team
-        chall = models.Challenge.create('Foo', 'Foo', 1, 'Foo', 'foo')
+        chall = models.Challenge.create('Foo', 'Foo', 1, 'Foo')
         models.Answer.create(chall, team, 'Foo')
         models.db.session.commit()
         data = {'nick': user.nick, 'admin': True}
@@ -743,7 +742,7 @@ class ChallengeTest(base.RestTestCase):
 
     def setUp(self):
         super(ChallengeTest, self).setUp()
-        self.challs, _ = makeTestChallenges()
+        self.challs = makeTestChallenges()
         self.chall = self.challs[0]
         self.PATH_SINGLE %= self.chall.cid
 
@@ -751,13 +750,18 @@ class ChallengeTest(base.RestTestCase):
         with self.queryLimit(0):
             self.assert403(self.client.get(self.PATH_LIST))
 
-    testGetListAuthenticated = base.authenticated_test(
-            testGetListAnonymous)
+    @base.authenticated_test
+    def testGetListAuthenticated(self):
+        # TODO: fix to not be O(n)
+        with self.queryLimit(3):
+            resp = self.client.get(self.PATH_LIST)
+        self.assert200(resp)
+        self.assertEqual(len(self.challs), len(resp.json['challenges']))
 
     @base.admin_test
     def testGetListAdmin(self):
         # TODO: fix to not be O(n)
-        with self.queryLimit(None):
+        with self.queryLimit(3):
             resp = self.client.get(self.PATH_LIST)
         self.assert200(resp)
         self.assertEqual(len(self.challs), len(resp.json['challenges']))
@@ -768,7 +772,6 @@ class ChallengeTest(base.RestTestCase):
             'description': 'Challenge 1',
             'points': 200,
             'answer': 'abc',
-            'cat_slug': self.chall.cat_slug,
             'unlocked': True,
             'validator': 'static_pbkdf2',
         }
@@ -860,132 +863,17 @@ class ScoreboardTest(base.RestTestCase):
         # TODO: check contents
 
 
-class CategoryTest(base.RestTestCase):
-
-    PATH_LIST = '/api/categories'
-    PATH_SINGLE = '/api/categories/%s'
-
-    def setUp(self):
-        super(CategoryTest, self).setUp()
-        self.challs, self.cats = makeTestChallenges()
-        self.cat = self.cats[0]
-        self.PATH_SINGLE %= self.cat.slug
-
-    def _testGetList(self):
-        with self.queryLimit(3):
-            resp = self.client.get(self.PATH_LIST)
-        self.assert200(resp)
-        self.assertEqual(len(self.cats), len(resp.json['categories']))
-        # TODO: check that the expected fields are visible and that others are
-        # not.
-
-    testGetListAuthenticated = base.authenticated_test(_testGetList)
-    testGetListAdmin = base.admin_test(_testGetList)
-
-    def testGetListAnonymous(self):
-        with self.queryLimit(0):
-            resp = self.client.get(self.PATH_LIST)
-        self.assert403(resp)
-
-    def testCreateCategoryFails(self):
-        data = {
-            'name': 'New',
-            'description': 'New Category',
-        }
-        with self.queryLimit(0):
-            resp = self.postJSON(self.PATH_LIST, data)
-        self.assert403(resp)
-        self.assertEqual(len(self.cats), models.Category.query.count())
-
-    testCreateCategoryFailsAuthenticated = base.authenticated_test(
-            testCreateCategoryFails)
-
-    @base.admin_test
-    def testCreateCategory(self):
-        data = {
-            'name': 'New',
-            'description': 'New Category',
-        }
-        with self.queryLimit(6):
-            resp = self.postJSON(self.PATH_LIST, data)
-        self.assert200(resp)
-        for f in ('name', 'description'):
-            self.assertEqual(data[f], resp.json[f])
-        cat = models.Category.query.get(resp.json['slug'])
-        for f in ('name', 'description'):
-            self.assertEqual(data[f], getattr(cat, f))
-
-    def testDeleteCategoryFails(self):
-        with self.queryLimit(0):
-            resp = self.client.delete(self.PATH_SINGLE)
-        self.assert403(resp)
-        self.assertIsNotNone(models.Category.query.get(self.cat.slug))
-
-    testDeleteCategoryFailsAuthenticated = base.authenticated_test(
-            testDeleteCategoryFails)
-
-    @base.admin_test
-    def testDeleteNonEmptyCategory(self):
-        with self.queryLimit(3):
-            resp = self.client.delete(self.PATH_SINGLE)
-        self.assert400(resp)
-        self.assertIsNotNone(models.Category.query.get(self.cat.slug))
-
-    @base.admin_test
-    def testDeleteEmptyCategory(self):
-        for i in self.cat.challenges:
-            models.db.session.delete(i)
-        models.db.session.commit()
-        with self.queryLimit(3):
-            resp = self.client.delete(self.PATH_SINGLE)
-        self.assert200(resp)
-        self.assertIsNone(models.Category.query.get(self.cat.slug))
-
-    def testGetCategoryAnonymous(self):
-        with self.queryLimit(0):
-            self.assert403(self.client.get(self.PATH_SINGLE))
-
-    def _testGetCategory(self):
-        with self.queryLimit(None):
-            resp = self.client.get(self.PATH_SINGLE)
-        self.assert200(resp)
-
-    testGetCategoryAuthenticated = base.authenticated_test(
-            _testGetCategory)
-    testGetCategoryAdmin = base.admin_test(_testGetCategory)
-
-    def testUpdateCategoryAnonymous(self):
-        with self.queryLimit(0):
-            resp = self.putJSON(self.PATH_SINGLE, {
-                'name': 'new name'})
-        self.assert403(resp)
-
-    testUpdateCategoryAuthenticated = base.authenticated_test(
-            testUpdateCategoryAnonymous)
-
-    @base.admin_test
-    def testUpdateCategoryAdmin(self):
-        data = {'name': 'new name'}
-        with self.queryLimit(None):
-            resp = self.putJSON(self.PATH_SINGLE, data)
-        self.assert200(resp)
-        self.assertEqual(data['name'], resp.json['name'])
-        cat = models.Category.query.get(self.cat.slug)
-        self.assertEqual(data['name'], cat.name)
-
-
 class AnswerTest(base.RestTestCase):
 
     PATH = '/api/answers'
 
     def setUp(self):
         super(AnswerTest, self).setUp()
-        cat = models.Category.create('test', 'test')
         self.answer = 'foobar'
         self.points = 100
         self.chall = models.Challenge.create(
                 'test', 'test', self.points,
-                self.answer, cat.slug, unlocked=True)
+                self.answer, unlocked=True)
         self.cid = self.chall.cid
         models.db.session.commit()
 
@@ -1127,7 +1015,6 @@ class ConfigTest(base.RestTestCase):
                     'validators',
                     'proof_of_work_bits',
                     'invite_only',
-                    'tags_only',
             ))
             expected_keys |= extra_keys
             self.assertEqual(expected_keys, set(resp.json.keys()))

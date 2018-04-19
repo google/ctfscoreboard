@@ -1,6 +1,6 @@
 /**
- * Copyright 2016 Google Inc. All Rights Reserved.
- * 
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,12 +28,12 @@ adminTeamCtrls.controller('AdminTeamsCtrl', [
     '$scope',
     '$routeParams',
     'answerService',
-    'categoryService',
+    'challengeService',
     'errorService',
     'sessionService',
     'teamService',
     'loadingService',
-    function($scope, $routeParams, answerService, categoryService, errorService,
+    function($scope, $routeParams, answerService, challengeService, errorService,
         sessionService, teamService, loadingService) {
       if (!sessionService.requireAdmin()) return;
 
@@ -84,27 +84,27 @@ adminTeamCtrls.controller('AdminTeamsCtrl', [
       };
 
       var teamLoaded = function() {
-        var catData = {};
+        var tagData = {};
         var solved = [];
         angular.forEach($scope.team.solved_challenges, function(chall) {
           solved.push(chall.cid);
-          if (!(chall.cat_name in catData))
-            catData[chall.cat_name] = chall.points;
-          else
-            catData[chall.cat_name] += chall.points;
+          angular.forEach(chall.tags, function(tag) {
+            if (!(tag.tagslug in tagData))
+              tagData[tag.tagslug] = chall.points;
+            else
+              tagData[tag.tagslug] += chall.points;
+          });
         });
-        $scope.categoryData = catData;
+        $scope.tagData = tagData;
         $scope.scoreHistory = {};
         $scope.scoreHistory[$scope.team.name] = $scope.team.score_history;
         $scope.unsolved = [];
 
-        categoryService.getList(function(challs) {
-          angular.forEach(challs.categories, function(cat) {
-            angular.forEach(cat.challenges, function(ch) {
-              if (solved.indexOf(ch.cid) < 0) {
-                $scope.unsolved.push(ch);
-              }
-            });
+        challengeService.get(function(challs) {
+          angular.forEach(challs.challenges, function(ch) {
+            if (solved.indexOf(ch.cid) < 0) {
+              $scope.unsolved.push(ch);
+            }
           });
           loadingService.stop();
         });

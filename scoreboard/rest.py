@@ -18,7 +18,6 @@ import flask_restful
 from flask_restful import fields
 import json
 import pytz
-from sqlalchemy import exc
 
 from scoreboard import attachments
 from scoreboard import auth
@@ -199,8 +198,6 @@ class Team(flask_restful.Resource):
     solved_challenges = {
         'cid': fields.Integer,
         'name': fields.String,
-        'cat_slug': fields.String,
-        'cat_name': fields.String,
         'solved': ISO8601DateTime(),
         'points': fields.Integer,
     }
@@ -227,8 +224,6 @@ class Team(flask_restful.Resource):
                     'points': answer.current_points,
                     'name': answer.challenge.name,
                     'cid': answer.challenge_cid,
-                    'cat_slug': answer.challenge.category.slug,
-                    'cat_name': answer.challenge.category.name,
                     })
             result['solved_challenges'] = challenges
             result['score_history'] = team.score_history
@@ -400,7 +395,6 @@ class Challenge(flask_restful.Resource):
         'points': fields.Integer,
         'description': fields.String,
         'unlocked': fields.Boolean,
-        'cat_slug': fields.String,
         'answered': fields.Boolean,
         'solves': fields.Integer,
         'weight': fields.Integer,
@@ -430,8 +424,6 @@ class Challenge(flask_restful.Resource):
             fields.Nested(attachment_fields))
     resource_fields['tags'] = fields.List(
             fields.Nested(tags_fields))
-    resource_fields['answers'] = fields.List(
-            fields.Nested(answers_fields))
 
     @flask_restful.marshal_with(resource_fields)
     def get(self, challenge_id):
@@ -444,7 +436,7 @@ class Challenge(flask_restful.Resource):
         old_unlocked = challenge.unlocked
         for field in (
                 'name', 'description', 'points',
-                'cat_slug', 'unlocked', 'weight'):
+                'unlocked', 'weight'):
             setattr(
                 challenge, field, data.get(field, getattr(challenge, field)))
         if 'validator' in data:
@@ -484,16 +476,36 @@ class Challenge(flask_restful.Resource):
 class ChallengeList(flask_restful.Resource):
     """Create & manage challenges for admins."""
 
-    decorators = [utils.admin_required]
+    decorators = [utils.login_required, utils.require_started]
 
     resource_fields = {
         'challenges': fields.Nested(Challenge.resource_fields)
     }
 
+    @staticmethod
+    def _tease_challenge(chall):
+        """Hide parts to be teased."""
+        res = {k: getattr(chall, k) for k in Challenge.resource_fields}
+        for f in ('description', 'attachments'):
+            del res[f]
+        return res
+
     @flask_restful.marshal_with(resource_fields)
     def get(self):
-        return dict(challenges=list(models.Challenge.query.all()))
+        q = (models.Challenge.query
+             .outerjoin(models.Challenge.answers)
+             .add_columns(models.Challenge.answers.label("solves")))
+        challs = []
+        t = models.Team.current()
+        for chall, solves in q.all():
+            chall._solves = solves
+            if utils.is_admin() or chall.unlocked_for_team(t):
+                challs.append(chall)
+            elif chall.teaser:
+                challs.append(self._tease_challenge(chall))
+        return {'challenges': challs}
 
+    @utils.admin_required
     @flask_restful.marshal_with(Challenge.resource_fields)
     def post(self):
         data = flask.request.get_json()
@@ -506,7 +518,6 @@ class ChallengeList(flask_restful.Resource):
             data['description'],
             data['points'],
             '',
-            data['cat_slug'],
             unlocked,
             data.get('validator', validators.GetDefaultValidator()))
         validator = validators.GetValidatorForChallenge(chall)
@@ -576,7 +587,7 @@ class Tag(flask_restful.Resource):
                 if ch.unlocked_for_team(models.Team.current()):
                     challenges.append(ch)
                 elif ch.teaser:
-                    challenges.append(cls._tease_challenge(ch))
+                    challenges.append(ChallengeList._tease_challenge(ch))
         res = {k: getattr(tag, k) for k in cls.tag_fields}
         res['challenges'] = list(challenges)
         return res
@@ -607,105 +618,6 @@ class TagList(flask_restful.Resource):
         app.logger.info('Tag %s created by %r.', tag, models.User.current())
         cache.clear()
         return tag
-
-
-class Category(flask_restful.Resource):
-    """Single category of challenges."""
-
-    decorators = [utils.login_required, utils.require_started]
-
-    category_fields = {
-        'name': fields.String,
-        'slug': fields.String,
-        'unlocked': fields.Boolean,
-        'description': fields.String,
-        'challenge_count': fields.Integer,
-        'solved_count': fields.Integer,
-    }
-    resource_fields = category_fields.copy()
-    resource_fields['challenges'] = fields.Nested(Challenge.resource_fields)
-
-    @flask_restful.marshal_with(resource_fields)
-    def get(self, category_slug):
-        category = models.Category.query.get_or_404(category_slug)
-        return self.get_challenges(category)
-
-    @utils.admin_required
-    @flask_restful.marshal_with(resource_fields)
-    def put(self, category_slug):
-        category = models.Category.query.get_or_404(category_slug)
-        category.name = get_field('name')
-        category.description = get_field('description', category.description)
-
-        app.logger.info('Category %s updated by %r.',
-                        category, models.User.current())
-        models.commit()
-        cache.clear()
-        return self.get_challenges(category)
-
-    @classmethod
-    def get_challenges(cls, category):
-        if models.User.current() and models.User.current().admin:
-            challenges = category.challenges
-        else:
-            raw = category.get_challenges()
-            challenges = []
-            for ch in raw:
-                if ch.unlocked_for_team(models.Team.current()):
-                    challenges.append(ch)
-                elif ch.teaser:
-                    challenges.append(cls._tease_challenge(ch))
-        res = {k: getattr(category, k) for k in cls.category_fields}
-        res['challenges'] = list(challenges)
-        return res
-
-    @staticmethod
-    def _tease_challenge(chall):
-        res = {k: getattr(chall, k) for k in Challenge.resource_fields}
-        for f in ('description', 'attachments'):
-            del res[f]
-        return res
-
-    @utils.admin_required
-    def delete(self, category_slug):
-        category = models.Category.query.get_or_404(category_slug)
-        try:
-            models.db.session.delete(category)
-            cache.clear()
-            models.commit()
-        except exc.IntegrityError:
-            models.db.session.rollback()
-            raise errors.ValidationError(
-                'Unable to delete category: make sure it is empty')
-
-
-class CategoryList(flask_restful.Resource):
-    """List of all categories."""
-
-    decorators = [utils.login_required, utils.require_started]
-
-    resource_fields = {
-        'categories': fields.Nested(Category.resource_fields)
-    }
-
-    @cache.rest_team_cache('cats/%d')
-    @flask_restful.marshal_with(resource_fields)
-    def get(self):
-        q = models.Category.joined_query()
-        categories = [Category.get_challenges(c) for c in q.all()]
-        return dict(categories=categories)
-
-    @utils.admin_required
-    @flask_restful.marshal_with(Category.category_fields)
-    def post(self):
-        cat = models.Category.create(
-            get_field('name'),
-            get_field('description', ''))
-        models.commit()
-        app.logger.info('Category %s created by %r.',
-                        cat, models.User.current())
-        cache.clear()
-        return cat
 
 
 class Answer(flask_restful.Resource):
@@ -789,8 +701,6 @@ class Validator(flask_restful.Resource):
 
 api.add_resource(Tag, '/api/tags/<string:tag_slug>')
 api.add_resource(TagList, '/api/tags')
-api.add_resource(Category, '/api/categories/<string:category_slug>')
-api.add_resource(CategoryList, '/api/categories')
 api.add_resource(ChallengeList, '/api/challenges')
 api.add_resource(Challenge, '/api/challenges/<int:challenge_id>')
 api.add_resource(Answer, '/api/answers')
@@ -851,7 +761,6 @@ class Config(flask_restful.Resource):
             validators=validators.ValidatorMeta(),
             proof_of_work_bits=int(app.config.get('PROOF_OF_WORK_BITS')),
             invite_only=app.config.get('INVITE_KEY') is not None,
-            tags_only=app.config.get('TAGS_ONLY'),
             )
         return config
 
@@ -1037,79 +946,23 @@ class BackupRestore(flask_restful.Resource):
 
     def get(self):
         # TODO: refactor, this is messy
-        categories = {}
-        for cat in models.Category.query.all():
-            challenges = []
-            for q in cat.challenges:
-                attachments = []
-                for a in q.attachments:
-                    attachments.append({
-                        'aid': a.aid,
-                        'filename': a.filename,
-                        'content_type': a.content_type,
-                    })
-                challenges.append({
-                    'cid': q.cid,
-                    'category': cat.slug,
-                    'name': q.name,
-                    'description': q.description,
-                    'points': q.points,
-                    'answer_hash': q.answer_hash,
-                    'attachments': attachments,
-                    'prerequisite': q.prerequisite,
-                    'weight': q.weight,
-                })
-            categories[cat.slug] = {
-                'name': cat.name,
-                'description': cat.description,
-                'challenges': challenges,
-                'slug': cat.slug,
-            }
+        rv = {
+                'challenges': list(models.Challenge.query.all()),
+                'tags': list(models.Challenge.query.all()),
+                }
         return (
-            {'categories': categories},
+            rv,
             200,
             {'Content-Disposition': 'attachment; filename=challenges.json'})
 
     def post(self):
         # TODO: refactor, this is messy
-        data = flask.request.get_json()
-        categories = data['categories']
+        raise NotImplementedError('Restore not implemented.')
 
-        if data.get('replace', False):
-            models.Attachment.query.delete()
-            models.Challenge.query.delete()
-            models.Category.query.delete()
-
-        cats = {}
-        challs = 0
-        for catslug, cat in categories.iteritems():
-            newcat = models.Category()
-            for f in ('name', 'description', 'slug'):
-                setattr(newcat, f, cat[f])
-            models.db.session.add(newcat)
-            cats[catslug] = newcat
-
-            for challenge in cat['challenges']:
-                newchall = models.Challenge()
-                for f in ('cid', 'name', 'description',
-                          'points', 'answer_hash', 'prerequisite',
-                          'weight'):
-                    setattr(newchall, f, challenge.get(f, None))
-                newchall.category = newcat
-                models.db.session.add(newchall)
-                challs += 1
-                for a in challenge.get('attachments', []):
-                    attachment = models.Attachment()
-                    attachment.challenge = newchall
-                    attachment.aid = a['aid']
-                    attachment.filename = a['filename']
-                    attachment.content_type = a['content_type']
-                    models.db.session.add(attachment)
-
+        challs = []
         models.commit()
         cache.clear()
-        return {'message': '%d Categories and %d Challenges imported.' %
-                (len(cats), challs)}
+        return {'message': '%d Challenges imported.' % (len(challs),)}
 
 
 api.add_resource(BackupRestore, '/api/backup')

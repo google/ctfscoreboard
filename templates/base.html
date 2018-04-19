@@ -49,19 +49,9 @@ should be in {% raw %} blocks.  DFIU! -#}
         <div class='row full-height'>
           <div class='col-md-3 left-sidebar full-height'>
               <div class='left-sidebar-background full-height'></div>
-              <div class='list-group' ng-controller='CategoryMenuCtrl'>
-                <a ng-href='/challenges/{{c.slug}}'
-                  class='list-group-item ng-hide'
-                  ng-repeat='c in categories' ng-show='c'
-                  highlight-active>{{c.name}}<span
-                    class='cat-count' ng-hide='isAdmin()'
-                    >[{{c.solved_count}}/{{c.challenge_count}}]</span></a>
-              </div>
               <!-- TODO: Admin only -->
               <div id='admin-links' class='list-group ng-hide admin-links'
                 ng-show='isAdmin()'>
-                <a href='/admin/categories'
-                  class='list-group-item' highlight-active>Categories</a>
                 <a href='/admin/tags'
                   class='list-group-item' highlight-active>Tags</a>
                 <a href='/admin/attachments'

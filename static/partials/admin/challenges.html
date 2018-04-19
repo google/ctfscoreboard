@@ -21,15 +21,15 @@
         <a ng-click='deleteChallenge(challenge)'
           class='btn btn-danger'>Delete</a>
         <a ng-click='moveUp(challenge)' ng-disabled='$first'
-          ng-show='categoryPage' class='btn btn-xs'>&#x25b2;</a>
+          class='btn btn-xs'>&#x25b2;</a>
         <a ng-click='moveDown(challenge)' ng-disabled='$last'
-          ng-show='categoryPage' class='btn btn-xs'>&#x25bc;</a>
+          class='btn btn-xs'>&#x25bc;</a>
       </td>
     </tr>
     <tr><td></td><td></td><td></td>
       <td><a ng-click='newChallenge()'
           class='btn btn-primary'>New</a><a ng-click='saveBulk()'
           ng-enabled='weightsChanged' class='btn btn-info'
-          ng-show='categoryPage'>Save Order</a></td></tr>
+          >Save Order</a></td></tr>
   </tbody>
 </table>

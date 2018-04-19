@@ -1,6 +1,6 @@
 /**
- * Copyright 2016 Google Inc. All Rights Reserved.
- * 
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -30,14 +30,16 @@ teamCtrls.controller('TeamPageCtrl', [
       teamService.get({tid: tid},
           function(team) {
             $scope.team = team;
-            var catData = {};
+            var tagData = {};
             angular.forEach(team.solved_challenges, function(chall) {
-              if (!(chall.cat_name in catData))
-                catData[chall.cat_name] = chall.points;
-              else
-                catData[chall.cat_name] += chall.points;
+              angular.forEach(chall.tags, function(tag) {
+                if (!(tag.tagslug in tagData))
+                  tagData[tag.tagslug] = chall.points;
+                else
+                  tagData[tag.tagslug] += chall.points;
+              });
             });
-            $scope.categoryData = catData;
+            $scope.tagData = tagData;
             $scope.scoreHistory = {};
             $scope.scoreHistory[team.name] = team.score_history;
             loadingService.stop();

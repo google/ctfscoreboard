@@ -1,6 +1,6 @@
 /**
- * Copyright 2016 Google Inc. All Rights Reserved.
- * 
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,98 +22,18 @@ var challengeCtrls = angular.module('challengeCtrls', [
     'sessionServices',
     ]);
 
-challengeCtrls.controller('CategoryMenuCtrl', [
-    '$scope',
-    '$interval',
-    'categoryService',
-    'sessionService',
-    function($scope, $interval, categoryService, sessionService) {
-        var updateCategories = function() {
-            categoryService.getList(function(data) {
-                $scope.categories = data.categories;
-            });
-        };
-
-        var update;
-        var startUpdate = function() {
-            updateCategories();
-            update = $interval(updateCategories, 60*1000);
-        };
-
-        sessionService.requireLogin(startUpdate, true);
-        $scope.$on('sessionLogin', startUpdate);
-        $scope.$on('sessionLogout', function() {
-            $scope.categories = [];
-            $interval.cancel(update);
-        });
-        $scope.$on('correctAnswer', updateCategories);
-    }]);
-
-challengeCtrls.controller('CategoryCtrl', [
-    '$scope',
-    '$routeParams',
-    'categoryService',
-    'errorService',
-    'sessionService',
-    'loadingService',
-    function($scope, $routeParams, categoryService, errorService, sessionService,
-      loadingService) {
-      errorService.clearErrors();
-
-      var refresh = function(slug) {
-        categoryService.get({slug: slug},
-            function(cat) {
-              $scope.category = cat;
-              $scope.category.answers = {};
-              $scope.challenges = cat.challenges;
-              $scope.challenges.sort(function(a, b) {
-                return (a.weight - b.weight);
-              });
-              loadingService.stop();
-            });
-      };
-
-      $scope.filterUnlocked = function(chall) {
-        return chall.unlocked == true;
-      };
-
-      var slug = $routeParams.slug;
-      if (slug) {
-        // Load challenges
-        sessionService.requireLogin(function() {
-          var found = false;
-          categoryService.getList(function(data) {
-            angular.forEach(data.categories, function(c) {
-              if (c.slug == slug){
-                $scope.slug = c.slug;
-                refresh(c.slug);
-                found = true;
-              }
-            });
-            if (!found) {
-              errorService.error('Category not found.');
-              loadingService.stop();
-            }
-          });
-        });
-      } else {
-        loadingService.stop();
-      }
-    }]);
-
-
 challengeCtrls.controller('ChallengeGridCtrl', [
+    '$rootScope',
     '$scope',
     '$location',
-    'categoryService',
+    'challengeService',
     'configService',
     'loadingService',
     'scoreService',
     'sessionService',
     'tagService',
-    function($scope, $location, categoryService, configService, loadingService,
-      scoreService, sessionService, tagService) {
-      $scope.categories = {};
+    function($rootScope, $scope, $location, challengeService, configService,
+      loadingService, scoreService, sessionService, tagService) {
       $scope.currChall = null;
       $scope.shownTags = {};
       $scope.config = configService.get();
@@ -124,15 +44,10 @@ challengeCtrls.controller('ChallengeGridCtrl', [
       };
 
       var refresh = function() {
-          categoryService.getList(function(data) {
-              var allChallenges = [];
-              $scope.categories = data.categories;
-              angular.forEach($scope.categories, function(c) {
-                c.challenges.sort(compareChallenges);
-                Array.prototype.push.apply(allChallenges, c.challenges);
-              });
-              allChallenges.sort(compareChallenges);
-              $scope.challenges = allChallenges;
+          console.log('Refresh grid.');
+          challengeService.get(function(data) {
+              data.challenges.sort(compareChallenges);
+              $scope.challenges = data.challenges;
           });
       };
 
@@ -192,7 +107,10 @@ challengeCtrls.controller('ChallengeGridCtrl', [
       }
 
       $scope.getSentiment = function(tag) {
-        var sentiments = ['sentiment_dissatisfied', 'sentiment_neutral', 'sentiment_satisfied'];
+        var sentiments = [
+          'sentiment_dissatisfied',
+          'sentiment_neutral',
+          'sentiment_satisfied'];
         return sentiments[$scope.shownTags[tag.tagslug]];
       }
 
@@ -200,4 +118,6 @@ challengeCtrls.controller('ChallengeGridCtrl', [
         refresh();
         loadingService.stop();
       });
+
+      $rootScope.$on('correctAnswer', refresh);
   }]);

@@ -106,9 +106,8 @@ class NonceValidatorTest(base.BaseTestCase):
 
     def setUp(self):
         super(NonceValidatorTest, self).setUp()
-        self.cat = models.Category.create('FooCat', 'Foo Cat')
         self.chall = models.Challenge.create(
-                'foo', 'bar', 100, '', self.cat.slug, unlocked=True,
+                'foo', 'bar', 100, '', unlocked=True,
                 validator='nonce_166432')
         self.validator = validators.GetValidatorForChallenge(self.chall)
         self.validator.change_answer('secret123')
