@@ -424,8 +424,6 @@ class Challenge(flask_restful.Resource):
             fields.Nested(attachment_fields))
     resource_fields['tags'] = fields.List(
             fields.Nested(tags_fields))
-    resource_fields['answers'] = fields.List(
-            fields.Nested(answers_fields))
 
     @flask_restful.marshal_with(resource_fields)
     def get(self, challenge_id):
@@ -494,15 +492,17 @@ class ChallengeList(flask_restful.Resource):
 
     @flask_restful.marshal_with(resource_fields)
     def get(self):
-        if utils.is_admin():
-            return dict(challenges=list(models.Challenge.query.all()))
-        t = models.Team.current()
+        q = (models.Challenge.query
+             .outerjoin(models.Challenge.answers)
+             .add_columns(models.Challenge.answers.label("solves")))
         challs = []
-        for c in models.Challenge.query.all():
-            if c.unlocked_for_team(t):
-                challs.append(c)
-            elif c.teaser:
-                challs.append(self._tease_challenge(c))
+        t = models.Team.current()
+        for chall, solves in q.all():
+            chall._solves = solves
+            if utils.is_admin() or chall.unlocked_for_team(t):
+                challs.append(chall)
+            elif chall.teaser:
+                challs.append(self._tease_challenge(chall))
         return {'challenges': challs}
 
     @utils.admin_required

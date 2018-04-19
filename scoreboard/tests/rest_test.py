@@ -753,7 +753,7 @@ class ChallengeTest(base.RestTestCase):
     @base.authenticated_test
     def testGetListAuthenticated(self):
         # TODO: fix to not be O(n)
-        with self.queryLimit(None):
+        with self.queryLimit(3):
             resp = self.client.get(self.PATH_LIST)
         self.assert200(resp)
         self.assertEqual(len(self.challs), len(resp.json['challenges']))
@@ -761,7 +761,7 @@ class ChallengeTest(base.RestTestCase):
     @base.admin_test
     def testGetListAdmin(self):
         # TODO: fix to not be O(n)
-        with self.queryLimit(None):
+        with self.queryLimit(3):
             resp = self.client.get(self.PATH_LIST)
         self.assert200(resp)
         self.assertEqual(len(self.challs), len(resp.json['challenges']))

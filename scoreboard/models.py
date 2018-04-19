@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All Rights Reserved.
+# Copyright 2018 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,9 @@ import sqlalchemy as sqlalchemy_base
 import time
 import utils
 from sqlalchemy import exc
+from sqlalchemy import func
 from sqlalchemy import orm
+from sqlalchemy.ext import hybrid
 
 from scoreboard import attachments
 from scoreboard import errors
@@ -361,9 +363,17 @@ class Challenge(db.Model):
         return bool(Answer.query.filter(Answer.challenge == self,
                                         Answer.team == team).count())
 
-    @property
+    @hybrid.hybrid_property
     def solves(self):
-        return len(self.answers)
+        try:
+            return self._solves
+        except AttributeError:
+            self._solves = len(self.answers)
+            return self._solves
+
+    @solves.expression
+    def solves(cls):
+        return func.count(cls.answers)
 
     @property
     def answered(self):
@@ -557,8 +567,8 @@ class Attachment(db.Model):
 class Answer(db.Model):
     """Log a successfully submitted answer."""
 
-    challenge_cid = db.Column(db.BigInteger, db.ForeignKey('challenge.cid'),
-                              primary_key=True)
+    challenge_cid = db.Column(
+        db.BigInteger, db.ForeignKey('challenge.cid'), primary_key=True)
     team_tid = db.Column(
         db.Integer, db.ForeignKey('team.tid'), primary_key=True)
     timestamp = db.Column(db.DateTime)
