@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All Rights Reserved.
+# Copyright 2018 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,9 @@ import sqlalchemy as sqlalchemy_base
 import time
 import utils
 from sqlalchemy import exc
+from sqlalchemy import func
 from sqlalchemy import orm
+from sqlalchemy.ext import hybrid
 
 from scoreboard import attachments
 from scoreboard import errors
@@ -276,7 +278,6 @@ tag_challenge_association = db.Table(
 class Tag(db.Model):
     """A Tag to be Applied to Challenges"""
 
-    # To differentiate from a catslug
     tagslug = db.Column(db.String(100), unique=True, primary_key=True,
                         nullable=False, index=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
@@ -329,101 +330,6 @@ class Tag(db.Model):
         return challenges.order_by(Challenge.weight)
 
 
-class Category(db.Model):
-    """A Category of Challenges."""
-
-    name = db.Column(db.String(100), unique=True, nullable=False)
-    slug = db.Column(db.String(100), primary_key=True, unique=True,
-                     nullable=False, index=True)
-    description = db.Column(db.Text)
-    unlocked = db.Column(db.Boolean, default=True)
-    challenges = db.relationship(
-        'Challenge', backref=db.backref('category', lazy='joined'),
-        lazy='joined')
-
-    def __repr__(self):
-        return '<Category: %s/%s>' % (self.slug, self.name)
-
-    @property
-    def challenge_count(self):
-        """Count of unlocked challenges."""
-        if 'challenges' not in sqlalchemy_base.inspect(self).unloaded:
-            return len(self.challenges)
-        return self.get_challenges(sort=False).count()
-
-    @property
-    def solved_count(self):
-        """Count of solved challenges for current team."""
-        if 'challenges' not in sqlalchemy_base.inspect(self).unloaded:
-            challs = self.challenges
-        else:
-            challs = self.get_challenges(sort=False)
-        ct = 0
-        for ch in challs:
-            if ch.answered:
-                ct += 1
-        return ct
-
-    def slugify(self):
-        base_slug = '-'.join(w.lower() for w in re.split('\W+', self.name))
-        if self.slug == base_slug:
-            return
-        ctr = 0
-        while True:
-            slug = base_slug + (('-%d' % ctr) if ctr else '')
-            if not Category.query.filter(Category.slug == slug).count():
-                break
-            ctr += 1
-        self.slug = slug
-
-    @classmethod
-    def create(cls, name, description, unlocked=True):
-        try:
-            cat = cls()
-            cat.name = name
-            cat.description = description
-            cat.unlocked = unlocked
-            cat.slugify()
-            db.session.add(cat)
-            return cat
-        except exc.IntegrityError:
-            db.session.rollback()
-
-    def delete(self):
-        db.session.delete(self)
-
-    def get_challenges(self, unlocked_only=True, sort=True, force_query=False):
-        if (force_query or
-                'challenges' in sqlalchemy_base.inspect(self).unloaded):
-            return self._get_challenges_query(
-                    unlocked_only=unlocked_only, sort=sort)
-        return self._get_challenges_cached(
-                unlocked_only=unlocked_only, sort=sort)
-
-    def _get_challenges_cached(self, unlocked_only=True, sort=True):
-        challenges = self.challenges
-        if unlocked_only:
-            challenges = [c for c in challenges if c.unlocked]
-        if sort:
-            challenges = sorted(challenges, key=lambda c: c.weight)
-        return challenges
-
-    def _get_challenges_query(self, unlocked_only=True, sort=True):
-        challenges = Challenge.query.filter(Challenge.category == self)
-        if unlocked_only:
-            unlocked_identity = True
-            challenges = challenges.filter(
-                Challenge.unlocked == unlocked_identity)
-        if not sort:
-            return challenges
-        return challenges.order_by(Challenge.weight)
-
-    @classmethod
-    def joined_query(cls):
-        return cls.query.options(orm.joinedload(cls.challenges)
-                                 .joinedload(Challenge.answers))
-
-
 class Challenge(db.Model):
     """A single challenge to be played."""
 
@@ -437,8 +343,6 @@ class Challenge(db.Model):
     unlocked = db.Column(db.Boolean, default=False)
     weight = db.Column(db.Integer, nullable=False)  # Order for display
     prerequisite = db.Column(db.Text, nullable=False)  # Prerequisite Metadata
-    cat_slug = db.Column(db.String(100), db.ForeignKey('category.slug'),
-                         nullable=False)
     answers = db.relationship('Answer',
                               backref=db.backref('challenge', lazy='joined'),
                               lazy='select')
@@ -459,9 +363,17 @@ class Challenge(db.Model):
         return bool(Answer.query.filter(Answer.challenge == self,
                                         Answer.team == team).count())
 
-    @property
+    @hybrid.hybrid_property
     def solves(self):
-        return len(self.answers)
+        try:
+            return self._solves
+        except AttributeError:
+            self._solves = len(self.answers)
+            return self._solves
+
+    @solves.expression
+    def solves(cls):
+        return func.count(cls.answers)
 
     @property
     def answered(self):
@@ -511,7 +423,7 @@ class Challenge(db.Model):
         return chall.is_answered(team=team, answers=team.answers)
 
     @classmethod
-    def create(cls, name, description, points, answer, slug, unlocked=False,
+    def create(cls, name, description, points, answer, unlocked=False,
                validator='static_pbkdf2'):
         challenge = cls()
         challenge.name = name
@@ -519,7 +431,6 @@ class Challenge(db.Model):
         challenge.cid = utils.generate_id()
         challenge.points = points
         challenge.answer_hash = answer
-        challenge.cat_slug = slug
         challenge.unlocked = unlocked
         challenge.validator = validator
         weight = db.session.query(db.func.max(Challenge.weight)).scalar()
@@ -656,8 +567,8 @@ class Attachment(db.Model):
 class Answer(db.Model):
     """Log a successfully submitted answer."""
 
-    challenge_cid = db.Column(db.BigInteger, db.ForeignKey('challenge.cid'),
-                              primary_key=True)
+    challenge_cid = db.Column(
+        db.BigInteger, db.ForeignKey('challenge.cid'), primary_key=True)
     team_tid = db.Column(
         db.Integer, db.ForeignKey('team.tid'), primary_key=True)
     timestamp = db.Column(db.DateTime)

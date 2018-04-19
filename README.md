@@ -3,13 +3,19 @@
 This is a basic CTF Scoreboard, with support for teams or individual
 competitors, and a handful of other features.
 
-Copyright 2018 Google, Inc.
+Copyright 2018 Google, Inc.    
 This is not an official Google product.
 
 Author: Please see the AUTHORS file.
 
+This is a version 2.x branch.  We've eliminated categories, in favor of tagging
+challenges.  This simplifies the codebase significantly, and is a better fit
+since so many challenges border on more than one category.  However, this branch
+is not compatible with databases from 1.x.  If you need that, check out the 1.x
+branch, which will only be getting security & bug fixes.
 
 ### Installation ###
+
 1. Install Python with PIP and setuptools.  If you'd like to use a virtualenv,
    set one up and activate it now.  Please note that only Python 2.7 is
    supported at the present time.
@@ -108,7 +114,6 @@ users API.
 
 - Setup database
 - Create user, verify admin
-- Create category
 - Create challenge
   - With, without attachment
 - Edit challenges

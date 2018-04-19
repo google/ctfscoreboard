@@ -15,36 +15,7 @@
   </div>
 </div>
 
-<div class='row jeopardy-container' ng-show='!config.tags_only'>
-  <div class='jeopardy-col' ng-repeat='cat in categories'>
-    <div class='jeopardy-cat jeopardy-box'
-      ng-href='"/challenges/" + cat.slug'><p ng-bind='cat.name'></p></div>
-  </div>
-</div>
-
-<div class='row jeopardy-container' ng-show='!config.tags_only'>
-  <div class='jeopardy-col' ng-repeat='cat in categories'>
-    <div class='jeopardy-chall jeopardy-box' ng-repeat='chall in cat.challenges'
-      ng-click='goChallenge(chall)' ng-class='{solved: chall.answered}'
-      ng-show='tagsAllowed(chall)'
-      ><div class='flipper'>
-        <div class='card front'>
-          <div class='chall-num'>
-            <span class='chall-num-val' ng-bind='chall.solves'>
-          </div>
-          <div ng-bind='chall.name' class='chall-name'></div>
-          <div class='chall-tags'>
-            <span class='chall-dummy'></span>
-            <span class='chall-tag' ng-repeat='tag in chall.tags' ng-bind='tag.name'></span>
-          </div>
-        </div>
-        <div class='card back'><p ng-bind='flipSide(chall)'></p></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class='row jeopardy-container jeopardy-tags-container' ng-show='config.tags_only'>
+<div class='row jeopardy-container jeopardy-tags-container'>
   <div class='jeopardy-chall jeopardy-box' ng-repeat='chall in challenges'
     ng-click='goChallenge(chall)' ng-class='{solved: chall.answered}'
     ng-show='tagsAllowed(chall)'

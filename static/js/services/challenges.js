@@ -1,6 +1,6 @@
 /**
- * Copyright 2016 Google Inc. All Rights Reserved.
- * 
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,12 +18,31 @@ var challengeServices = angular.module('challengeServices', [
     'ngResource',
     'globalServices']);
 
-challengeServices.service('challengeService', ['$resource',
-    function($resource) {
-      return $resource('/api/challenges/:cid', {}, {
+challengeServices.service('challengeService', [
+    '$resource',
+    '$rootScope',
+    '$cacheFactory',
+    '$timeout',
+    function($resource, $rootScope, $cacheFactory, $timeout) {
+      var cache = $cacheFactory('challengeCache');
+      var cacheTimeout = 30000;
+      var res = $resource('/api/challenges/:cid', {}, {
+        'get': {method: 'GET', cache: cache},
         'save': {method: 'PUT'},
         'create': {method: 'POST'},
       });
+      this.get = res.get;
+      this.save = function() {
+        cache.removeAll();
+        return res.apply(res, arguments);
+      };
+      this.create = function() {
+        cache.removeAll();
+        return res.apply(res, arguments);
+      };
+      this.flush = cache.removeAll;
+      $rootScope.$on('correctAnswer', cache.removeAll);
+      return this;
     }]);
 
 challengeServices.service('tagService', [
@@ -110,62 +129,6 @@ challengeServices.service('attachService', [
 
     }
 ])
-
-challengeServices.service('categoryService', [
-    '$resource',
-    '$rootScope',
-    '$cacheFactory',
-    '$timeout',
-    function($resource, $rootScope, $cacheFactory, $timeout) {
-      var categoryCache = $cacheFactory('categoryCache');
-      this.catlist = null;
-
-      this.res = $resource('/api/categories/:slug', {}, {
-        'get': {method: 'GET', cache: categoryCache},
-        'save': {method: 'PUT'},
-        'create': {method: 'POST'},
-      });
-
-      this.get = this.res.get;
-      this.create = this.res.create;
-      this.save = this.res.save;
-      this.delete = this.res.delete;
-
-      this.getList = function(callback, force) {
-        // TODO: rewrite this to maintain binding in scopes
-        if (force) {
-          categoryCache.removeAll();
-        } else if (this.catlist) {
-          callback(this.catlist);
-          return;
-        }
-        this.res.get(angular.bind(this, function(data) {
-          this.catlist = data;
-          $timeout(
-            angular.bind(this, function() {
-              this.catlist = null;
-              categoryCache.removeAll();
-            }),
-            30000,
-            false);
-          callback(data);
-        }));
-      };
-
-      $rootScope.$on('$locationChangeSuccess', function() {
-          // Clear cache on navigation
-          categoryCache.removeAll();
-      });
-
-      angular.bind(this, function() {
-        $rootScope.$on('correctAnswer', function() {
-            categoryCache.removeAll();
-            console.log('Refreshing cache.');
-            this.getList(function(){}, true);
-        });
-      });
-
-    }]);
 
 challengeServices.service('answerService', [
     '$resource',

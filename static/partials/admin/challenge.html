@@ -1,30 +1,22 @@
 <h2><span ng-bind='action'></span> Challenge</h2>
 <form ng-submit='saveChallenge()' name='challengeForm'>
   <div class='well'>
-    <div class='form-group'>
-        <label for='name'>Name</label>
-        <input id='name' name='name' placeholder='Name'
-          ng-model='challenge.name' class='form-control'
-          required>
-    </div>
     <div class='row'>
         <div class='col-md-8'>
-        <div class='form-group'>
-            <label for='category'>Category</label>
-            <select id='category' name='category' class='form-control'
-              ng-options='cat.slug as cat.name for cat in categories'
-              ng-model='challenge.cat_slug' required>
-            <option disabled>-- Select Category --</option>
-            </select>
-        </div>
+          <div class='form-group'>
+              <label for='name'>Name</label>
+              <input id='name' name='name' placeholder='Name'
+                ng-model='challenge.name' class='form-control'
+                required>
+          </div>
         </div>
         <div class='col-md-4'>
-        <div class='form-group'>
-            <label for='points'>Points</label>
-            <input id='points' name='points' class='form-control'
-              type='number' ng-model='challenge.points' placeholder='0'
-              required>
-        </div>
+          <div class='form-group'>
+              <label for='points'>Points</label>
+              <input id='points' name='points' class='form-control'
+                type='number' ng-model='challenge.points' placeholder='0'
+                required>
+          </div>
         </div>
     </div>
     <div class='form-group'>
@@ -69,7 +61,9 @@
       <tbody>
         <tr ng-repeat='tag in tags'>
           <td>{{tag.name}}</td><td>{{tag.description}}</td>
-          <td><a class='btn btn-sm {{hasTag(tag.tagslug) ? "btn-success" : "btn-danger"}}' ng-click='toggleTag(tag.tagslug)'>
+          <td><a
+               class='btn btn-sm {{hasTag(tag.tagslug) ? "btn-success" : "btn-danger"}}'
+               ng-click='toggleTag(tag.tagslug)'>
                 <span ng-if= 'hasTag(tag.tagslug)'>&#x2713;</span>
                 <span ng-if='!hasTag(tag.tagslug)'>&#x2715;</span>
               </a>

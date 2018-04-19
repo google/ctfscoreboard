@@ -265,7 +265,7 @@ sbDirectives.directive('scoreChart', [
 
 /* Draw a donut chart of, well, anything.
  * Expects data like:
- * {category: value}
+ * {tag: value}
  */
 sbDirectives.directive('donutChart', [
     '$filter',

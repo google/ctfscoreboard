@@ -44,13 +44,6 @@ def make_players(teams):
     return players
 
 
-def make_categories():
-    categories = []
-    for name in ('Pwning', 'Reversing', 'Web', 'Crypto'):
-        categories.append(models.Category.create(name, name + ' Category'))
-    return categories
-
-
 def make_tags():
     tags = []
     for name in ('x86', 'x64', 'MIPS', 'RISC', 'Fun'):
@@ -58,7 +51,7 @@ def make_tags():
     return tags
 
 
-def make_challenges(cats, tags):
+def make_challenges(tags):
     challs = []
     chall_words = (
             'Magic', 'Grand', 'Fast', 'Hash', 'Table', 'Password',
@@ -73,14 +66,13 @@ def make_challenges(cats, tags):
         random.shuffle(title)
         title = ' '.join(title)
         flag = '_'.join(random.sample(chall_words, 4)).lower()
-        cat = random.choice(cats)
         # Choose a random subset of tags
         numtags = random.randint(0, len(tags)-1)
         local_tags = random.sample(tags, numtags)
         points = random.randint(1, 20) * 100
         desc = 'Flag: ' + flag
         ch = models.Challenge.create(
-                title, desc, points, flag, cat.slug,
+                title, desc, points, flag,
                 unlocked=True)
         ch.add_tags(local_tags)
         if len(challs) % 8 == 7:
@@ -116,11 +108,10 @@ def create_all():
     teams = make_teams()
     make_players(teams)
 
-    # Categories and challenges
-    cats = make_categories()
+    # Challenges
     tags = make_tags()
     models.commit()  # Need IDs allocated
-    challs = make_challenges(cats, tags)
+    challs = make_challenges(tags)
 
     # Submitted answers
     make_answers(teams, challs)
