@@ -19,6 +19,7 @@ import time
 
 from scoreboard.tests import base
 
+from scoreboard import errors
 from scoreboard import models
 
 
@@ -68,6 +69,9 @@ class UserTest(base.BaseTestCase):
         self.assertEqual(nick, models.User.get_by_nick(nick).nick)
         self.assertIsNone(models.User.get_by_nick(nick*2))
 
+    def testStr(self):
+        self.assertEqual('test', str(self.user))
+
     @mock.patch.object(time, 'time')
     def testGetToken(self, mock_time):
         mock_time.return_value = 12345.678
@@ -78,3 +82,81 @@ class UserTest(base.BaseTestCase):
         mock_get.assert_called_once_with('SECRET_KEY')
         mock_time.assert_called_once_with()
         self.assertEqual('MTk1NDU6P0O68xiZ-H9gOLWPLzFkW8fhAQ8=', token)
+
+    @mock.patch.object(time, 'time')
+    def testVerifyToken_full(self, mock_time):
+        good_token = 'MTk1NDU6P0O68xiZ-H9gOLWPLzFkW8fhAQ8='
+        mock_time.return_value = 12348.678
+        self.user.pwhash = '$1$foo'
+        with mock.patch.object(self.app.config, 'get') as mock_get:
+            mock_get.return_value = 'foo'
+            self.assertTrue(self.user.verify_token(good_token))
+        mock_get.assert_called_once_with('SECRET_KEY')
+        mock_time.assert_called_once_with()
+
+    @mock.patch.object(time, 'time')
+    def testVerifyToken_wrongType(self, mock_time):
+        good_token = 'MTk1NDU6P0O68xiZ-H9gOLWPLzFkW8fhAQ8='
+        mock_time.return_value = 12348.678
+        self.user.pwhash = '$1$foo'
+        with mock.patch.object(self.app.config, 'get') as mock_get:
+            mock_get.return_value = 'foo'
+            with self.assertRaises(errors.ValidationError):
+                self.user.verify_token(good_token, token_type='non')
+        mock_get.assert_called_once_with('SECRET_KEY')
+        mock_time.assert_called_once_with()
+
+    def testVerifyToken_badFormat(self):
+        with self.assertRaises(errors.ValidationError):
+            self.user.verify_token('!!!')
+
+    @mock.patch.object(time, 'time')
+    def testVerifyToken_expired(self, mock_time):
+        good_token = 'MTk1NDU6P0O68xiZ-H9gOLWPLzFkW8fhAQ8='
+        mock_time.return_value = 99912345.678
+        self.user.pwhash = '$1$foo'
+        with self.assertRaises(errors.ValidationError):
+            self.user.verify_token(good_token)
+        mock_time.assert_called_once_with()
+
+    @mock.patch.object(time, 'time')
+    def testVerifyToken_invalidSig(self, mock_time):
+        good_token = 'MTk1NDU6P0O68xiZ-H9gOLWPLzgkW8fhAQ8='
+        mock_time.return_value = 12345.678
+        self.user.pwhash = '$1$foo'
+        with mock.patch.object(self.app.config, 'get') as mock_get:
+            mock_get.return_value = 'foo'
+            with self.assertRaises(errors.ValidationError):
+                self.user.verify_token(good_token)
+        mock_get.assert_called_once_with('SECRET_KEY')
+        mock_time.assert_called_once_with()
+
+    @mock.patch.object(time, 'time')
+    def testVerifyToken_perUser(self, mock_time):
+        good_token = 'MTk1NDU6P0O68xiZ-H9gOLWPLzFkW8fhAQ8='
+        mock_time.return_value = 12345.678
+        self.user.pwhash = '$1$foo'
+        self.user.uid = 55
+        with mock.patch.object(self.app.config, 'get') as mock_get:
+            mock_get.return_value = 'foo'
+            with self.assertRaises(errors.ValidationError):
+                self.user.verify_token(good_token)
+        mock_get.assert_called_once_with('SECRET_KEY')
+        mock_time.assert_called_once_with()
+
+    @mock.patch.object(time, 'time')
+    def testVerifyToken_perPass(self, mock_time):
+        good_token = 'MTk1NDU6P0O68xiZ-H9gOLWPLzFkW8fhAQ8='
+        mock_time.return_value = 12345.678
+        self.user.pwhash = '$1$foobar'
+        with mock.patch.object(self.app.config, 'get') as mock_get:
+            mock_get.return_value = 'foo'
+            with self.assertRaises(errors.ValidationError):
+                self.user.verify_token(good_token)
+        mock_get.assert_called_once_with('SECRET_KEY')
+        mock_time.assert_called_once_with()
+
+    def testGetByEmail(self):
+        self.assertEqual(
+                self.user.nick, models.User.get_by_email(self.user.email).nick)
+        self.assertIsNone(models.User.get_by_email('foo'))
