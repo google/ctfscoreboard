@@ -387,7 +387,8 @@ adminChallengeCtrls.controller('AdminChallengeCtrl', [
         errorService.clearErrors();
         // TODO: Check attachments
 
-        if ($scope.challenge.prerequisite.type == 'None') {
+        if ($scope.challenge.prerequisite && (
+          $scope.challenge.prerequisite.type == 'None')) {
           $scope.challenge.prerequisite = null;
         };
 

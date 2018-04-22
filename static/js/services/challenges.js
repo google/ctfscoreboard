@@ -34,11 +34,11 @@ challengeServices.service('challengeService', [
       this.get = res.get;
       this.save = function() {
         cache.removeAll();
-        return res.apply(res, arguments);
+        return res.save.apply(res, arguments);
       };
       this.create = function() {
         cache.removeAll();
-        return res.apply(res, arguments);
+        return res.create.apply(res, arguments);
       };
       this.flush = cache.removeAll;
       $rootScope.$on('correctAnswer', cache.removeAll);
