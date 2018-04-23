@@ -30,8 +30,10 @@ challengeServices.service('challengeService', [
         'get': {method: 'GET', cache: cache},
         'save': {method: 'PUT'},
         'create': {method: 'POST'},
+        'delete': {method: 'DELETE'},
       });
       this.get = res.get;
+      this.delete = res.delete;
       this.save = function() {
         cache.removeAll();
         return res.save.apply(res, arguments);
