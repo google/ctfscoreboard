@@ -22,8 +22,11 @@ should be in {% raw %} blocks.  DFIU! -#}
         <div class='container'>
           <div class='navbar-header'>
             <a class='navbar-brand' ng-bind='config.sbname' href='/'>Scoreboard</a>
+            <a class='btn btn-info btn-sm mobile right menu-btn'
+              data-toggle='collapse'
+              href='#main-navbar'>Menu</a>
           </div>
-          <nav class='navbar-collapse collapse'>
+          <nav class='navbar-collapse collapse' id='main-navbar'>
             <ul class='nav navbar-nav'>
               <li><a ng-href='{{config.rules}}' class='ng-hide'
                   ng-show='config.rules' highlight-active>Rules</a></li>
