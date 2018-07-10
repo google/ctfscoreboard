@@ -359,6 +359,7 @@ table.team-challenges-unsolved {
         left: -38px;
     }
 }
+
 .tag-selector {
     $tag-height: 36px;
     $info-height: 56px;
@@ -536,3 +537,5 @@ table.team-challenges-unsolved {
 .navbar {
   font-size: 12pt;
 }
+
+@import 'scoreboard-mobile';
