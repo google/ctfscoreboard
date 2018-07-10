@@ -11,9 +11,17 @@
     padding-top: 20px;
   }
 
+  header {
+    // I have no idea why this is needed
+    width: 100vw;
+  }
+
   // For registration, challenges, etc. menu
   .menu-btn {
     width: auto;
+    i {
+      font-size: 2.5em;
+    }
   }
 
   // Hide the left sidebar.
