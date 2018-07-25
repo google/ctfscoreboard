@@ -7,6 +7,8 @@ libraries:
   version: "latest"
 - name: MySQLdb
   version: "latest"
+- name: ssl
+  version: "latest"
 
 handlers:
 - url: /css
