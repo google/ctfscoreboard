@@ -59,7 +59,7 @@
             <th class='col-md-1'></th></tr>
       </thead>
       <tbody>
-        <tr ng-repeat='tag in tags'>
+        <tr ng-repeat='tag in tags | orderBy:"name"'>
           <td>{{tag.name}}</td><td>{{tag.description}}</td>
           <td><a
                class='btn btn-sm {{hasTag(tag.tagslug) ? "btn-success" : "btn-danger"}}'

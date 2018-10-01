@@ -4,7 +4,7 @@
     <span class='info-text'>left or right click to filter tags</span>
   </div>
   <div class='tag-align'>
-    <div class='tag-filter' ng-repeat='tag in allTags'
+    <div class='tag-filter' ng-repeat='tag in allTags | orderBy:"name"'
       ng-class='{"tag-inc": shownTags[tag.tagslug]==2, "tag-exc": shownTags[tag.tagslug]==0, "tag-either": shownTags[tag.tagslug]==1}'
       ng-any-click='toggleTag(tag.tagslug, $click)'>
         <span class='tag-item'>
@@ -27,7 +27,7 @@
         <div ng-bind='chall.name' class='chall-name'></div>
         <div class='chall-tags'>
           <span class='chall-dummy'></span>
-          <span class='chall-tag' ng-repeat='tag in chall.tags' ng-bind='tag.name'></span>
+          <span class='chall-tag' ng-repeat='tag in chall.tags | orderBy:"name"' ng-bind='tag.name'></span>
         </div>
       </div>
       <div class='card back'><p ng-bind='flipSide(chall)'></p></div>
