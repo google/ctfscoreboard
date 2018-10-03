@@ -11,7 +11,7 @@
   <tbody>
     <tr ng-repeat='entry in scoreboard'><td
         class='col-md-1'>{{entry.position}}</td>
-      <td><a href='/teams/{{entry.tid}}'>{{entry.name}}</a></td>
+      <td><a ng-href='/teams/{{entry.tid}}'>{{entry.name}}</a></td>
       <td class='col-md-2'>{{entry.score}}</td></tr>
   </tbody>
 </table>

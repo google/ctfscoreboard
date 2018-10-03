@@ -10,7 +10,7 @@
     <p ng-bind-html='chall.description|markdown' class='markdown'></p>
     <ul ng-show='chall.attachments' class='attachments'>
       <li ng-repeat='attachment in chall.attachments'>
-        <a href='/attachment/{{attachment.aid}}' target='_self'>{{attachment.filename}}</a>
+        <a ng-href='/attachment/{{attachment.aid}}' target='_self'>{{attachment.filename}}</a>
       </li>
     </ul>
     <div>
