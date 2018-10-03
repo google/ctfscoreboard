@@ -7,11 +7,11 @@
   </thead>
   <tbody>
     <tr ng-repeat='user in users'>
-      <td><a href='/admin/users/{{user.uid}}'>{{user.nick}}</a>
+      <td><a ng-href='/admin/users/{{user.uid}}'>{{user.nick}}</a>
         <span class='ng-hide' ng-show='user.admin'>(Admin)</span></td>
-      <td><a href='mailto:{{user.email}}'>{{user.email}}</a></td>
+      <td><a ng-href='mailto:{{user.email}}'>{{user.email}}</a></td>
       <td><a
-          href='/admin/teams/{{user.team_tid}}'
+          ng-href='/admin/teams/{{user.team_tid}}'
           ng-show='config.teams && user.team'>{{user.team.name}}</a>
         <span class='ng-hide' ng-hide='config.teams'>{{user.team.solves}}</span></td>
     </tr>
