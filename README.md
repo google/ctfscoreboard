@@ -78,7 +78,7 @@ branch, which will only be getting security & bug fixes.
 
 4. Find the name of the container you created for the scoreboard.
 
-       docker ls -a
+       docker container ls -a
 
 5. Run the command below to start the docker container for the scoreboard.
 
