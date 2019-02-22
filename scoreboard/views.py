@@ -19,7 +19,6 @@ from werkzeug import exceptions
 from scoreboard import attachments
 from scoreboard import main
 from scoreboard import models
-from scoreboard import utils
 
 app = main.get_app()
 
