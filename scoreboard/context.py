@@ -31,7 +31,6 @@ DEFAULT_CSP_POLICY = {
             "'self'",
             "'unsafe-eval'",  # Needed for Charts.js
         ],
-        'frame-ancestors': ["'none'"],
         'img-src': [
             "'self'",
             'data:',
@@ -99,8 +98,8 @@ def load_globals():
 def add_headers(response):
     """Add security-related headers to all outgoing responses."""
     h = response.headers
-    h.add('Content-Security-Policy', get_csp_policy())
-    h.add('X-Frame-Options', 'DENY')
+    h.setdefault('Content-Security-Policy', get_csp_policy())
+    h.setdefault('X-Frame-Options', 'DENY')
     h.add('X-XSS-Protection', '1', mode='block')
     return response
 

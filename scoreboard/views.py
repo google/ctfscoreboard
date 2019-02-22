@@ -59,7 +59,10 @@ def render_index():
                 os.path.join(app.static_folder, 'js/app.min.js'))
         tmpl = flask.render_template('index.html', minify=minify)
         _VIEW_CACHE['index'] = tmpl
-    return flask.make_response(tmpl, 200)
+    resp = flask.make_response(tmpl, 200)
+    if flask.request.path.startswith('/scoreboard'):
+        resp.headers.add('X-FRAME-OPTIONS', 'ALLOW')
+    return resp
 
 
 @app.route('/attachment/<filename>')

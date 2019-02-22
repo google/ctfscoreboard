@@ -291,7 +291,7 @@ class Tag(db.Model):
         return '<Tag: %s/%s>' % (self.tagslug, self.name)
 
     def slugify(self):
-        self.tagslug = '-'.join(w.lower() for w in re.split('\W+', self.name))
+        self.tagslug = '-'.join(w.lower() for w in re.split(r'\W+', self.name))
 
     @classmethod
     def create(cls, name, description):

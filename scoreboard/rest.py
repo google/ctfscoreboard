@@ -137,8 +137,8 @@ class User(flask_restful.Resource):
         try:
             models.commit()
         except AssertionError:
-                raise errors.ValidationError(
-                        'Error in updating user.  Details are logged.')
+            raise errors.ValidationError(
+                    'Error in updating user.  Details are logged.')
         return user
 
 
