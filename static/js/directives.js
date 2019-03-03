@@ -241,7 +241,6 @@ sbDirectives.directive('scoreChart', [
               canvas.width = element.width() - legendWidth - padding;
             else
               canvas.width = element.width() - padding;
-            element.append(canvas);
 
             var legend;
             if (withLegend) {
@@ -252,6 +251,8 @@ sbDirectives.directive('scoreChart', [
               legend.style.maxWidth = legendWidth;
               $(legend).addClass('sbchart-legend');
             }
+            // canvas comes after legend
+            element.append(canvas);
 
             var ctx = canvas.getContext("2d");
             var stepChart = new Chart(ctx).Step(datasets, options);
