@@ -1,8 +1,12 @@
 html {
     overflow-y: scroll;
 
-    &,body,.full-height {
-        height: 100%;
+    &,body {
+      height: 100%;
+    }
+
+    .full-height {
+        height: 100vh;
         font-size: 12pt;
     }
 }
@@ -132,8 +136,9 @@ a.btn {
 }
 
 #news-box {
-    height: 150px;
+    min-height: 150px;
     overflow: auto;
+    bottom: 0px;
 
     & ul {
         list-style-type: none;
