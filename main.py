@@ -35,6 +35,15 @@ def main(argv):
         from scoreboard.tests import data
         models.db.create_all()
         data.create_all()
+    elif 'shell' in argv:
+        try:
+            import IPython
+            run_shell = IPython.embed
+        except ImportError:
+            import readline  # noqa: F401
+            import code
+            run_shell = code.InteractiveConsole().interact
+        run_shell()
     else:
         wsgi.app.run(
                 host='0.0.0.0', debug=True,
