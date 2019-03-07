@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ "${SKIP_TESTS}" != "" ] ; then
+    exit 0
+fi
+
 # stash code not to be committed
 git stash -q --keep-index >/dev/null 2>&1
 
