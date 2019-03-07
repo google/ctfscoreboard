@@ -501,6 +501,12 @@ class Challenge(db.Model):
                 a.team.update_score()
                 ScoreHistory.add_entry(a.team)
 
+    @classmethod
+    def get_joined_query(cls):
+        """Get a prejoined-query with answers and teams."""
+        return cls.query.options(
+                orm.joinedload(cls.answers).joinedload(Answer.team))
+
 
 attach_challenge_association = db.Table(
         'attach_chall_association', db.Model.metadata,

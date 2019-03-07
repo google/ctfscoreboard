@@ -492,13 +492,10 @@ class ChallengeList(flask_restful.Resource):
 
     @flask_restful.marshal_with(resource_fields)
     def get(self):
-        q = (models.Challenge.query
-             .outerjoin(models.Challenge.answers)
-             .add_columns(models.Challenge.answers.label("solves")))
+        q = models.Challenge.get_joined_query()
         challs = []
         t = models.Team.current()
-        for chall, solves in q.all():
-            chall._solves = solves
+        for chall in q.all():
             if utils.is_admin() or chall.unlocked_for_team(t):
                 challs.append(chall)
             elif chall.teaser:
