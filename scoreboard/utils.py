@@ -14,17 +14,22 @@
 
 import base64
 import datetime
-import errors
 import flask
 import functools
 import hashlib
 import hmac
 import pytz
+import sys
 import time
-import urlparse
+
+try:
+    import urlparse
+except ImportError:
+    from urllib import parse as urlparse
 
 from random import SystemRandom
 
+from scoreboard import errors
 from scoreboard import main
 
 app = main.get_app()
@@ -156,8 +161,7 @@ def validate_proof_of_work(val, key, nbits):
     key = urlsafe_b64decode_nopadding(key)
     if len(key) < 32:
         return False
-    if isinstance(val, unicode):
-        val = val.encode('utf-8')
+    val = to_bytes(val)
     mac = hmac.new(key, val, digestmod=hashlib.sha256).digest()
     while nbits >= 8:
         if ord(mac[0]) != 0:
@@ -177,6 +181,14 @@ def urlsafe_b64decode_nopadding(val):
     return base64.urlsafe_b64decode(str(val) + '===')
 
 
+def to_bytes(val):
+    if sys.version_info.major == 3:
+        return bytes(val, 'utf-8')
+    if isinstance(val, unicode):
+        return val.encode('utf-8')
+    return val
+
+
 class GameTime(object):
     """Manage start/end times for the game."""
 
@@ -184,9 +196,9 @@ class GameTime(object):
     def setup(cls):
         """Get start and end time."""
         cls.start, cls.end = app.config.get('GAME_TIME')
-        if isinstance(cls.start, basestring):
+        if isinstance(cls.start, str):
             cls.start = cls._parsedate(cls.start)
-        if isinstance(cls.end, basestring):
+        if isinstance(cls.end, str):
             cls.end = cls._parsedate(cls.end)
 
     @classmethod

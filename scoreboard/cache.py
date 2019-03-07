@@ -62,7 +62,7 @@ def rest_cache(f_or_key):
                     cache_key = f.__name__
             return _rest_cache_caller(f, cache_key, *args, **kwargs)
         return wrapped
-    if isinstance(f_or_key, basestring):
+    if isinstance(f_or_key, str):
         override_cache_key = f_or_key
         return wrap_func
     return wrap_func(f_or_key)
@@ -98,7 +98,7 @@ def rest_team_cache(f_or_key):
                 return _rest_cache_caller(f, cache_key, *args, **kwargs)
             return f(*args, **kwargs)
         return wrapped
-    if isinstance(f_or_key, basestring):
+    if isinstance(f_or_key, str):
         override_cache_key = f_or_key
         if '%d' not in override_cache_key:
             raise ValueError('No way to override the key per team!')
@@ -142,7 +142,7 @@ def _rest_cache_caller(f, cache_key, *args, **kwargs):
 def _rest_add_cache_header(rv, hit=False):
     # TODO: check status codes?
     headers = {'X-Cache-Hit': str(hit)}
-    if isinstance(rv, basestring):
+    if isinstance(rv, str):
         return (rv, 200, headers)
     if isinstance(rv, tuple):
         if len(rv) == 1:
