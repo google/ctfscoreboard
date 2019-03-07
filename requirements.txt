@@ -12,5 +12,4 @@ pbkdf2
 python-dateutil
 pytz
 six
-wsgiref
 Flask-Scss
