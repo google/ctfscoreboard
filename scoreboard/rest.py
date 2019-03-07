@@ -416,14 +416,16 @@ class Challenge(flask_restful.Resource):
     }
     answers_fields = {
         'timestamp': fields.DateTime,
+        'team': fields.Nested(team_fields),
     }
-    answers_fields['team'] = fields.Nested(team_fields)
 
     resource_fields = challenge_fields.copy()
     resource_fields['attachments'] = fields.List(
             fields.Nested(attachment_fields))
     resource_fields['tags'] = fields.List(
             fields.Nested(tags_fields))
+    resource_fields['answers'] = fields.List(
+            fields.Nested(answers_fields))
 
     @flask_restful.marshal_with(resource_fields)
     def get(self, challenge_id):
@@ -474,7 +476,11 @@ class Challenge(flask_restful.Resource):
 
 
 class ChallengeList(flask_restful.Resource):
-    """Create & manage challenges for admins."""
+    """Bulk challenge management, includes:
+
+       - Create & manage challenges for admins.
+       - View challenge list for players.
+    """
 
     decorators = [utils.login_required, utils.require_started]
 
