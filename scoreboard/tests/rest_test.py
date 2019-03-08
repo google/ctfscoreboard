@@ -747,12 +747,12 @@ class ChallengeTest(base.RestTestCase):
         self.PATH_SINGLE %= self.chall.cid
 
     def testGetListAnonymous(self):
-        with self.queryLimit(0):
-            self.assert403(self.client.get(self.PATH_LIST))
+        with self.queryLimit(3):
+            resp = self.client.get(self.PATH_LIST)
+        self.assert200(resp)
 
     @base.authenticated_test
     def testGetListAuthenticated(self):
-        # TODO: fix to not be O(n)
         with self.queryLimit(3):
             resp = self.client.get(self.PATH_LIST)
         self.assert200(resp)
@@ -760,7 +760,6 @@ class ChallengeTest(base.RestTestCase):
 
     @base.admin_test
     def testGetListAdmin(self):
-        # TODO: fix to not be O(n)
         with self.queryLimit(3):
             resp = self.client.get(self.PATH_LIST)
         self.assert200(resp)

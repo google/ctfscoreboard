@@ -482,7 +482,7 @@ class ChallengeList(flask_restful.Resource):
        - View challenge list for players.
     """
 
-    decorators = [utils.login_required, utils.require_started]
+    decorators = [utils.require_started]
 
     resource_fields = {
         'challenges': fields.Nested(Challenge.resource_fields)
