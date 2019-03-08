@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc. All Rights Reserved.
+# Copyright 2019 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from __future__ import division
 
 import base64
 import hashlib
@@ -57,12 +59,12 @@ class BaseNonceValidator(base.BaseValidator):
             app.logger.error('Invalid padding for answer.')
             return False
         if len(decoded_answer) != (
-                self.NONCE_BITS + self.AUTHENTICATOR_BITS) / 8:
+                self.NONCE_BITS + self.AUTHENTICATOR_BITS) // 8:
             app.logger.error('Invalid length of decoded answer in %s',
                              type(self).__name__)
             return False
-        nonce = decoded_answer[:self.NONCE_BITS/8]
-        authenticator = decoded_answer[self.NONCE_BITS/8:]
+        nonce = decoded_answer[:self.NONCE_BITS//8]
+        authenticator = decoded_answer[self.NONCE_BITS//8:]
         if not utils.compare_digest(authenticator,
                                     self.compute_authenticator(nonce)):
             app.logger.error('Invalid nonce flag: %s', answer)
@@ -82,20 +84,20 @@ class BaseNonceValidator(base.BaseValidator):
                 self.challenge.answer_hash.encode('utf-8'),
                 nonce,
                 digestmod=self.HASH).digest()
-        return mac[:self.AUTHENTICATOR_BITS/8]
+        return mac[:self.AUTHENTICATOR_BITS//8]
 
     def make_answer(self, nonce):
         """Compute the whole answer for a nonce."""
         if isinstance(nonce, int):
             nonce = struct.pack('>Q', nonce)
-            nonce = nonce[8 - (self.NONCE_BITS / 8):]
-        if len(nonce) != self.NONCE_BITS / 8:
+            nonce = nonce[8 - (self.NONCE_BITS // 8):]
+        if len(nonce) != self.NONCE_BITS // 8:
             raise ValueError('nonce is wrong length!')
         return self._encode(nonce + self.compute_authenticator(nonce))
 
     @classmethod
     def unpack_nonce(cls, nonce):
-        pad = '\x00' * (8 - cls.NONCE_BITS / 8)
+        pad = b'\x00' * (8 - cls.NONCE_BITS // 8)
         return struct.unpack('>Q', pad + nonce)[0]
 
 
@@ -112,8 +114,7 @@ class Base32Validator(BaseNonceValidator):
 
     @staticmethod
     def _decode(buf):
-        if isinstance(buf, unicode):
-            buf = buf.encode('utf-8')
+        buf = utils.to_bytes(buf)
         return base64.b32decode(buf, casefold=True, map01='I')
 
 

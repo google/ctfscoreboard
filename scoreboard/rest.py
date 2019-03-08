@@ -925,8 +925,11 @@ class AttachmentList(flask_restful.Resource):
     decorators = [utils.admin_required]
 
     def post(self):
+        app.logger.info('Uploading a new file.')
         fp = flask.request.files['file']
+        app.logger.info('Using backend: %r', attachments.backend)
         aid, fpath = attachments.backend.upload(fp)
+        app.logger.info('File uploaded to backend, got aid %s', aid)
         attachment = models.Attachment.query.get(aid)
         if not attachment:
             models.Attachment.create(aid, fp.filename, fp.mimetype)

@@ -13,3 +13,4 @@ python-dateutil
 pytz
 six
 Flask-Scss
+pylibmc

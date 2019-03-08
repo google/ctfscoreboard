@@ -163,14 +163,20 @@ def validate_proof_of_work(val, key, nbits):
         return False
     val = to_bytes(val)
     mac = hmac.new(key, val, digestmod=hashlib.sha256).digest()
+
+    def _ord(v):
+        if isinstance(v, int):
+            return v
+        return ord(v)
+
     while nbits >= 8:
-        if ord(mac[0]) != 0:
+        if _ord(mac[0]) != 0:
             return False
         nbits -= 8
         mac = mac[1:]
     if nbits:
         mask = 2**nbits - 1
-        if ord(mac[0]) & mask:
+        if _ord(mac[0]) & mask:
             return False
     return True
 
@@ -183,7 +189,11 @@ def urlsafe_b64decode_nopadding(val):
 
 def to_bytes(val):
     if sys.version_info.major == 3:
-        return bytes(val, 'utf-8')
+        unicode = str
+        if isinstance(val, str):
+            return bytes(val, 'utf-8')
+        if isinstance(val, bytes):
+            return val
     if isinstance(val, unicode):
         return val.encode('utf-8')
     return val

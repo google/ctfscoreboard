@@ -40,7 +40,7 @@ class CaseStaticPBKDF2Validator(StaticPBKDF2Validator):
     name = 'Static (Case Insensitive)'
 
     def validate_answer(self, answer, team):
-        if not isinstance(answer, basestring):
+        if not isinstance(answer, str):
             return False
         return super(CaseStaticPBKDF2Validator, self).validate_answer(
                 answer.lower(), team)
