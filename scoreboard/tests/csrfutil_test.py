@@ -78,8 +78,7 @@ class CSRFUtilTest(base.BaseTestCase):
             csrfutil.verify_csrf_token(token, self.test_user)
         mock_time.reset_mock()
         token = 'a'
-        with self.assertRaises(TypeError):
-            csrfutil.verify_csrf_token(token, self.test_user)
+        self.assertFalse(csrfutil.verify_csrf_token(token, self.test_user))
         mock_time.assert_not_called()
 
     def testDecorator_GET(self):
