@@ -19,7 +19,6 @@ var challengeCtrls = angular.module('challengeCtrls', [
     'ngRoute',
     'challengeServices',
     'globalServices',
-    'sessionServices',
     ]);
 
 challengeCtrls.controller('ChallengeGridCtrl', [
@@ -30,10 +29,9 @@ challengeCtrls.controller('ChallengeGridCtrl', [
     'configService',
     'loadingService',
     'scoreService',
-    'sessionService',
     'tagService',
     function($rootScope, $scope, $location, challengeService, configService,
-      loadingService, scoreService, sessionService, tagService) {
+      loadingService, scoreService, tagService) {
       $scope.currChall = null;
       $scope.shownTags = {};
       $scope.config = configService.get();
@@ -43,11 +41,14 @@ challengeCtrls.controller('ChallengeGridCtrl', [
         return (a.weight - b.weight);
       };
 
-      var refresh = function() {
+      var refresh = function(cb) {
           console.log('Refresh grid.');
           challengeService.get(function(data) {
               data.challenges.sort(compareChallenges);
               $scope.challenges = data.challenges;
+              if (cb !== undefined && cb !== null) {
+                  cb();
+              }
           });
       };
 
@@ -114,10 +115,7 @@ challengeCtrls.controller('ChallengeGridCtrl', [
         return sentiments[$scope.shownTags[tag.tagslug]];
       }
 
-      sessionService.requireLogin(function() {
-        refresh();
-        loadingService.stop();
-      });
+      refresh(loadingService.stop);
 
       $rootScope.$on('correctAnswer', refresh);
   }]);

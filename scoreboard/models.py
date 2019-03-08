@@ -404,6 +404,8 @@ class Challenge(db.Model):
             return False
         if prereq['type'] == 'None':
             return True
+        if not team:
+            return False
         try:
             eval_func = getattr(self, 'prereq_' + prereq['type'])
         except AttributeError:
