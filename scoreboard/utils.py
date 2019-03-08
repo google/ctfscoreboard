@@ -189,13 +189,13 @@ def urlsafe_b64decode_nopadding(val):
 
 def to_bytes(val):
     if sys.version_info.major == 3:
-        unicode = str
         if isinstance(val, str):
             return bytes(val, 'utf-8')
         if isinstance(val, bytes):
             return val
-    if isinstance(val, unicode):
-        return val.encode('utf-8')
+    else:
+        if isinstance(val, unicode):  # noqa: F821
+            return val.encode('utf-8')
     return val
 
 
