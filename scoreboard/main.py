@@ -49,7 +49,7 @@ def create_app(config=None):
                 app, static_dir='static/css', asset_dir='static/scss')
         scss_compiler.update_scss()
 
-    for c in exceptions.default_exceptions.iterkeys():
+    for c in exceptions.default_exceptions.keys():
         app.register_error_handler(c, api_error_handler)
 
     setup_logging(app)

@@ -24,7 +24,7 @@ import pbkdf2
 import re
 import sqlalchemy as sqlalchemy_base
 import time
-import utils
+
 from sqlalchemy import exc
 from sqlalchemy import func
 from sqlalchemy import orm
@@ -33,6 +33,7 @@ from sqlalchemy.ext import hybrid
 from scoreboard import attachments
 from scoreboard import errors
 from scoreboard import main
+from scoreboard import utils
 
 app = main.get_app()
 db = flask_sqlalchemy.SQLAlchemy(app)
@@ -63,7 +64,7 @@ class Team(db.Model):
     def code(self):
         secret_key = (app.config.get('TEAM_SECRET_KEY') or
                       app.config.get('SECRET_KEY'))
-        return hmac.new(secret_key,
+        return hmac.new(utils.to_bytes(secret_key),
                         self.name.encode('utf-8')).hexdigest()[:12]
 
     @property
