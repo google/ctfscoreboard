@@ -81,7 +81,7 @@ class UserTest(base.BaseTestCase):
             token = self.user.get_token()
         mock_get.assert_called_once_with('SECRET_KEY')
         mock_time.assert_called_once_with()
-        self.assertEqual('MTk1NDU6P0O68xiZ-H9gOLWPLzFkW8fhAQ8=', token)
+        self.assertEqual(b'MTk1NDU6P0O68xiZ-H9gOLWPLzFkW8fhAQ8=', token)
 
     @mock.patch.object(time, 'time')
     def testVerifyToken_full(self, mock_time):

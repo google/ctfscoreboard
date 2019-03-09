@@ -183,17 +183,18 @@ class User(db.Model):
         token_plain = '%d:%d:%s:%s' % (
                 self.uid, expires, token_type, self.pwhash)
         mac = hmac.new(
-                app.config.get('SECRET_KEY'), token_plain,
+                utils.to_bytes(app.config.get('SECRET_KEY')),
+                utils.to_bytes(token_plain),
                 hashlib.sha1).digest()
-        token = '%d:%s' % (expires, mac)
+        token = utils.to_bytes('%d:' % expires) + mac
         return base64.urlsafe_b64encode(token)
 
     def verify_token(self, token, token_type='pwreset'):
         """Verify a user-specific token."""
-        token = str(token)
+        token = utils.to_bytes(token)
         try:
             decoded = base64.urlsafe_b64decode(token)
-            expires, mac = decoded.split(':', 1)
+            expires, mac = decoded.split(b':', 1)
         except ValueError:
             raise errors.ValidationError('Invalid token.')
         if float(expires) < time.time():
