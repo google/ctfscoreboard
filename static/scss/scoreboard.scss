@@ -1,3 +1,6 @@
+/** Colors */
+$solved-banner-bgcolor: #ff0000;
+
 html {
     overflow-y: scroll;
 
@@ -231,6 +234,8 @@ table.team-challenges-unsolved {
 }
 
 /* Jeopardy grid */
+$chall-border-radius: 6px;
+
 .jeopardy-container {
     display: flex;
     width: 100%;
@@ -266,12 +271,14 @@ table.team-challenges-unsolved {
         .jeopardy-cat {
             font-weight: bolder;
             font-size: 1.3em;
-            border-radius: 6px;
+            border-radius: $chall-border-radius;
             margin-bottom: 0px;
         }
 
         .jeopardy-chall {
             perspective: 1000px;
+            overflow: hidden;
+            border-radius: $chall-border-radius;
 
             .flipper {
                 transition: 0.8s;
@@ -292,7 +299,7 @@ table.team-challenges-unsolved {
                 backface-visibility: hidden;
                 height: 100%;
                 width: 100%;
-                border-radius: 6px;
+                border-radius: $chall-border-radius;
             }
 
             & .front {
@@ -316,11 +323,11 @@ table.team-challenges-unsolved {
                         font-size: 16px;
 
                         &:nth-child(2), #{$dummy} {
-                            border-bottom-left-radius: 6px;
+                            border-bottom-left-radius: $chall-border-radius;
                         }
 
                         &:last-child, #{$dummy} {
-                            border-bottom-right-radius: 6px;
+                            border-bottom-right-radius: $chall-border-radius;
                         }
 
                         &:not(:last-child) {
@@ -348,6 +355,16 @@ table.team-challenges-unsolved {
                 .chall-name {
                     padding-left: 10px;
                     padding-right: 10px;
+                }
+
+                .solved-banner {
+                    transform: rotate(-45deg);
+                    background-color: $solved-banner-bgcolor;
+                    position: absolute;
+                    top: 40%;
+                    bottom: 40%;
+                    left: -100%;
+                    right: -100%;
                 }
             }
 
