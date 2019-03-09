@@ -137,8 +137,8 @@ class User(flask_restful.Resource):
         try:
             models.commit()
         except AssertionError:
-                raise errors.ValidationError(
-                        'Error in updating user.  Details are logged.')
+            raise errors.ValidationError(
+                    'Error in updating user.  Details are logged.')
         return user
 
 
@@ -416,14 +416,16 @@ class Challenge(flask_restful.Resource):
     }
     answers_fields = {
         'timestamp': fields.DateTime,
+        'team': fields.Nested(team_fields),
     }
-    answers_fields['team'] = fields.Nested(team_fields)
 
     resource_fields = challenge_fields.copy()
     resource_fields['attachments'] = fields.List(
             fields.Nested(attachment_fields))
     resource_fields['tags'] = fields.List(
             fields.Nested(tags_fields))
+    resource_fields['answers'] = fields.List(
+            fields.Nested(answers_fields))
 
     @flask_restful.marshal_with(resource_fields)
     def get(self, challenge_id):
@@ -474,9 +476,13 @@ class Challenge(flask_restful.Resource):
 
 
 class ChallengeList(flask_restful.Resource):
-    """Create & manage challenges for admins."""
+    """Bulk challenge management, includes:
 
-    decorators = [utils.login_required, utils.require_started]
+       - Create & manage challenges for admins.
+       - View challenge list for players.
+    """
+
+    decorators = [utils.require_started]
 
     resource_fields = {
         'challenges': fields.Nested(Challenge.resource_fields)
@@ -492,13 +498,10 @@ class ChallengeList(flask_restful.Resource):
 
     @flask_restful.marshal_with(resource_fields)
     def get(self):
-        q = (models.Challenge.query
-             .outerjoin(models.Challenge.answers)
-             .add_columns(models.Challenge.answers.label("solves")))
+        q = models.Challenge.get_joined_query()
         challs = []
         t = models.Team.current()
-        for chall, solves in q.all():
-            chall._solves = solves
+        for chall in q.all():
             if utils.is_admin() or chall.unlocked_for_team(t):
                 challs.append(chall)
             elif chall.teaser:
@@ -922,8 +925,11 @@ class AttachmentList(flask_restful.Resource):
     decorators = [utils.admin_required]
 
     def post(self):
+        app.logger.info('Uploading a new file.')
         fp = flask.request.files['file']
+        app.logger.info('Using backend: %r', attachments.backend)
         aid, fpath = attachments.backend.upload(fp)
+        app.logger.info('File uploaded to backend, got aid %s', aid)
         attachment = models.Attachment.query.get(aid)
         if not attachment:
             models.Attachment.create(aid, fp.filename, fp.mimetype)

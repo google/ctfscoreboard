@@ -38,7 +38,7 @@
         <label for='team_link'
             ng-show='!!team && !!team.code'>Team Invite Link</label>
         <input type='text' id='team_link' disabled value='{{team_link}}'
-            class='form-control'>
+            ng-show='!!team && !!team.code' class='form-control'>
       </div>
       <div class='form-group'>
         <label for='email'>Email</label>

@@ -22,13 +22,15 @@ should be in {% raw %} blocks.  DFIU! -#}
         <div class='container'>
           <div class='navbar-header'>
             <a class='navbar-brand' ng-bind='config.sbname' href='/'>Scoreboard</a>
+            <a class='btn btn-info btn-sm mobile right menu-btn'
+              data-toggle='collapse'
+              href='#main-navbar'><i class='material-icons'>menu</i></a>
           </div>
-          <nav class='navbar-collapse collapse'>
+          <nav class='navbar-collapse collapse' id='main-navbar'>
             <ul class='nav navbar-nav'>
               <li><a ng-href='{{config.rules}}' class='ng-hide'
                   ng-show='config.rules' highlight-active>Rules</a></li>
-              <li><a href='/challenges' class='ng-hide' ng-show='session.user'
-                  highlight-active>Challenges</a></li>
+              <li><a href='/challenges' highlight-active>Challenges</a></li>
               <li><a href='/scoreboard' highlight-active>Scoreboard</a></li>
               <li><a href='/profile' class='ng-hide' ng-show='session.user'
                   highlight-active>Profile</a></li>
@@ -47,7 +49,7 @@ should be in {% raw %} blocks.  DFIU! -#}
       </header>
       <div class='container full-height'>
         <div class='row full-height'>
-          <div class='col-md-3 left-sidebar full-height'>
+          <div class='col-md-3 col-sm-3 left-sidebar full-height hidden-xs'>
               <div class='left-sidebar-background full-height'></div>
               <!-- TODO: Admin only -->
               <div id='admin-links' class='list-group ng-hide admin-links'
@@ -81,7 +83,7 @@ should be in {% raw %} blocks.  DFIU! -#}
                 </ul>
               </div>
           </div>
-          <div class='col-md-9'>
+          <div class='col-md-9 col-sm-9'>
             <!-- TODO: title -->
             <h2></h2>
             {%- endraw %}

@@ -3,7 +3,7 @@
 This is a basic CTF Scoreboard, with support for teams or individual
 competitors, and a handful of other features.
 
-Copyright 2018 Google, Inc.    
+Copyright 2019 Google, Inc.    
 This is not an official Google product.
 
 Author: Please see the AUTHORS file.
@@ -78,7 +78,7 @@ branch, which will only be getting security & bug fixes.
 
 4. Find the name of the container you created for the scoreboard.
 
-       docker ls -a
+       docker container ls -a
 
 5. Run the command below to start the docker container for the scoreboard.
 

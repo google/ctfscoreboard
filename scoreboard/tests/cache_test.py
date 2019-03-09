@@ -44,7 +44,7 @@ class BaseCacheTest(base.BaseTestCase):
         """Test that we can build the various types of caches."""
         for ctype in ('memcached', 'appengine', 'local'):
             with mock.patch.object(self.app, 'config') as m:
-                m.get = self.makeMockGet(ctype)
+                m.get = self.makeMockGet(ctype, 'localhost')
                 c = cache.CacheWrapper(self.app)
                 with self.assertRaises(AttributeError):
                     c._non_existent_attribute_really

@@ -24,7 +24,7 @@ import pbkdf2
 import re
 import sqlalchemy as sqlalchemy_base
 import time
-import utils
+
 from sqlalchemy import exc
 from sqlalchemy import func
 from sqlalchemy import orm
@@ -33,6 +33,7 @@ from sqlalchemy.ext import hybrid
 from scoreboard import attachments
 from scoreboard import errors
 from scoreboard import main
+from scoreboard import utils
 
 app = main.get_app()
 db = flask_sqlalchemy.SQLAlchemy(app)
@@ -63,7 +64,7 @@ class Team(db.Model):
     def code(self):
         secret_key = (app.config.get('TEAM_SECRET_KEY') or
                       app.config.get('SECRET_KEY'))
-        return hmac.new(secret_key,
+        return hmac.new(utils.to_bytes(secret_key),
                         self.name.encode('utf-8')).hexdigest()[:12]
 
     @property
@@ -253,8 +254,10 @@ class User(db.Model):
             uid = flask.session.get('user')
             if uid is not None:
                 # For some reason, .get() does not join!
-                user = cls.query.filter(cls.uid == uid).first()
+                user = cls.query.options(orm.joinedload(cls.team)).filter(
+                        cls.uid == uid).first()
                 flask.g.user = user
+                flask.g.team = user.team
                 if user:
                     # Bump expiration time on session
                     utils.session_for_user(user)
@@ -291,7 +294,7 @@ class Tag(db.Model):
         return '<Tag: %s/%s>' % (self.tagslug, self.name)
 
     def slugify(self):
-        self.tagslug = '-'.join(w.lower() for w in re.split('\W+', self.name))
+        self.tagslug = '-'.join(w.lower() for w in re.split(r'\W+', self.name))
 
     @classmethod
     def create(cls, name, description):
@@ -403,6 +406,8 @@ class Challenge(db.Model):
             return False
         if prereq['type'] == 'None':
             return True
+        if not team:
+            return False
         try:
             eval_func = getattr(self, 'prereq_' + prereq['type'])
         except AttributeError:
@@ -500,6 +505,12 @@ class Challenge(db.Model):
                     continue
                 a.team.update_score()
                 ScoreHistory.add_entry(a.team)
+
+    @classmethod
+    def get_joined_query(cls):
+        """Get a prejoined-query with answers and teams."""
+        return cls.query.options(
+                orm.joinedload(cls.answers).joinedload(Answer.team))
 
 
 attach_challenge_association = db.Table(

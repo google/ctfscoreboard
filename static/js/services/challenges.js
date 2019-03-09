@@ -30,15 +30,17 @@ challengeServices.service('challengeService', [
         'get': {method: 'GET', cache: cache},
         'save': {method: 'PUT'},
         'create': {method: 'POST'},
+        'delete': {method: 'DELETE'},
       });
       this.get = res.get;
+      this.delete = res.delete;
       this.save = function() {
         cache.removeAll();
-        return res.apply(res, arguments);
+        return res.save.apply(res, arguments);
       };
       this.create = function() {
         cache.removeAll();
-        return res.apply(res, arguments);
+        return res.create.apply(res, arguments);
       };
       this.flush = cache.removeAll;
       $rootScope.$on('correctAnswer', cache.removeAll);

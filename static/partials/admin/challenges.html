@@ -16,7 +16,7 @@
         <a class='btn lockbtn btn-info'
           ng-show='challenge.unlocked'
           ng-click='lockChallenge(challenge, true)'>Unlocked</a>
-        <a href='/admin/challenge/{{challenge.cid}}'
+        <a ng-href='/admin/challenge/{{challenge.cid}}'
           class='btn btn-primary'>Edit</a>
         <a ng-click='deleteChallenge(challenge)'
           class='btn btn-danger'>Delete</a>

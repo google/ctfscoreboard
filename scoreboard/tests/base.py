@@ -34,6 +34,7 @@ from scoreboard import attachments
 from scoreboard import cache
 from scoreboard import main
 from scoreboard import models
+from scoreboard import utils
 
 
 class BaseTestCase(flask_testing.TestCase):
@@ -81,6 +82,23 @@ class BaseTestCase(flask_testing.TestCase):
 
     def queryLimit(self, limit=None):
         return MaxQueryBlock(self, limit)
+
+    def assertItemsEqual(self, a, b, msg=None):
+        a = list(a)
+        b = list(b)
+        a.sort()
+        b.sort()
+        if len(a) == len(b):
+            success = True
+            for c, d in zip(a, b):
+                if c != d:
+                    success = False
+                    break
+            if success:
+                return None
+        if msg is not None:
+            raise AssertionError(msg)
+        raise AssertionError('Items not equal: %r != %r', a, b)
 
 
 class RestTestCase(BaseTestCase):
@@ -248,12 +266,12 @@ def json_monkeypatch():
     """Automatically strip our XSSI header."""
     def new_loads(data, *args, **kwargs):
         try:
-            prefix = ")]}',\n"
+            prefix = utils.to_bytes(")]}',\n")
             if data.startswith(prefix):
                 data = data[len(prefix):]
             return json.loads(data, *args, **kwargs)
         except Exception as exc:
-            logging.exception('JSON monkeypatch failed: ', exc)
+            logging.exception('JSON monkeypatch failed: %s', exc)
     flask.json.loads = new_loads
 
 

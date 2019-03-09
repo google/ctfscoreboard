@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import flask
+from flask import logging as flask_logging
 import logging
 import os
 from werkzeug import exceptions
@@ -48,7 +49,7 @@ def create_app(config=None):
                 app, static_dir='static/css', asset_dir='static/scss')
         scss_compiler.update_scss()
 
-    for c in exceptions.default_exceptions.iterkeys():
+    for c in exceptions.default_exceptions.keys():
         app.register_error_handler(c, api_error_handler)
 
     setup_logging(app)
@@ -92,6 +93,8 @@ def setup_logging(app):
         app.challenge_log = local_logger
     else:
         app.challenge_log = app.logger
+        if not app.logger.handlers:
+            app.logger.addHandler(flask_logging.default_handler)
         app.logger.handlers[0].setFormatter(log_formatter)
         logging.getLogger().handlers[0].setFormatter(log_formatter)
 

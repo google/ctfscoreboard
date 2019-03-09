@@ -19,7 +19,6 @@ from werkzeug import exceptions
 from scoreboard import attachments
 from scoreboard import main
 from scoreboard import models
-from scoreboard import utils
 
 app = main.get_app()
 
@@ -59,23 +58,26 @@ def render_index():
                 os.path.join(app.static_folder, 'js/app.min.js'))
         tmpl = flask.render_template('index.html', minify=minify)
         _VIEW_CACHE['index'] = tmpl
-    return flask.make_response(tmpl, 200)
+    resp = flask.make_response(tmpl, 200)
+    if flask.request.path.startswith('/scoreboard'):
+        resp.headers.add('X-FRAME-OPTIONS', 'ALLOW')
+    return resp
 
 
 @app.route('/attachment/<filename>')
-@utils.login_required
 def download(filename):
     """Download an attachment."""
 
     attachment = models.Attachment.query.get_or_404(filename)
-    valid = models.User.current().admin
+    cuser = models.User.current()
+    valid = cuser and cuser.admin
     for ch in attachment.challenges:
         if ch.unlocked:
             valid = True
             break
     if not valid:
         flask.abort(404)
-    app.logger.info('Download of %s by %r.', attachment, models.User.current())
+    app.logger.info('Download of %s by %r.', attachment, cuser or "Anonymous")
 
     return attachments.backend.send(attachment)
 

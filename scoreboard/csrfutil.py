@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import base64
+import binascii
 import flask
 import functools
 import hashlib
@@ -22,27 +23,35 @@ import struct
 import time
 
 from scoreboard import main
+from scoreboard import utils
 
 app = main.get_app()
+
+b64_vals = utils.to_bytes('_-')
 
 
 def _get_csrf_token(user=None, expires=None):
     user = user or flask.session.get('user', flask.request.remote_addr)
-    expires = expires or time.time() + 60 * 60 * 24
+    expires = expires or int(time.time()) + 60 * 60 * 24
     expires_bytes = struct.pack('<I', expires)
-    msg = '%s:%s' % (user, expires_bytes)
-    sig = hmac.new(app.config.get('SECRET_KEY'), msg, hashlib.sha256).digest()
+    msg = utils.to_bytes('%s:' % user) + expires_bytes
+    key = utils.to_bytes(app.config.get('SECRET_KEY'))
+    sig = hmac.new(key, msg, hashlib.sha256).digest()
     return expires_bytes + sig
 
 
 def get_csrf_token(*args, **kwargs):
     """Returns a URL-safe base64 CSRF token."""
-    return base64.b64encode(str(_get_csrf_token(*args, **kwargs)), '_-')
+    return base64.b64encode(utils.to_bytes(
+        _get_csrf_token(*args, **kwargs)), b64_vals).decode('utf-8')
 
 
 def verify_csrf_token(token, user=None):
     """Verify a token for a user."""
-    token = base64.b64decode(str(token), '_-')
+    try:
+        token = base64.b64decode(str(token), b64_vals)
+    except (binascii.Error, TypeError):
+        return False
     expires = struct.unpack('<I', token[:4])[0]
     if expires < time.time():
         return False

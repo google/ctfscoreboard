@@ -15,7 +15,7 @@
 
 import flask
 import json
-import StringIO
+import io
 
 from scoreboard.tests import base
 from scoreboard.tests import data
@@ -223,12 +223,12 @@ class AttachmentTest(base.RestTestCase):
     PATH = '/api/attachments/%s'
     ATTACHMENT_FIELDS = ('aid', 'filename', 'challenges')
 
-    text = "This is a test"
+    text = b"This is a test"
     name = "test.txt"
 
     def uploadFile(self, filename, text):
         with self.admin_client as c:
-            string = StringIO.StringIO()
+            string = io.BytesIO()
             string.write(text)
             string.seek(0)
             return c.post('/api/attachments', data={
@@ -240,7 +240,7 @@ class AttachmentTest(base.RestTestCase):
             return c.get(self.PATH % aid)
 
     def testUploadFile(self):
-        resp = self.uploadFile("test.txt", "This is a test")
+        resp = self.uploadFile(self.name, self.text)
         self.assert200(resp)
         # Calculated using an external sha256 tool
         self.assertEquals(
@@ -250,6 +250,7 @@ class AttachmentTest(base.RestTestCase):
 
     def testQueryFile(self):
         postresp = self.uploadFile(self.name, self.text)
+        self.app.logger.info('Your JSON: %s', postresp.json)
         getresp = self.fetchFile(postresp.json['aid'])
         self.assert200(getresp)
 
@@ -747,12 +748,12 @@ class ChallengeTest(base.RestTestCase):
         self.PATH_SINGLE %= self.chall.cid
 
     def testGetListAnonymous(self):
-        with self.queryLimit(0):
-            self.assert403(self.client.get(self.PATH_LIST))
+        with self.queryLimit(3):
+            resp = self.client.get(self.PATH_LIST)
+        self.assert200(resp)
 
     @base.authenticated_test
     def testGetListAuthenticated(self):
-        # TODO: fix to not be O(n)
         with self.queryLimit(3):
             resp = self.client.get(self.PATH_LIST)
         self.assert200(resp)
@@ -760,7 +761,6 @@ class ChallengeTest(base.RestTestCase):
 
     @base.admin_test
     def testGetListAdmin(self):
-        # TODO: fix to not be O(n)
         with self.queryLimit(3):
             resp = self.client.get(self.PATH_LIST)
         self.assert200(resp)

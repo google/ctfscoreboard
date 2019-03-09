@@ -42,6 +42,9 @@ teamCtrls.controller('TeamPageCtrl', [
             $scope.tagData = tagData;
             $scope.scoreHistory = {};
             $scope.scoreHistory[team.name] = team.score_history;
+            $scope.scoreHistory[team.name].sort(function(a, b) {
+                return (Date.parse(a.solved) - Date.parse(b.solved));
+            });
             loadingService.stop();
           },
           function(err) {

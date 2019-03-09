@@ -2,6 +2,7 @@
 *.pyc
 *.swp
 .virtualenv
+__pycache__
 
 # Runtime data
 /config.py
