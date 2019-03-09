@@ -487,6 +487,8 @@ sbDirectives.directive('challengeBox', [
             return (!!sessionService.session.user &&
                 sessionService.session.user.admin);
           };
+
+          scope.loggedIn = (!!sessionService.session.user);
         } // Link function
       }
     }]);
