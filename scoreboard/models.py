@@ -254,8 +254,10 @@ class User(db.Model):
             uid = flask.session.get('user')
             if uid is not None:
                 # For some reason, .get() does not join!
-                user = cls.query.filter(cls.uid == uid).first()
+                user = cls.query.options(orm.joinedload(cls.team)).filter(
+                        cls.uid == uid).first()
                 flask.g.user = user
+                flask.g.team = user.team
                 if user:
                     # Bump expiration time on session
                     utils.session_for_user(user)
