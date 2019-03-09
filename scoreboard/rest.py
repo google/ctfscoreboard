@@ -599,7 +599,7 @@ class Tag(flask_restful.Resource):
 class TagList(flask_restful.Resource):
     """List of all tags"""
 
-    decorators = [utils.login_required, utils.require_started]
+    decorators = [utils.require_started]
 
     resource_fields = {
         'tags': fields.Nested(Tag.tag_fields)
