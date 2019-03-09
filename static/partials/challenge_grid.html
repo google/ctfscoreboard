@@ -17,10 +17,13 @@
 
 <div class='row jeopardy-container jeopardy-tags-container'>
   <div class='jeopardy-chall jeopardy-box' ng-repeat='chall in challenges'
-    ng-click='goChallenge(chall)' ng-class='{solved: chall.answered}'
+    ng-click='goChallenge(chall)'
+    ng-class='{solved: chall.answered, unsolved: !chall.answered}'
     ng-show='tagsAllowed(chall)'
     ><div class='flipper'>
       <div class='card front'>
+        <div class='solved-banner ng-hide'
+          ng-show='chall.answered'>Solved</div>
         <div class='chall-num'>
           <span class='chall-num-val' ng-bind='chall.solves'>
         </div>
