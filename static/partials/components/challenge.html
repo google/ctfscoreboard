@@ -18,7 +18,7 @@
       <span class='alert alert-success solved ng-hide'
         ng-show='chall.answered'>Solved</span>
       <!-- if not solved -->
-      <div ng-hide='chall.answered'>
+      <div ng-hide='chall.answered || !loggedIn'>
         <form name='challengeForm' ng-submit='submitChallenge()' class='submitForm'>
           <input type='hidden' name='cid' value='{{chall.cid}}'>
           <div class='form-group'>
