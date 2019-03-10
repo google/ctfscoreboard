@@ -20,6 +20,7 @@ import hashlib
 import hmac
 import json
 import logging
+import os
 import pbkdf2
 import re
 import sqlalchemy as sqlalchemy_base
@@ -155,6 +156,8 @@ class User(db.Model):
     team_tid = db.Column(db.Integer, db.ForeignKey('team.tid'))
     create_ip = db.Column(db.String(45))     # max 45 bytes for IPv6
     last_login_ip = db.Column(db.String(45))
+    api_key = db.Column(db.String(32), index=True)
+    api_key_updated = db.Column(db.DateTime)
 
     def set_password(self, password):
         self.pwhash = pbkdf2.crypt(password)
@@ -204,6 +207,15 @@ class User(db.Model):
             raise errors.ValidationError('Invalid token.')
         return True
 
+    def reset_api_key(self):
+        """Reset a user's api key."""
+        new_key = os.urandom(16)
+        try:
+            self.api_key = new_key.hex()  # Python 3
+        except AttributeError:
+            self.api_key = new_key.encode('hex')  # Python 2
+        self.api_key_update = datetime.datetime.now()
+
     @classmethod
     def get_by_email(cls, email):
         try:
@@ -215,6 +227,15 @@ class User(db.Model):
     def get_by_nick(cls, nick):
         try:
             return cls.query.filter_by(nick=nick).one()
+        except exc.InvalidRequestError:
+            return None
+
+    @classmethod
+    def get_by_api_key(cls, token):
+        if not token:
+            return None
+        try:
+            return cls.query.filter_by(api_key=token).one()
         except exc.InvalidRequestError:
             return None
 
