@@ -1106,6 +1106,29 @@ class APIKeyTest(base.RestTestCase):
         self.assert200(resp)
         self.assertEqual(key, resp.json['api_key'])
 
+    @base.admin_test
+    def testDelete_Own(self):
+        key = '55'*16
+        self.admin_client.user.api_key = key
+        models.commit()
+        with self.queryLimit(2):
+            resp = self.client.delete(self.PATH + '/' + key)
+        self.assert200(resp)
+        self.assertIsNone(self.admin_client.user.api_key)
+
+    @base.admin_test
+    def testDelete_All(self):
+        self.admin_client.user.api_key = '55'*16
+        other_admin = models.User.create('foo@foo.com', 'foo', 'foo')
+        other_admin.promote()
+        other_admin.api_key = '44'*16
+        models.commit()
+        with self.queryLimit(4):
+            resp = self.client.delete(self.PATH)
+        self.assert200(resp)
+        self.assertIsNone(self.admin_client.user.api_key)
+        self.assertIsNone(other_admin.api_key)
+
     def testGetApiKey_Denied(self):
         with self.queryLimit(0):
             resp = self.client.get(self.PATH)
@@ -1121,6 +1144,14 @@ class APIKeyTest(base.RestTestCase):
 
     testUpdateApiKey_Denied_Authenticated = base.authenticated_test(
             testUpdateApiKey_Denied)
+
+    def testDeleteApiKey_All_Denied(self):
+        with self.queryLimit(0):
+            resp = self.client.delete(self.PATH)
+        self.assert403(resp)
+
+    testDeleteApiKey_All_Denied_Auth = base.authenticated_test(
+            testDeleteApiKey_All_Denied)
 
 
 class NewsTest(base.RestTestCase):

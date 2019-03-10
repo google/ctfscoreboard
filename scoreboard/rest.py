@@ -968,8 +968,27 @@ class APIKey(flask_restful.Resource):
     def get(self):
         return models.User.current()
 
+    def delete(self, keyid=None):
+        if keyid is None:
+            return self._delete_all()
+        user = models.User.current()
+        if keyid != user.api_key:
+            raise errors.AccessDeniedError('Cannot delete that key.')
+        user.api_key = None
+        user.api_key_updated = datetime.datetime.now()
+        models.commit()
+        return dict(status='OK')
 
-api.add_resource(APIKey, '/api/apikey')
+    def _delete_all(self):
+        for u in models.User.query.filter(
+                models.User.api_key != None).all():  # noqa: E711
+            u.api_key = None
+            u.api_key_updated = datetime.datetime.now()
+        models.commit()
+        return dict(status='OK')
+
+
+api.add_resource(APIKey, '/api/apikey', '/api/apikey/<keyid>')
 
 
 class BackupRestore(flask_restful.Resource):
