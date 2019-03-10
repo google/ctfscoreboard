@@ -128,8 +128,10 @@ regCtrls.controller('ProfileCtrl', [
     'loadingService',
     'gameTimeService',
     'teamService',
+    'apiKeyService',
     function($scope, $location, configService, errorService, sessionService,
-        userService, loadingService, gameTimeService, teamService) {
+        userService, loadingService, gameTimeService, teamService,
+        apiKeyService) {
       $scope.user = null;
 
       $scope.started = gameTimeService.started;
@@ -191,6 +193,15 @@ regCtrls.controller('ProfileCtrl', [
         teamService.get(function(c) {
           $scope.teams = c.teams;
         })
+        apiKeyService.get(function(r) {
+            $scope.apiKey = r;
+        });
+        $scope.apiKeyNew = function() {
+            apiKeyService.create(function(r) {
+                $scope.apiKey = r;
+                errorService.success('Created new key.');
+            }, errorService.error);
+        };
       });
 
       $scope.updateProfile = function() {
