@@ -15,31 +15,33 @@ should be in {% raw %} blocks.  DFIU! -#}
           rel="stylesheet">
     <base href="/">
   </head>
-  <body ng-controller='LoggedInCtrl'>
+  <body class='text-light' ng-controller='LoggedInCtrl'>
     <div id='loading-overlay' loading-overlay></div>
     <div class='container'>
-      <header class='navbar navbar-default navbar-fixed-top' id='top'>
+      <header
+        class='navbar navbar-default navbar-fixed-top navbar-expand-md navbar-dark'
+        id='top'>
         <div class='container'>
           <div class='navbar-header'>
-            <a class='navbar-brand' ng-bind='config.sbname' href='/'>Scoreboard</a>
             <a class='btn btn-info btn-sm mobile right menu-btn'
               data-toggle='collapse'
               href='#main-navbar'><i class='material-icons'>menu</i></a>
           </div>
           <nav class='navbar-collapse collapse' id='main-navbar'>
+            <a class='navbar-brand' ng-bind='config.sbname' href='/'>Scoreboard</a>
             <ul class='nav navbar-nav'>
-              <li><a ng-href='{{config.rules}}' class='ng-hide'
+              <li class='nav-item'><a class='nav-link' ng-href='{{config.rules}}' class='ng-hide'
                   ng-show='config.rules' highlight-active>Rules</a></li>
-              <li><a href='/challenges' highlight-active>Challenges</a></li>
-              <li><a href='/scoreboard' highlight-active>Scoreboard</a></li>
-              <li><a href='/profile' class='ng-hide' ng-show='session.user'
+              <li class='nav-item'><a class='nav-link' href='/challenges' highlight-active>Challenges</a></li>
+              <li class='nav-item'><a class='nav-link' href='/scoreboard' highlight-active>Scoreboard</a></li>
+              <li class='nav-item'><a href='/profile' class='ng-hide nav-link' ng-show='session.user'
                   highlight-active>Profile</a></li>
-              <li><a href='/logout' class='ng-hide' ng-show='session.user'
+              <li class='nav-item'><a href='/logout' class='ng-hide nav-link' ng-show='session.user'
                   highlight-active>Logout</a></li>
-              <li><a href='#' ng-href='{{config.login_url}}' ng-hide='session.user'
-                  highlight-active target="_self">Login</a></li>
-              <li><a href='#' ng-href='{{config.register_url}}' ng-hide='session.user'
-                  highlight-active target="_self">Register</a></li>
+              <li class='nav-item'><a href='#' ng-href='{{config.login_url}}' ng-hide='session.user'
+                  highlight-active target="_self" class='nav-link'>Login</a></li>
+              <li class='nav-item'><a href='#' ng-href='{{config.register_url}}' ng-hide='session.user'
+                  highlight-active target="_self" class='nav-link'>Register</a></li>
             </ul>
             <ul class='nav navbar-right'>
                 <span countdown-timer id='countdown'></span>

@@ -8,7 +8,7 @@
     <h4>Solved Challenges ({{team.score}} Points)</h4>
     <p ng-hide='team.solved_challenges'>This team has not solved any challenges.</p>
     <table ng-show='team.solved_challenges'
-      class='team-challenges table table-striped table-responsive'>
+      class='team-challenges table table-striped table-responsive text-light'>
       <tr><th>Name</th><th>Points</th><th>Solved</th></tr>
       <tr ng-repeat='chall in team.solved_challenges'>
         <td ng-bind='chall.name'></td>
