@@ -16,6 +16,7 @@
 import flask
 import json
 import io
+import mock
 
 from scoreboard.tests import base
 from scoreboard.tests import data
@@ -1026,6 +1027,56 @@ class ConfigTest(base.RestTestCase):
             makeTestGetConfig())
     testGetConfigAdmin = base.admin_test(
             makeTestGetConfig())
+
+
+class APIKeyTest(base.RestTestCase):
+
+    PATH = '/api/apikey'
+
+    def setUp(self):
+        super(APIKeyTest, self).setUp()
+        self.admin_client.user.api_key = None
+        models.commit()
+
+    @base.admin_test
+    def testGetApiKey(self):
+        key = '44'*16
+        self.admin_client.user.api_key = key
+        models.commit()
+        with self.queryLimit(1):
+            resp = self.client.get(self.PATH)
+        self.assert200(resp)
+        self.assertEqual(key, resp.json['api_key'])
+
+    @base.admin_test
+    def testUpdateApiKey(self):
+        key = '55'*16
+        with mock.patch.object(
+                self.admin_client.user, 'reset_api_key') as mock_reset:
+            def mock_side_effect():
+                self.admin_client.user.api_key = key
+            mock_reset.side_effect = mock_side_effect
+            with self.queryLimit(3):
+                resp = self.postJSON(self.PATH, {})
+            mock_reset.assert_called_once()
+        self.assert200(resp)
+        self.assertEqual(key, resp.json['api_key'])
+
+    def testGetApiKey_Denied(self):
+        with self.queryLimit(0):
+            resp = self.client.get(self.PATH)
+        self.assert403(resp)
+
+    testGetApiKey_Denied_Authenticated = base.authenticated_test(
+            testGetApiKey_Denied)
+
+    def testUpdateApiKey_Denied(self):
+        with self.queryLimit(0):
+            resp = self.postJSON(self.PATH, {})
+        self.assert403(resp)
+
+    testUpdateApiKey_Denied_Authenticated = base.authenticated_test(
+            testUpdateApiKey_Denied)
 
 
 class NewsTest(base.RestTestCase):

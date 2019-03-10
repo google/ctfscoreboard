@@ -946,6 +946,32 @@ api.add_resource(Attachment, '/api/attachments/<string:aid>')
 api.add_resource(AttachmentList, '/api/attachments')
 
 
+class APIKey(flask_restful.Resource):
+    """Get/set API key for admins."""
+
+    decorators = [utils.admin_required]
+
+    resource_fields = {
+            'api_key': fields.String,
+            'api_key_updated': ISO8601DateTime(),
+    }
+
+    @flask_restful.marshal_with(resource_fields)
+    def post(self):
+        user = models.User.current()
+        app.logger.info('Resetting API key for %r.', user)
+        user.reset_api_key()
+        models.commit()
+        return user
+
+    @flask_restful.marshal_with(resource_fields)
+    def get(self):
+        return models.User.current()
+
+
+api.add_resource(APIKey, '/api/apikey')
+
+
 class BackupRestore(flask_restful.Resource):
     """Control for backup and restore."""
     decorators = [utils.admin_required]
