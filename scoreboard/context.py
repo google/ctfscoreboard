@@ -93,6 +93,24 @@ def load_globals():
     flask.g.admin = flask.session.get('admin') or False
 
 
+@app.before_request
+def load_apikey():
+    """Load flask.g.user, flask.g.uid from an API key."""
+    try:
+        key = flask.request.headers.get('X-SCOREBOARD-API-KEY')
+        if not key or len(key) != 32:
+            return
+        user = models.User.get_by_api_key(key)
+        if not user:
+            return
+        flask.g.user = user
+        flask.g.uid = user.uid
+        flask.g.admin = user.admin
+    except Exception:
+        # Don't want any API key problems to block requests
+        pass
+
+
 # Add headers to responses
 @app.after_request
 def add_headers(response):

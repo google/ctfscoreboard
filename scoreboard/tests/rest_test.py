@@ -16,6 +16,9 @@
 import flask
 import json
 import io
+import mock
+
+from werkzeug import datastructures
 
 from scoreboard.tests import base
 from scoreboard.tests import data
@@ -735,6 +738,48 @@ class SessionTest(base.RestTestCase):
             self.assertIsNone(flask.session.get('team'))
             self.assertIsNone(flask.session.get('admin'))
 
+    def testGetSessionWithApiKey(self):
+        """Test that an API Key can be used to make requests."""
+        key = '41'*16
+        headers = datastructures.Headers()
+        headers.add('X-SCOREBOARD-API-KEY', key)
+        with self.client as c:
+            with self.queryLimit(1):
+                with mock.patch.object(
+                        models.User, 'get_by_api_key') as getter:
+                    getter.return_value = self.admin_client.user
+                    resp = c.get(self.PATH, headers=headers)
+                    getter.assert_called_once_with(key)
+            self.assert200(resp)
+            self.assertEqual(flask.g.user.email, self.admin_client.user.email)
+            self.assertEqual(flask.g.uid, self.admin_client.user.uid)
+            self.assertTrue(flask.g.admin)
+        self.assertEqual(
+                self.admin_client.user.nick,
+                resp.json['user']['nick'])
+        self.assertTrue(resp.json['user']['admin'])
+
+    def testGetSessionWithBadApiKey(self):
+        """Test that an API Key with the wrong value does not work."""
+        key = '41'*16
+        for key in ('41'*16, '41'*18, '41'*15, '55'*16, ''):
+            headers = datastructures.Headers()
+            headers.add('X-SCOREBOARD-API-KEY', key)
+            with self.client as c:
+                with self.queryLimit(1):
+                    with mock.patch.object(
+                            models.User, 'get_by_api_key') as getter:
+                        getter.return_value = None
+                        resp = c.get(self.PATH, headers=headers)
+                        if len(key) == 32:
+                            getter.assert_called_once_with(key)
+                        else:
+                            getter.assert_not_called()
+                self.assert403(resp)
+                with self.assertRaises(AttributeError):
+                    _ = flask.g.user
+                self.assertIsNone(flask.g.uid)
+
 
 class ChallengeTest(base.RestTestCase):
 
@@ -1026,6 +1071,87 @@ class ConfigTest(base.RestTestCase):
             makeTestGetConfig())
     testGetConfigAdmin = base.admin_test(
             makeTestGetConfig())
+
+
+class APIKeyTest(base.RestTestCase):
+
+    PATH = '/api/apikey'
+
+    def setUp(self):
+        super(APIKeyTest, self).setUp()
+        self.admin_client.user.api_key = None
+        models.commit()
+
+    @base.admin_test
+    def testGetApiKey(self):
+        key = '44'*16
+        self.admin_client.user.api_key = key
+        models.commit()
+        with self.queryLimit(1):
+            resp = self.client.get(self.PATH)
+        self.assert200(resp)
+        self.assertEqual(key, resp.json['api_key'])
+
+    @base.admin_test
+    def testUpdateApiKey(self):
+        key = '55'*16
+        with mock.patch.object(
+                self.admin_client.user, 'reset_api_key') as mock_reset:
+            def mock_side_effect():
+                self.admin_client.user.api_key = key
+            mock_reset.side_effect = mock_side_effect
+            with self.queryLimit(3):
+                resp = self.postJSON(self.PATH, {})
+            mock_reset.assert_called_once()
+        self.assert200(resp)
+        self.assertEqual(key, resp.json['api_key'])
+
+    @base.admin_test
+    def testDelete_Own(self):
+        key = '55'*16
+        self.admin_client.user.api_key = key
+        models.commit()
+        with self.queryLimit(2):
+            resp = self.client.delete(self.PATH + '/' + key)
+        self.assert200(resp)
+        self.assertIsNone(self.admin_client.user.api_key)
+
+    @base.admin_test
+    def testDelete_All(self):
+        self.admin_client.user.api_key = '55'*16
+        other_admin = models.User.create('foo@foo.com', 'foo', 'foo')
+        other_admin.promote()
+        other_admin.api_key = '44'*16
+        models.commit()
+        with self.queryLimit(4):
+            resp = self.client.delete(self.PATH)
+        self.assert200(resp)
+        self.assertIsNone(self.admin_client.user.api_key)
+        self.assertIsNone(other_admin.api_key)
+
+    def testGetApiKey_Denied(self):
+        with self.queryLimit(0):
+            resp = self.client.get(self.PATH)
+        self.assert403(resp)
+
+    testGetApiKey_Denied_Authenticated = base.authenticated_test(
+            testGetApiKey_Denied)
+
+    def testUpdateApiKey_Denied(self):
+        with self.queryLimit(0):
+            resp = self.postJSON(self.PATH, {})
+        self.assert403(resp)
+
+    testUpdateApiKey_Denied_Authenticated = base.authenticated_test(
+            testUpdateApiKey_Denied)
+
+    def testDeleteApiKey_All_Denied(self):
+        with self.queryLimit(0):
+            resp = self.client.delete(self.PATH)
+        self.assert403(resp)
+
+    testDeleteApiKey_All_Denied_Auth = base.authenticated_test(
+            testDeleteApiKey_All_Denied)
 
 
 class NewsTest(base.RestTestCase):

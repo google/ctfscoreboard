@@ -946,6 +946,51 @@ api.add_resource(Attachment, '/api/attachments/<string:aid>')
 api.add_resource(AttachmentList, '/api/attachments')
 
 
+class APIKey(flask_restful.Resource):
+    """Get/set API key for admins."""
+
+    decorators = [utils.admin_required]
+
+    resource_fields = {
+            'api_key': fields.String,
+            'api_key_updated': ISO8601DateTime(),
+    }
+
+    @flask_restful.marshal_with(resource_fields)
+    def post(self):
+        user = models.User.current()
+        app.logger.info('Resetting API key for %r.', user)
+        user.reset_api_key()
+        models.commit()
+        return user
+
+    @flask_restful.marshal_with(resource_fields)
+    def get(self):
+        return models.User.current()
+
+    def delete(self, keyid=None):
+        if keyid is None:
+            return self._delete_all()
+        user = models.User.current()
+        if keyid != user.api_key:
+            raise errors.AccessDeniedError('Cannot delete that key.')
+        user.api_key = None
+        user.api_key_updated = datetime.datetime.now()
+        models.commit()
+        return dict(status='OK')
+
+    def _delete_all(self):
+        for u in models.User.query.filter(
+                models.User.api_key != None).all():  # noqa: E711
+            u.api_key = None
+            u.api_key_updated = datetime.datetime.now()
+        models.commit()
+        return dict(status='OK')
+
+
+api.add_resource(APIKey, '/api/apikey', '/api/apikey/<keyid>')
+
+
 class BackupRestore(flask_restful.Resource):
     """Control for backup and restore."""
     decorators = [utils.admin_required]

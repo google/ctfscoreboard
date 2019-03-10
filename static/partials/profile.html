@@ -42,8 +42,10 @@
       </div>
       <div class='form-group'>
         <label for='email'>Email</label>
-        <input type='text' id='email' name='email' readonly
-          class='form-control' ng-model='user.email'>
+        <div class='input-group'>
+            <input type='text' id='email' name='email' readonly
+            class='form-control' ng-model='user.email'>
+        </div>
       </div>
       <div class='form-group' ng-show='config.login_method == "local"'>
         <label for='password'>Password</label>
@@ -57,6 +59,17 @@
         <input type='password' id='password2' name='password2'
           placeholder='repeat password' class='form-control'
           ng-model='user.password2'>
+      </div>
+      <div class='form-group ng-hide' ng-show='user.admin'>
+          <label for='api_key'>API Key</label>
+          <div class='input-group'>
+            <input type='text' disabled ng-value='apiKey.api_key'
+                    class='form-control'>
+            <div class='input-group-append'>
+                <input type='button' class='btn btn-secondary' value='New'
+                        ng-click='apiKeyNew()'>
+            </div>
+          </div>
       </div>
       <input type='submit' value='Save' class='btn btn-primary'
         ng-disabled='profileForm.$invalid && (team.tid < 0 || !team.code || !changing)'>

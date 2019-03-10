@@ -1,4 +1,4 @@
-# Copyright 2018 Google Inc. All Rights Reserved.
+# Copyright 2019 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 """Tests for models."""
 
 import mock
+import os
 import time
 
 from scoreboard.tests import base
@@ -71,6 +72,19 @@ class UserTest(base.BaseTestCase):
 
     def testStr(self):
         self.assertEqual('test', str(self.user))
+
+    def testResetApiKey(self):
+        self.assertIsNone(self.user.api_key)
+        self.user.reset_api_key()
+        self.assertNotEqual('', self.user.api_key)
+        old_key = self.user.api_key
+        self.user.reset_api_key()
+        self.assertNotEqual(old_key, self.user.api_key)
+        with mock.patch.object(os, 'urandom') as mock_urandom:
+            mock_urandom.return_value = b'\x41' * 16
+            self.user.reset_api_key()
+            self.assertEqual('41'*16, self.user.api_key)
+            mock_urandom.assert_called_once_with(16)
 
     @mock.patch.object(time, 'time')
     def testGetToken(self, mock_time):
@@ -160,3 +174,11 @@ class UserTest(base.BaseTestCase):
         self.assertEqual(
                 self.user.nick, models.User.get_by_email(self.user.email).nick)
         self.assertIsNone(models.User.get_by_email('foo'))
+
+    def testGetByApiKey(self):
+        token = 'a'*32
+        self.user.api_key = token
+        models.commit()
+        self.assertEqual(
+                self.user.nick, models.User.get_by_api_key(token).nick)
+        self.assertIsNone(models.User.get_by_api_key(token[:-1]))

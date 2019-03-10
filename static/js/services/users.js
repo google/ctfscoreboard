@@ -30,3 +30,12 @@ userServices.service('passwordResetService', [
     function($resource) {
         return $resource('/api/pwreset/:email');
     }]);
+
+userServices.service('apiKeyService', [
+    '$resource',
+    function($resource) {
+        return $resource('/api/apikey/:keyid', {}, {
+            'create': {method: 'POST'},
+            'deleteAll': {method: 'DELETE', params:{}}
+        });
+    }]);
