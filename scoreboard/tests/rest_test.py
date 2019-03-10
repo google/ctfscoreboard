@@ -762,19 +762,23 @@ class SessionTest(base.RestTestCase):
     def testGetSessionWithBadApiKey(self):
         """Test that an API Key with the wrong value does not work."""
         key = '41'*16
-        headers = datastructures.Headers()
-        headers.add('X-SCOREBOARD-API-KEY', key)
-        with self.client as c:
-            with self.queryLimit(1):
-                with mock.patch.object(
-                        models.User, 'get_by_api_key') as getter:
-                    getter.return_value = None
-                    resp = c.get(self.PATH, headers=headers)
-                    getter.assert_called_once_with(key)
-            self.assert403(resp)
-            with self.assertRaises(AttributeError):
-                _ = flask.g.user
-            self.assertIsNone(flask.g.uid)
+        for key in ('41'*16, '41'*18, '41'*15, '55'*16, ''):
+            headers = datastructures.Headers()
+            headers.add('X-SCOREBOARD-API-KEY', key)
+            with self.client as c:
+                with self.queryLimit(1):
+                    with mock.patch.object(
+                            models.User, 'get_by_api_key') as getter:
+                        getter.return_value = None
+                        resp = c.get(self.PATH, headers=headers)
+                        if len(key) == 32:
+                            getter.assert_called_once_with(key)
+                        else:
+                            getter.assert_not_called()
+                self.assert403(resp)
+                with self.assertRaises(AttributeError):
+                    _ = flask.g.user
+                self.assertIsNone(flask.g.uid)
 
 
 class ChallengeTest(base.RestTestCase):
