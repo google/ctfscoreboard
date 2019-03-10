@@ -18,6 +18,8 @@ import json
 import io
 import mock
 
+from werkzeug import datastructures
+
 from scoreboard.tests import base
 from scoreboard.tests import data
 from scoreboard import models
@@ -735,6 +737,44 @@ class SessionTest(base.RestTestCase):
             self.assertIsNone(flask.session.get('user'))
             self.assertIsNone(flask.session.get('team'))
             self.assertIsNone(flask.session.get('admin'))
+
+    def testGetSessionWithApiKey(self):
+        """Test that an API Key can be used to make requests."""
+        key = '41'*16
+        headers = datastructures.Headers()
+        headers.add('X-SCOREBOARD-API-KEY', key)
+        with self.client as c:
+            with self.queryLimit(1):
+                with mock.patch.object(
+                        models.User, 'get_by_api_key') as getter:
+                    getter.return_value = self.admin_client.user
+                    resp = c.get(self.PATH, headers=headers)
+                    getter.assert_called_once_with(key)
+            self.assert200(resp)
+            self.assertEqual(flask.g.user.email, self.admin_client.user.email)
+            self.assertEqual(flask.g.uid, self.admin_client.user.uid)
+            self.assertTrue(flask.g.admin)
+        self.assertEqual(
+                self.admin_client.user.nick,
+                resp.json['user']['nick'])
+        self.assertTrue(resp.json['user']['admin'])
+
+    def testGetSessionWithBadApiKey(self):
+        """Test that an API Key with the wrong value does not work."""
+        key = '41'*16
+        headers = datastructures.Headers()
+        headers.add('X-SCOREBOARD-API-KEY', key)
+        with self.client as c:
+            with self.queryLimit(1):
+                with mock.patch.object(
+                        models.User, 'get_by_api_key') as getter:
+                    getter.return_value = None
+                    resp = c.get(self.PATH, headers=headers)
+                    getter.assert_called_once_with(key)
+            self.assert403(resp)
+            with self.assertRaises(AttributeError):
+                _ = flask.g.user
+            self.assertIsNone(flask.g.uid)
 
 
 class ChallengeTest(base.RestTestCase):
