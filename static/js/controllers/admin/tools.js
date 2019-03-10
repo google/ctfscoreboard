@@ -17,6 +17,7 @@
 var adminToolCtrls = angular.module('adminToolCtrls', [
     'adminServices',
     'sessionServices',
+    'userServices',
     ]);
 
 adminToolCtrls.controller('AdminToolCtrl', [
@@ -25,7 +26,8 @@ adminToolCtrls.controller('AdminToolCtrl', [
     'errorService',
     'sessionService',
     'loadingService',
-    function($scope, adminToolsService, errorService, sessionService, loadingService) {
+    'apiKeyService',
+    function($scope, adminToolsService, errorService, sessionService, loadingService, apiKeyService) {
         if (!sessionService.requireAdmin()) return;
 
         $scope.recalculateScores = adminToolsService.recalculateScores;
@@ -36,6 +38,13 @@ adminToolCtrls.controller('AdminToolCtrl', [
         $scope.resetPlayers = function() {
           adminToolsService.resetPlayers(
             errorService.success, errorService.error);
+        };
+        $scope.clearApiKeys = function() {
+            apiKeyService.deleteAll(function() {
+                errorService.success("Cleared");
+            }, function() {
+                errorService.error("Failed clearing API keys.");
+            });
         };
 
         loadingService.stop();
