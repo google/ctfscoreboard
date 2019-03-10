@@ -1,5 +1,5 @@
 <!-- All Teams -->
-<table class='table table-striped' ng-hide='!!team'>
+<table class='table table-striped text-light' ng-hide='!!team'>
   <thead>
     <tr>
       <th class='col-md-5'>Team</th>
@@ -27,7 +27,7 @@
       <h4>Solved Challenges ({{team.score}} points)</h4>
       <p ng-hide='team.solved_challenges'>This team has not solved any challenges.</p>
       <table ng-show='team.solved_challenges'
-        class='team-challenges table table-striped table-responsive'>
+        class='team-challenges table table-striped table-responsive text-light'>
         <tr><th>Name</th><th>Points</th><th>Solved</th></tr>
         <tr ng-repeat='chall in team.solved_challenges'>
           <td ng-bind='chall.name'></td>
@@ -41,7 +41,7 @@
     <div class='col-md-8 col-md-offset-2 team-players'
       ng-show='config.teams && team.players.length'>
       <h4>Team Members</h4>
-      <table class='team-players table table-striped table-responsive'>
+      <table class='team-players table table-striped table-responsive text-light'>
         <tr><th>Handle</th><th>Email</th></tr>
         <tr ng-repeat='player in team.players'>
           <td ng-bind='player.nick'></td>
@@ -55,7 +55,7 @@
       ng-show='unsolved'>
       <h4>Unsolved Challenges</h4>
       <table
-        class='team-challenges-unsolved table table-striped table-responsive'>
+        class='team-challenges-unsolved table table-striped table-responsive text-light'>
         <tr><th>Name</th><th>Points</th><th></th></tr>
         <tr ng-repeat='chall in unsolved'>
           <td ng-bind='chall.name'></td>
