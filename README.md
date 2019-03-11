@@ -23,7 +23,7 @@ branch, which will only be getting security & bug fixes.
 2. Install the dependencies:
    pip install -r requirements.txt
 
-3. Install a database library.  For MySQL, consider mysql-python.  For Postgres,
+3. Install a database library.  For MySQL, consider PyMySQL.  For Postgres,
    use psycopg2.  (Others may work; untested.)
 
 4. Write a config.py for your relevant installation.  An example is provided in
