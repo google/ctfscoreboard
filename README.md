@@ -3,7 +3,7 @@
 This is a basic CTF Scoreboard, with support for teams or individual
 competitors, and a handful of other features.
 
-Copyright 2019 Google, Inc.    
+Copyright 2019 Google LLC.
 This is not an official Google product.
 
 Author: Please see the AUTHORS file.
