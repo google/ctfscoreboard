@@ -96,7 +96,16 @@ globalServices.service('proofOfWorkService', [
         // Patches welcome.
         var callTry = function() {
           return _tryProofOfWork(instr, nbits)
-              .then(resolver).catch(callTry);
+              .then(function(k) {
+                  if (k == null) {
+                      callTry();
+                      return;
+                  }
+                  resolver(k);
+              }).catch(function(e) {
+                  console.error('Error in proof of work: ' + e);
+                  reject(e);
+              });
         };
         callTry();
       });
@@ -153,7 +162,8 @@ globalServices.service('proofOfWorkService', [
             })
             .catch(reject);
           } else {
-            reject('');
+            // Not a match
+            resolve(null);
           }
         })
         .catch(reject);
