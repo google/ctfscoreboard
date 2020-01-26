@@ -74,7 +74,11 @@ class Team(db.Model):
         return len(self.answers)
 
     def update_score(self):
+        old_score = self.score
         self.score = sum(a.current_points for a in self.answers)
+        if self.score != old_score:
+            # Add score history entry
+            ScoreHistory.add_entry(self)
 
     def can_access(self, user=None):
         """Check if player can access team."""
