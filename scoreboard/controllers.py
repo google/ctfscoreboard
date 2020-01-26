@@ -144,7 +144,7 @@ def submit_answer(cid, answer, token):
             return points
         else:
             raise errors.InvalidAnswerError('Really?  Haha no....')
-    except errors.IntegrityError:
+    except (errors.IntegrityError, errors.FlushError):
         models.db.session.rollback()
         raise
     finally:
@@ -160,6 +160,7 @@ def submit_answer(cid, answer, token):
 def save_team_answer(challenge, team, answer):
     """Create the answer entry and update the scores."""
     ans = models.Answer.create(challenge, team, answer)
+    models.commit()
 
     team.last_solve = datetime.datetime.utcnow()
     challenge.update_answers(exclude_team=team)
@@ -168,6 +169,7 @@ def save_team_answer(challenge, team, answer):
         return 0
     team.score += ans.current_points
     models.ScoreHistory.add_entry(team)
+    models.commit()
     return ans.current_points
 
 

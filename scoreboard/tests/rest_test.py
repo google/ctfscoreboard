@@ -941,7 +941,7 @@ class AnswerTest(base.RestTestCase):
     def testSubmitAdmin_Override(self):
         team = models.Team.create('crash_override')
         models.db.session.commit()
-        with self.queryLimit(7):
+        with self.queryLimit(12):
             resp = self.postJSON(self.PATH, {
                 'cid': self.cid,
                 'tid': team.tid,
@@ -951,7 +951,7 @@ class AnswerTest(base.RestTestCase):
 
     @base.authenticated_test
     def testSubmitCorrect(self):
-        with self.queryLimit(6):
+        with self.queryLimit(13):
             resp = self.postJSON(self.PATH, {
                 'cid': self.cid,
                 'answer': self.answer,
@@ -975,7 +975,7 @@ class AnswerTest(base.RestTestCase):
     def testSubmitDouble(self):
         models.Answer.create(self.chall, self.client.team, '')
         old_score = self.client.team.score
-        with self.queryLimit(4):
+        with self.queryLimit(5):
             resp = self.postJSON(self.PATH, {
                 'cid': self.cid,
                 'answer': self.answer,
@@ -988,49 +988,40 @@ class AnswerTest(base.RestTestCase):
     def testSubmit_ProofOfWork(self):
         test_nbits = 12
 
-        def MockValidate(val, key, nbits):
-            self.assertEqual(val, self.answer)
-            self.assertEqual(key, 'foo')
-            self.assertEqual(nbits, test_nbits)
-            return True
+        # TODO: patch this too
         self.app.config['PROOF_OF_WORK_BITS'] = test_nbits
-        # TODO: switch to mock framework
-        old_pow_test = utils.validate_proof_of_work
-        utils.validate_proof_of_work = MockValidate
-        with self.queryLimit(6):
-            resp = self.postJSON(self.PATH, {
-                'cid': self.cid,
-                'answer': self.answer,
-                'token': 'foo'
-            })
+        with mock.patch.object(
+                utils, 'validate_proof_of_work',
+                return_value=True) as mock_pow:
+            with self.queryLimit(13):
+                resp = self.postJSON(self.PATH, {
+                    'cid': self.cid,
+                    'answer': self.answer,
+                    'token': 'foo'
+                })
+            mock_pow.assert_called_once_with(self.answer, 'foo', test_nbits)
         self.assert200(resp)
         self.assertEqual(self.points, resp.json['points'])
-        utils.validate_proof_of_work = old_pow_test
 
     @base.authenticated_test
     def testSubmit_ProofOfWorkFails(self):
         test_nbits = 12
 
-        def MockValidate(val, key, nbits):
-            self.assertEqual(val, self.answer)
-            self.assertEqual(key, 'foo')
-            self.assertEqual(nbits, test_nbits)
-            return False
         self.app.config['PROOF_OF_WORK_BITS'] = test_nbits
-        # TODO: switch to mock framework
-        old_pow_test = utils.validate_proof_of_work
-        utils.validate_proof_of_work = MockValidate
         old_score = self.client.team.score
-        with self.queryLimit(2):
-            resp = self.postJSON(self.PATH, {
-                'cid': self.cid,
-                'answer': self.answer,
-                'token': 'foo'
-            })
+        with mock.patch.object(
+                utils, 'validate_proof_of_work',
+                return_value=False) as mock_pow:
+            with self.queryLimit(2):
+                resp = self.postJSON(self.PATH, {
+                    'cid': self.cid,
+                    'answer': self.answer,
+                    'token': 'foo'
+                })
+            mock_pow.assert_called_once_with(self.answer, 'foo', test_nbits)
         self.assert403(resp)
         team = models.Team.query.get(self.client.team.tid)
         self.assertEqual(old_score, team.score)
-        utils.validate_proof_of_work = old_pow_test
 
 
 class ConfigTest(base.RestTestCase):

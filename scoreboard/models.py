@@ -20,6 +20,7 @@ import hashlib
 import hmac
 import json
 import logging
+import math
 import os
 import pbkdf2
 import re
@@ -73,7 +74,11 @@ class Team(db.Model):
         return len(self.answers)
 
     def update_score(self):
+        old_score = self.score
         self.score = sum(a.current_points for a in self.answers)
+        if self.score != old_score:
+            # Add score history entry
+            ScoreHistory.add_entry(self)
 
     def can_access(self, user=None):
         """Check if player can access team."""
@@ -614,12 +619,19 @@ class Answer(db.Model):
         if utils.GameTime.state(self.timestamp) == "AFTER":
             return 0
 
-        mode = app.config.get('SCORING')
+        mode = app.config.get('SCORING', 'plain')
         value = self.challenge.points
         if mode == 'plain':
             return value + self.first_blood
         if mode == 'progressive':
-            return max((value / self.challenge.solves) + self.first_blood, 1)
+            speed = app.config.get('SCORING_SPEED', 60)
+            min_value = app.config.get('SCORING_MIN', 100)
+            solves = self.challenge.solves
+            increment = float(value - min_value) / math.pow(speed, 2)
+            para_val = increment * math.pow(solves, 1.5)
+            inv_val = value / math.sqrt((solves + 3)/4)
+            total = math.ceil(para_val + inv_val)
+            return max(min(total, value), min_value) + self.first_blood
 
     @classmethod
     def create(cls, challenge, team, answer_text):
@@ -634,6 +646,8 @@ class Answer(db.Model):
         if flask.request:
             answer.submit_ip = flask.request.remote_addr
         db.session.add(answer)
+        # remove cache here
+        del challenge._solves
         return answer
 
 
