@@ -619,7 +619,7 @@ class Answer(db.Model):
         if utils.GameTime.state(self.timestamp) == "AFTER":
             return 0
 
-        mode = app.config.get('SCORING')
+        mode = app.config.get('SCORING', 'plain')
         value = self.challenge.points
         if mode == 'plain':
             return value + self.first_blood
