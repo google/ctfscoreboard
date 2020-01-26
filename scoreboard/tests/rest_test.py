@@ -990,7 +990,9 @@ class AnswerTest(base.RestTestCase):
 
         # TODO: patch this too
         self.app.config['PROOF_OF_WORK_BITS'] = test_nbits
-        with mock.patch.object(utils, 'validate_proof_of_work') as mock_pow:
+        with mock.patch.object(
+                utils, 'validate_proof_of_work',
+                return_value=True) as mock_pow:
             with self.queryLimit(13):
                 resp = self.postJSON(self.PATH, {
                     'cid': self.cid,
@@ -1007,7 +1009,9 @@ class AnswerTest(base.RestTestCase):
 
         self.app.config['PROOF_OF_WORK_BITS'] = test_nbits
         old_score = self.client.team.score
-        with mock.patch.object(utils, 'validate_proof_of_work') as mock_pow:
+        with mock.patch.object(
+                utils, 'validate_proof_of_work',
+                return_value=False) as mock_pow:
             with self.queryLimit(2):
                 resp = self.postJSON(self.PATH, {
                     'cid': self.cid,
