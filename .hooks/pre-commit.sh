@@ -16,6 +16,11 @@ if git status --porcelain | awk '{print $2}' | grep -q '^scoreboard/' ; then
 fi
 
 # restore stash
-git stash pop -q >/dev/null 2>&1
+# git has a bad bug with 2.24 and --quiet where it deletes files
+if git --version | grep -q '^git version 2.24' ; then
+    git stash pop >/dev/null 2>&1
+else
+    git stash pop -q >/dev/null 2>&1
+fi
 
 exit $RESULT
