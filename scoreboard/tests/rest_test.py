@@ -941,7 +941,7 @@ class AnswerTest(base.RestTestCase):
     def testSubmitAdmin_Override(self):
         team = models.Team.create('crash_override')
         models.db.session.commit()
-        with self.queryLimit(7):
+        with self.queryLimit(12):
             resp = self.postJSON(self.PATH, {
                 'cid': self.cid,
                 'tid': team.tid,
@@ -951,7 +951,7 @@ class AnswerTest(base.RestTestCase):
 
     @base.authenticated_test
     def testSubmitCorrect(self):
-        with self.queryLimit(6):
+        with self.queryLimit(13):
             resp = self.postJSON(self.PATH, {
                 'cid': self.cid,
                 'answer': self.answer,
@@ -975,7 +975,7 @@ class AnswerTest(base.RestTestCase):
     def testSubmitDouble(self):
         models.Answer.create(self.chall, self.client.team, '')
         old_score = self.client.team.score
-        with self.queryLimit(4):
+        with self.queryLimit(5):
             resp = self.postJSON(self.PATH, {
                 'cid': self.cid,
                 'answer': self.answer,
@@ -991,7 +991,7 @@ class AnswerTest(base.RestTestCase):
         # TODO: patch this too
         self.app.config['PROOF_OF_WORK_BITS'] = test_nbits
         with mock.patch.object(utils, 'validate_proof_of_work') as mock_pow:
-            with self.queryLimit(6):
+            with self.queryLimit(13):
                 resp = self.postJSON(self.PATH, {
                     'cid': self.cid,
                     'answer': self.answer,
