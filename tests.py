@@ -12,7 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+from scoreboard.tests import base
 
-from google.appengine.ext import vendor
 
-vendor.add('lib')
+def main(argv):
+    if len(argv) > 1:
+        if not base.run_all_tests(argv[1]):
+            sys.exit(1)
+        return
+    if not base.run_all_tests():
+        sys.exit(1)
+
+
+if __name__ == '__main__':
+    main(sys.argv)
