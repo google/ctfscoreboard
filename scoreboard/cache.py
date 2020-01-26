@@ -31,8 +31,6 @@ class CacheWrapper(object):
         if cache_type == 'memcached':
             host = app.config.get('MEMCACHE_HOST')
             self._cache = cache.MemcachedCache([host])
-        elif cache_type == 'appengine':
-            self._cache = cache.MemcachedCache()
         elif cache_type == 'local':
             self._cache = cache.SimpleCache()
         else:

@@ -98,8 +98,7 @@ team.
 
 **SQLALCHEMY_DATABASE_URI**: A SQLAlchemy database URI string.
 
-**LOGIN_METHOD**: Supports 'local' or 'appengine'.  'appengine' uses AppEngine
-users API.
+**LOGIN_METHOD**: Supports 'local'
 
 ### Development ###
 
