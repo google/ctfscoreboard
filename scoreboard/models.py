@@ -626,8 +626,8 @@ class Answer(db.Model):
             increment = float(value - min_value) / math.pow(speed, 2)
             para_val = increment * math.pow(solves, 1.5)
             inv_val = value / math.sqrt((solves + 3)/4)
-            total = para_val + inv_val
-            return max(total, min_value) + self.first_blood
+            total = math.ceil(para_val + inv_val)
+            return max(min(total, value), min_value) + self.first_blood
 
     @classmethod
     def create(cls, challenge, team, answer_text):
@@ -642,6 +642,8 @@ class Answer(db.Model):
         if flask.request:
             answer.submit_ip = flask.request.remote_addr
         db.session.add(answer)
+        # remove cache here
+        del challenge._solves
         return answer
 
 

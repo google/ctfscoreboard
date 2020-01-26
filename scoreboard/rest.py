@@ -655,7 +655,6 @@ class Answer(flask_restful.Resource):
                 team.name, team.tid)
         try:
             points = controllers.save_team_answer(challenge, team, None)
-            models.commit()
         except (errors.IntegrityError, errors.FlushError) as ex:
             app.logger.exception(
                     'Unable to save answer for %s/%s: %s',
@@ -672,14 +671,10 @@ class Answer(flask_restful.Resource):
         try:
             points = controllers.submit_answer(
                 data['cid'], answer, data.get('token'))
-        except errors.IntegrityError:
-            raise errors.AccessDeniedError(
-                    'Previously solved or flag already used.')
-        try:
-            models.commit()
         except (errors.IntegrityError, errors.FlushError):
             models.db.session.rollback()
-            raise errors.AccessDeniedError("You've already solved that one!")
+            raise errors.AccessDeniedError(
+                    'Previously solved or flag already used.')
         cache.delete_team('cats/%d')
         cache.delete('scoreboard')
         return dict(points=points)
