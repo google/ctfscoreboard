@@ -20,6 +20,7 @@ import hashlib
 import hmac
 import json
 import logging
+import math
 import os
 import pbkdf2
 import re
@@ -619,7 +620,14 @@ class Answer(db.Model):
         if mode == 'plain':
             return value + self.first_blood
         if mode == 'progressive':
-            return max((value / self.challenge.solves) + self.first_blood, 1)
+            speed = app.config.get('SCORING_SPEED', 60)
+            min_value = app.config.get('SCORING_MIN', 100)
+            solves = self.challenge.solves
+            increment = float(value - min_value) / math.pow(speed, 2)
+            para_val = increment * math.pow(solves, 1.5)
+            inv_val = value / math.sqrt((solves + 3)/4)
+            total = para_val + inv_val
+            return max(total, min_value) + self.first_blood
 
     @classmethod
     def create(cls, challenge, team, answer_text):
