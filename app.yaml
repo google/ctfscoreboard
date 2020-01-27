@@ -1,5 +1,4 @@
 runtime: python37
-threadsafe: true
 instance_class: F4
 
 handlers:
@@ -24,21 +23,9 @@ handlers:
   secure: always
 
 - url: /createdb
-  script: scoreboard.wsgi.app
   secure: always
-  login: admin
+  script: auto
 
 - url: /.*
-  script: scoreboard.wsgi.app
   secure: always
-
-skip_files:
-- ^(.*/)?#.*#$
-- ^(.*/)?.*~$
-- ^(.*/)?.*\.py[co]$
-- ^(.*/)?.*/RCS/.*$
-- ^(.*/)?\..*$
-- ^(.*/)?.git/.*$
-- ^.*.md$
-- ^(.*/)?LICENSE$
-- scoreboard/tests
+  script: auto

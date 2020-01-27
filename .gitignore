@@ -6,6 +6,7 @@ __pycache__
 
 # Runtime data
 /config.py
+*.bak
 *.db
 /attachments
 /attachments/**
@@ -14,9 +15,6 @@ __pycache__
 /static/js/app.min.js
 /static/css/*.css
 
-# Appengine libraries
-lib
-
-# Python coverage toold
+# Python coverage tool2
 .coverage
 htmlcov
