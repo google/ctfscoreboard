@@ -84,6 +84,8 @@ def load_globals():
         del flask.g.team
     except AttributeError:
         pass
+    if load_apikey():
+        return
     if (app.config.get('SESSION_EXPIRATION_SECONDS') and
             flask.session.get('expires') and
             flask.session.get('expires') < time.time()):
@@ -93,7 +95,6 @@ def load_globals():
     flask.g.admin = flask.session.get('admin') or False
 
 
-@app.before_request
 def load_apikey():
     """Load flask.g.user, flask.g.uid from an API key."""
     try:
@@ -106,6 +107,7 @@ def load_apikey():
         flask.g.user = user
         flask.g.uid = user.uid
         flask.g.admin = user.admin
+        return True
     except Exception:
         # Don't want any API key problems to block requests
         pass
