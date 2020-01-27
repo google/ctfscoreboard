@@ -107,6 +107,7 @@ def load_apikey():
         flask.g.user = user
         flask.g.uid = user.uid
         flask.g.admin = user.admin
+        flask.g.tid = None
         return True
     except Exception:
         # Don't want any API key problems to block requests
