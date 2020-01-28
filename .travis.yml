@@ -10,7 +10,7 @@ install:
   - pip install codecov
 
 script:
-  - coverage run main.py runtests
+  - coverage run tests.py
   - flake8 .
 
 after_success:
