@@ -3,7 +3,7 @@
 This is a basic CTF Scoreboard, with support for teams or individual
 competitors, and a handful of other features.
 
-Copyright 2019 Google LLC.
+Copyright 2020 Google LLC.
 This is not an official Google product.
 
 Author: Please see the AUTHORS file.
@@ -17,8 +17,8 @@ branch, which will only be getting security & bug fixes.
 ### Installation ###
 
 1. Install Python with PIP and setuptools.  If you'd like to use a virtualenv,
-   set one up and activate it now.  Please note that only Python 2.7 is
-   supported at the present time.
+   set one up and activate it now.  Please note that only Python 3.6+ is
+   officially supported at the present time, but it should still work on Python 2.7.
 
 2. Install the dependencies:
    pip install -r requirements.txt
