@@ -20,11 +20,23 @@ Attachments on Google Cloud Storage.
 
 import hashlib
 import os
-import urlparse
+try:
+    import urlparse
+except ImportError:
+    import urllib.parse as urlparse
+try:
+    from io import BytesIO
+except ImportError:
+    try:
+        import cStringIO.StringIO as BytesIO
+    except ImportError:
+        import StringIO.StringIO as BytesIO
+
 
 import flask
 
-import cloudstorage as gcs
+from google.cloud import storage
+from google.cloud import exceptions
 
 from scoreboard import main
 
@@ -37,31 +49,34 @@ def get_bucket(path=None):
     return url.netloc
 
 
-def make_path(aid):
-    return '/%s/%s' % (get_bucket(), aid)
-
-
 def send(attachment):
     """Send to download URI."""
-    path = make_path(attachment.aid)
     try:
-        fp = gcs.open(path)
+        client = storage.Client()
+        bucket = client.bucket(get_bucket())
+        buf = BytesIO()
+        blob = bucket.get_blob(attachment.aid)
+        if not blob:
+            return flask.abort(404)
+        blob.download_to_file(buf)
+        buf.seek(0)
         return flask.send_file(
-            fp,
+            buf,
             mimetype=attachment.content_type,
             attachment_filename=attachment.filename,
             add_etags=False, as_attachment=True)
-    except gcs.NotFoundError:
+    except exceptions.NotFound:
         return flask.abort(404)
 
 
 def delete(attachment):
     """Delete from GCS Bucket."""
-    path = make_path(attachment.aid)
     try:
-        gcs.delete(path)
-    except gcs.NotFoundError:
-        pass
+        client = storage.Client()
+        bucket = client.bucket(get_bucket())
+        bucket.delete_blob(attachment.aid)
+    except exceptions.NotFound:
+        return flask.abort(404)
 
 
 def upload(fp):
@@ -74,8 +89,9 @@ def upload(fp):
         md.update(blk)
     fp.seek(0, os.SEEK_SET)
     aid = md.hexdigest()
-    path = make_path(aid)
-    gcsfp = gcs.open(path, "w", content_type=fp.mimetype)
-    fp.save(gcsfp)
-    gcsfp.close()
+    client = storage.Client()
+    bucket = client.bucket(get_bucket())
+    blob = bucket.blob(aid)
+    blob.upload_from_file(fp)
+    path = 'gcs://{}/{}'.format(get_bucket(), aid)
     return aid, path
