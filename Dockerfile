@@ -1,8 +1,9 @@
-FROM debian:jessie
+FROM debian:buster
 
 RUN apt-get update && apt-get install -y \
     nginx \
     python \
+    python-dev \
     python-pip \
     supervisor \
     uwsgi \
@@ -17,6 +18,7 @@ COPY doc/nginx.conf /etc/nginx/sites-enabled/default
 COPY doc/docker/supervisord.conf /etc/supervisor/conf.d/
 
 COPY . /opt/scoreboard
+COPY config.example.py /opt/scoreboard/config.py
 WORKDIR /opt/scoreboard
 
 RUN python main.py createdb
