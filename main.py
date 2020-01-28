@@ -13,22 +13,13 @@
 # limitations under the License.
 
 import sys
+from scoreboard import wsgi
+from scoreboard import models
+# For use in gunicorn
+from scoreboard.wsgi import app  # noqa: F401
 
 
 def main(argv):
-    if len(argv) > 1 and argv[1] == 'runtests':
-        from scoreboard.tests import base
-        if len(argv) > 2:
-            if not base.run_all_tests(argv[2]):
-                sys.exit(1)
-            return
-        if not base.run_all_tests():
-            sys.exit(1)
-        return
-
-    # This needs to only be imported when not testing
-    from scoreboard import wsgi
-    from scoreboard import models
     if 'createdb' in argv:
         models.db.create_all()
     elif 'createdata' in argv:

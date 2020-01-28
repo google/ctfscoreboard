@@ -1,15 +1,5 @@
-runtime: python27
-api_version: 1
-threadsafe: true
+runtime: python37
 instance_class: F4
-
-libraries:
-- name: jinja2
-  version: "latest"
-- name: MySQLdb
-  version: "latest"
-- name: ssl
-  version: "latest"
 
 handlers:
 - url: /css
@@ -33,21 +23,9 @@ handlers:
   secure: always
 
 - url: /createdb
-  script: scoreboard.wsgi.app
   secure: always
-  login: admin
+  script: auto
 
 - url: /.*
-  script: scoreboard.wsgi.app
   secure: always
-
-skip_files:
-- ^(.*/)?#.*#$
-- ^(.*/)?.*~$
-- ^(.*/)?.*\.py[co]$
-- ^(.*/)?.*/RCS/.*$
-- ^(.*/)?\..*$
-- ^(.*/)?.git/.*$
-- ^.*.md$
-- ^(.*/)?LICENSE$
-- scoreboard/tests
+  script: auto

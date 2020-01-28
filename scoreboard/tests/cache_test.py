@@ -42,7 +42,7 @@ class BaseCacheTest(base.BaseTestCase):
 
     def testBuildCaches(self):
         """Test that we can build the various types of caches."""
-        for ctype in ('memcached', 'appengine', 'local'):
+        for ctype in ('memcached', 'local'):
             with mock.patch.object(self.app, 'config') as m:
                 m.get = self.makeMockGet(ctype, 'localhost')
                 c = cache.CacheWrapper(self.app)

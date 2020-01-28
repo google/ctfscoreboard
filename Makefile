@@ -28,13 +28,9 @@ scss:
 	done
 
 tests:
-	python main.py runtests
+	python tests.py
 
 coverage:
 	coverage run main.py runtests
 	coverage html
 	xdg-open htmlcov/index.html
-
-deps:
-	pip install -r requirements.txt -t lib
-	pip install -r requirements.gae -t lib

@@ -29,7 +29,9 @@ _app_singleton = None
 def on_appengine():
     """Returns true if we're running on AppEngine."""
     runtime = os.environ.get('SERVER_SOFTWARE', '')
-    return (runtime.startswith('Development/') or
+    gae_env = os.environ.get('GAE_ENV', '')
+    return ((gae_env != '') or
+            runtime.startswith('Development/') or
             runtime.startswith('Google App Engine/'))
 
 
@@ -93,10 +95,21 @@ def setup_logging(app):
         app.challenge_log = local_logger
     else:
         app.challenge_log = app.logger
+        try:
+            import google.cloud.logging
+            from google.cloud.logging import handlers
+            client = google.cloud.logging.Client()
+            client.setup_logging()
+            handler = handlers.CloudLoggingHandler(client)
+            app.logger.addHandler(handler)
+            handler.setLevel(logging.INFO)
+            return app
+        except ImportError as ex:
+            logging.error('Failed setting up logging: %s', ex)
         if not app.logger.handlers:
             app.logger.addHandler(flask_logging.default_handler)
-        app.logger.handlers[0].setFormatter(log_formatter)
-        logging.getLogger().handlers[0].setFormatter(log_formatter)
+            app.logger.handlers[0].setFormatter(log_formatter)
+            logging.getLogger().handlers[0].setFormatter(log_formatter)
 
     return app
 

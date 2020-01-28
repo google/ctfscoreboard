@@ -2,7 +2,6 @@ Flask
 Flask-RESTful
 Flask-SQLAlchemy
 Flask-Scss
-GoogleAppEngineCloudStorageClient
 Jinja2
 MarkupSafe
 PyMySQL
@@ -16,3 +15,5 @@ pylibmc
 python-dateutil
 pytz
 six
+google-cloud-logging
+google-cloud-storage
