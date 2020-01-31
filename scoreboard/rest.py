@@ -394,6 +394,7 @@ class Challenge(flask_restful.Resource):
         'name': fields.String,
         'points': fields.Integer,
         'min_points': fields.Integer,
+        'current_points': fields.Integer,
         'description': fields.String,
         'unlocked': fields.Boolean,
         'answered': fields.Boolean,
@@ -438,7 +439,7 @@ class Challenge(flask_restful.Resource):
         data = flask.request.get_json()
         old_unlocked = challenge.unlocked
         for field in (
-                'name', 'description', 'points',
+                'name', 'description', 'points', 'min_points',
                 'unlocked', 'weight'):
             setattr(
                 challenge, field, data.get(field, getattr(challenge, field)))
@@ -526,6 +527,10 @@ class ChallengeList(flask_restful.Resource):
             data.get('validator', validators.GetDefaultValidator()))
         validator = validators.GetValidatorForChallenge(chall)
         validator.change_answer(answer)
+        if 'min_points' in data:
+            chall.min_points = data['min_points']
+        else:
+            chall.min_points = chall.points
         if 'attachments' in data:
             chall.set_attachments(data['attachments'])
         if 'prerequisite' in data:

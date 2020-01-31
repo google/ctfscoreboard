@@ -175,9 +175,6 @@ challengeServices.service('scoreService', [
       this.getCurrentPoints = function(challenge) {
         if (!challenge)
           return 0;
-        if (this.scoring === 'plain')
-          return challenge.points;
-        if (this.scoring === 'progressive')
-          return Math.floor(challenge.points / Math.max(challenge.solves, 1));
+        return challenge.current_points;
       };
     }])

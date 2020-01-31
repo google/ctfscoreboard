@@ -10,12 +10,19 @@
                 required>
           </div>
         </div>
-        <div class='col-md-4'>
+        <div ng-class='{"col-md-4": config.scoring != "progressive", "col-md-2": config.scoring == "progressive"}'>
           <div class='form-group'>
               <label for='points'>Points</label>
               <input id='points' name='points' class='form-control'
                 type='number' ng-model='challenge.points' placeholder='0'
                 required>
+          </div>
+        </div>
+        <div class='col-md-2' ng-hide='config.scoring != "progressive"'>
+          <div class='form-group'>
+              <label for='min_points'>Min</label>
+              <input id='min_points' name='min_points' class='form-control'
+                     type='number' ng-model='challenge.min_points' placeholder='0'>
           </div>
         </div>
     </div>
