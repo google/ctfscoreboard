@@ -367,6 +367,7 @@ class Challenge(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
     points = db.Column(db.Integer, nullable=False)
+    min_points = db.Column(db.Integer, nullable=True)
     validator = db.Column(db.String(24), nullable=False,
                           default='static_pbkdf2')
     answer_hash = db.Column(db.String(48))  # Protect answers
@@ -625,7 +626,7 @@ class Answer(db.Model):
             return value + self.first_blood
         if mode == 'progressive':
             speed = app.config.get('SCORING_SPEED', 60)
-            min_value = app.config.get('SCORING_MIN', 100)
+            min_value = self.challenge.min_points
             solves = self.challenge.solves
             increment = float(value - min_value) / math.pow(speed, 2)
             para_val = increment * math.pow(solves, 1.5)

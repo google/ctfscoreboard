@@ -393,6 +393,7 @@ class Challenge(flask_restful.Resource):
         'cid': fields.Integer,
         'name': fields.String,
         'points': fields.Integer,
+        'min_points': fields.Integer,
         'description': fields.String,
         'unlocked': fields.Boolean,
         'answered': fields.Boolean,
