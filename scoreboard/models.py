@@ -428,15 +428,23 @@ class Challenge(db.Model):
         if mode == 'plain':
             self.cur_points = value
         elif mode == 'progressive':
-            speed = app.config.get('SCORING_SPEED', 60)
-            min_value = self.min_points
-            solves = self.solves
-            increment = float(value - min_value) / math.pow(speed, 2)
-            para_val = increment * math.pow(solves, 1.5)
-            inv_val = value / math.sqrt((solves + 3)/4)
-            total = math.ceil(para_val + inv_val)
-            self.cur_points = max(min(total, value), min_value)
+            speed = app.config.get('SCORING_SPEED', 12)
+            self.cur_points = self.log_score(
+                    value, self.min_points, speed, self.soles)
         return self.cur_points
+
+    @staticmethod
+    def log_score(max_points, min_points, midpoint, solves):
+        # logit(u, l, m, s, x) = (u - l) * ((1.0 / (1.0 + exp((1.0/s) * (x - m)))) / (1.0 / (1.0 + exp((1.0/s) * (1 - m))))) + l
+        def log_func(midpoint, solves):
+            spread = midpoint / 3.0
+            delta = solves - midpoint
+            return (
+                    1.0 / (1.0 + math.exp((1.0 / spread) * delta)))
+        max_delta = (max_points - min_points)
+        base_point = log_func(midpoint, 1.0)
+        cur_point = log_func(midpoint, solves)
+        return math.ceil(max_delta * cur_point / base_point + min_points)
 
     def unlocked_for_team(self, team):
         """Checks if prerequisites are met for this team."""
