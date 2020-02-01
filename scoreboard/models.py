@@ -367,12 +367,14 @@ class Challenge(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
     points = db.Column(db.Integer, nullable=False)
+    min_points = db.Column(db.Integer, nullable=True)
     validator = db.Column(db.String(24), nullable=False,
                           default='static_pbkdf2')
     answer_hash = db.Column(db.String(48))  # Protect answers
     unlocked = db.Column(db.Boolean, default=False)
     weight = db.Column(db.Integer, nullable=False)  # Order for display
     prerequisite = db.Column(db.Text, nullable=False)  # Prerequisite Metadata
+    cur_points = db.Column(db.Integer, nullable=True)
     answers = db.relationship('Answer',
                               backref=db.backref('challenge', lazy='joined'),
                               lazy='select')
@@ -418,6 +420,23 @@ class Challenge(db.Model):
         if not Team.current():
             return False
         return not self.unlocked_for_team(Team.current())
+
+    @property
+    def current_points(self):
+        mode = app.config.get('SCORING', 'plain')
+        value = self.points
+        if mode == 'plain':
+            self.cur_points = value
+        elif mode == 'progressive':
+            speed = app.config.get('SCORING_SPEED', 60)
+            min_value = self.min_points
+            solves = self.solves
+            increment = float(value - min_value) / math.pow(speed, 2)
+            para_val = increment * math.pow(solves, 1.5)
+            inv_val = value / math.sqrt((solves + 3)/4)
+            total = math.ceil(para_val + inv_val)
+            self.cur_points = max(min(total, value), min_value)
+        return self.cur_points
 
     def unlocked_for_team(self, team):
         """Checks if prerequisites are met for this team."""
@@ -614,25 +633,6 @@ class Answer(db.Model):
     submit_ip = db.Column(db.String(45))    # Source IP for submission
     first_blood = db.Column(db.Integer, default=0, nullable=False)
 
-    @property
-    def current_points(self):
-        if utils.GameTime.state(self.timestamp) == "AFTER":
-            return 0
-
-        mode = app.config.get('SCORING', 'plain')
-        value = self.challenge.points
-        if mode == 'plain':
-            return value + self.first_blood
-        if mode == 'progressive':
-            speed = app.config.get('SCORING_SPEED', 60)
-            min_value = app.config.get('SCORING_MIN', 100)
-            solves = self.challenge.solves
-            increment = float(value - min_value) / math.pow(speed, 2)
-            para_val = increment * math.pow(solves, 1.5)
-            inv_val = value / math.sqrt((solves + 3)/4)
-            total = math.ceil(para_val + inv_val)
-            return max(min(total, value), min_value) + self.first_blood
-
     @classmethod
     def create(cls, challenge, team, answer_text):
         answer = cls()
@@ -649,6 +649,13 @@ class Answer(db.Model):
         # remove cache here
         del challenge._solves
         return answer
+
+    @property
+    def current_points(self):
+        if utils.GameTime.state(self.timestamp) == "AFTER":
+            return 0
+
+        return self.challenge.current_points + self.first_blood
 
 
 class News(db.Model):
