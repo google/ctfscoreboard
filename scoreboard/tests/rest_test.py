@@ -835,7 +835,7 @@ class ChallengeTest(base.RestTestCase):
         # TODO: variants
         data = self.newChallengeData()
         # TODO: optimize count
-        with self.queryLimit(8):
+        with self.queryLimit(9):
             resp = self.postJSON(self.PATH_LIST, data)
         self.assert200(resp)
         for field in ('name', 'description', 'points', 'unlocked'):
@@ -852,7 +852,7 @@ class ChallengeTest(base.RestTestCase):
     @base.admin_test
     def testUpdateChallenge(self):
         data = self.getUpdateData()
-        with self.queryLimit(6):
+        with self.queryLimit(7):
             resp = self.putJSON(self.PATH_SINGLE, data)
         self.assert200(resp)
         for k in data.keys():
@@ -941,7 +941,7 @@ class AnswerTest(base.RestTestCase):
     def testSubmitAdmin_Override(self):
         team = models.Team.create('crash_override')
         models.db.session.commit()
-        with self.queryLimit(12):
+        with self.queryLimit(13):
             resp = self.postJSON(self.PATH, {
                 'cid': self.cid,
                 'tid': team.tid,
@@ -951,7 +951,7 @@ class AnswerTest(base.RestTestCase):
 
     @base.authenticated_test
     def testSubmitCorrect(self):
-        with self.queryLimit(13):
+        with self.queryLimit(14):
             resp = self.postJSON(self.PATH, {
                 'cid': self.cid,
                 'answer': self.answer,
@@ -993,7 +993,7 @@ class AnswerTest(base.RestTestCase):
         with mock.patch.object(
                 utils, 'validate_proof_of_work',
                 return_value=True) as mock_pow:
-            with self.queryLimit(13):
+            with self.queryLimit(14):
                 resp = self.postJSON(self.PATH, {
                     'cid': self.cid,
                     'answer': self.answer,
