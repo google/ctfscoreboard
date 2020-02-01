@@ -423,9 +423,6 @@ class Challenge(db.Model):
 
     @property
     def current_points(self):
-        if utils.GameTime.state(self.timestamp) == "AFTER":
-            return 0
-
         mode = app.config.get('SCORING', 'plain')
         value = self.points
         if mode == 'plain':
@@ -655,6 +652,9 @@ class Answer(db.Model):
 
     @property
     def current_points(self):
+        if utils.GameTime.state(self.timestamp) == "AFTER":
+            return 0
+
         return self.challenge.current_points + self.first_blood
 
 
