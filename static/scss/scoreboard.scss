@@ -31,9 +31,9 @@ table, .table {
         z-index: -1;
         width: 100%;
         margin-left: -15px;
-        min-height: 99999px;
-        margin-bottom: -99999px;
         overflow: hidden;
+        top: 0;
+        bottom: 0;
     }
 }
 
@@ -185,7 +185,7 @@ a.btn {
 }
 
 .sbchart-legend {
-    overflow: hidden;
+    overflow: visible;
     position: absolute;
     right: 0;
     max-width: 180px;
@@ -579,6 +579,12 @@ $chall-border-radius: 6px;
             vertical-align: middle;
         }
     }
+}
+
+/** File upload control */
+.fileupload {
+    height: 0;
+    display: none;
 }
 
 @import 'scoreboard-mobile';
