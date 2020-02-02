@@ -33,6 +33,8 @@ table, .table {
 
 .left-sidebar {
     position: relative;
+    display: flex;
+    flex-direction: column;
 
     .left-sidebar-background {
         /* This is so hacky but necessary. */
@@ -149,7 +151,9 @@ a.btn {
 #news-box {
     min-height: 150px;
     overflow: auto;
-    bottom: 0px;
+    bottom: 0;
+    top: 0;
+    flex-grow: 1;
 
     & ul {
         list-style-type: none;
