@@ -9,9 +9,18 @@ html {
     }
 
     .full-height {
-        height: 100vh;
+        height: 100%;
         font-size: 12pt;
     }
+}
+
+.container.full-height {
+    margin-top: -56px;
+    height: 100vh;
+}
+
+.row.full-height {
+    padding-top: 56px;
 }
 
 body {
