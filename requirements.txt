@@ -17,3 +17,4 @@ pytz
 six
 google-cloud-logging
 google-cloud-storage
+mailjet_rest
