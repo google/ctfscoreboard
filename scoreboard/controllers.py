@@ -25,6 +25,14 @@ from scoreboard import models
 from scoreboard import utils
 from scoreboard import validators
 
+# Need to handle Python 2 and 3.
+try:
+    urllib_quote = urllib.quote
+except AttributeError:
+    import urllib.parse
+    urllib_quote = urllib.parse.quote
+
+
 app = main.get_app()
 
 
@@ -184,9 +192,9 @@ def test_answer(cid, answer):
 
 
 def offer_password_reset(user):
-    token = user.get_token()
+    token = user.get_token().decode('utf-8')
     token_url = utils.absolute_url('/pwreset/%s/%s' %
-                                   (urllib.quote(user.email), token))
+                                   (urllib_quote(user.email), token))
     message = flask.render_template(
             'pwreset.eml', token_url=token_url,
             user=user, ip=flask.request.remote_addr, config=app.config)
