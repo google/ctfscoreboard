@@ -436,9 +436,13 @@ class Challenge(db.Model):
 
     @staticmethod
     def log_score(max_points, min_points, midpoint, solves):
-        # logit(u, l, m, s, x) = (u - l) * ((1.0 / (1.0 + exp((1.0/s) * (x - m)))) / (1.0 / (1.0 + exp((1.0/s) * (1 - m))))) + l
+        # Algorithm designed by symmetric
+        # logit(u, l, m, s, x) =
+        #       (u - l) * ((1.0 / (1.0 + exp((1.0/s) * (x - m)))) /
+        #       (1.0 / (1.0 + exp((1.0/s) * (1 - m))))) + l
         if solves == 0:
             return max_points
+
         def log_func(midpoint, solves):
             spread = midpoint / 3.0
             delta = solves - midpoint
