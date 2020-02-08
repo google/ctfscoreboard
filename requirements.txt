@@ -6,7 +6,7 @@ Jinja2
 MarkupSafe
 PyMySQL
 SQLAlchemy
-Werkzeug
+Werkzeug<1.0.0
 aniso8601
 argparse
 itsdangerous
