@@ -117,5 +117,5 @@ challengeCtrls.controller('ChallengeGridCtrl', [
 
       refresh(loadingService.stop);
 
-      $rootScope.$on('correctAnswer', refresh);
+      $rootScope.$on('correctAnswer', (e) => refresh());
   }]);

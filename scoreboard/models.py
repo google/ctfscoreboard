@@ -429,15 +429,20 @@ class Challenge(db.Model):
             self.cur_points = value
         elif mode == 'progressive':
             speed = app.config.get('SCORING_SPEED', 12)
+            min_points = 0 if self.min_points is None else self.min_points
             self.cur_points = self.log_score(
-                    value, self.min_points, speed, self.soles)
+                    value, min_points, speed, self.solves)
         return self.cur_points
 
     @staticmethod
     def log_score(max_points, min_points, midpoint, solves):
-        # logit(u, l, m, s, x) = (u - l) * ((1.0 / (1.0 + exp((1.0/s) * (x - m)))) / (1.0 / (1.0 + exp((1.0/s) * (1 - m))))) + l
+        # Algorithm designed by symmetric
+        # logit(u, l, m, s, x) =
+        #       (u - l) * ((1.0 / (1.0 + exp((1.0/s) * (x - m)))) /
+        #       (1.0 / (1.0 + exp((1.0/s) * (1 - m))))) + l
         if solves == 0:
             return max_points
+
         def log_func(midpoint, solves):
             spread = midpoint / 3.0
             delta = solves - midpoint
