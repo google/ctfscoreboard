@@ -15,6 +15,8 @@ $panel-body-bkg: #4e5d6c;
 $chall-text: #ffffff;
 $sidebar-text: #ffffff;
 $sidebar-active-text: #ffffff;
+$chall-link: #42a5f5;
+$chall-link-hover: #42a5f5;
 
 body {
   background-color: $body-bkg;
@@ -69,6 +71,15 @@ input.form-control[readonly] {
 
 .chall-well, .chall-panel, .chall-panel-body{
   background-color: $panel-body-bkg;
+}
+
+.chall-panel-body {
+    a {
+        color: $chall-link;
+    }
+    a:hover, a:focus, a:active {
+        color: $chall-link-hover;
+    }
 }
 
 /* Jeopardy grid */
