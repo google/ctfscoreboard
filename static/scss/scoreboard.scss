@@ -408,6 +408,7 @@ $chall-border-radius: 6px;
 
     .tag-align {
         display: flex;
+        flex-wrap: wrap;
 
         .tag-filter {
             flex-grow: 1;
@@ -416,6 +417,11 @@ $chall-border-radius: 6px;
             flex-direction: column;
             justify-content: space-around;
             cursor: pointer;
+            margin-right: 5px;
+            margin-left: 5px;
+            margin-bottom: 5px;
+            min-width: 15%;
+            border-radius: 6px;
 
             .tag-item {
                 user-select: none;
@@ -430,20 +436,6 @@ $chall-border-radius: 6px;
                 i {
                     vertical-align: sub;
                 }
-            }
-
-            &:first-child {
-                border-top-left-radius: 6px;
-                border-bottom-left-radius: 6px;
-            }
-
-            &:last-child {
-                border-top-right-radius: 6px;
-                border-bottom-right-radius: 6px;
-            }
-
-            &:not(:last-child) {
-                margin-right: 10px;
             }
         }
 
