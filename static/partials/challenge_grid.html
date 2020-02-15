@@ -7,7 +7,7 @@
     <div class='tag-filter' ng-repeat='tag in allTags | orderBy:"name"'
       ng-class='{"tag-inc": shownTags[tag.tagslug]==2, "tag-exc": shownTags[tag.tagslug]==0, "tag-either": shownTags[tag.tagslug]==1}'
       ng-any-click='toggleTag(tag.tagslug, $click)'>
-        <span class='tag-item oneline'>
+        <span class='tag-item oneline' title='{{tag.description}}'>
           <i class='material-icons'>{{getSentiment(tag)}}</i>
           {{tag.name}}
         </span>
