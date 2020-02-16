@@ -21,6 +21,10 @@ html {
 
 .row.full-height {
     padding-top: 56px;
+
+    .body-col {
+        padding-top: 1rem;
+    }
 }
 
 body {
