@@ -651,8 +651,10 @@ class Answer(db.Model):
     @classmethod
     def create(cls, challenge, team, answer_text):
         answer = cls()
-        answer.first_blood = (app.config.get('FIRST_BLOOD')
-                              if not challenge.solves else 0)
+        answer.first_blood = 0
+        if not challenge.solves:
+            if app.config.get('FIRST_BLOOD_MIN', 0) <= challenge.points:
+                answer.first_blood = app.config.get('FIRST_BLOOD', 0)
         answer.challenge = challenge
         answer.team = team
         answer.timestamp = datetime.datetime.utcnow()

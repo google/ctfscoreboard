@@ -24,6 +24,7 @@ class Defaults(object):
     EXTEND_CSP_POLICY = None
     ERROR_404_HELP = False
     FIRST_BLOOD = 0
+    FIRST_BLOOD_MIN = 0
     GAME_TIME = (None, None)
     INVITE_KEY = None
     LOGIN_METHOD = 'local'
