@@ -677,7 +677,8 @@ class Answer(flask_restful.Resource):
         try:
             points = controllers.submit_answer(
                 data['cid'], answer, data.get('token'))
-        except (errors.IntegrityError, errors.FlushError):
+        except (errors.IntegrityError, errors.FlushError) as exc:
+            app.logger.exception('Exception when saving answer: %s', exc)
             models.db.session.rollback()
             raise errors.AccessDeniedError(
                     'Previously solved or flag already used.')

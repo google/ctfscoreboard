@@ -78,7 +78,9 @@ class Team(db.Model):
         self.score = sum(a.current_points for a in self.answers)
         if self.score != old_score:
             # Add score history entry
-            ScoreHistory.add_entry(self)
+            if not getattr(self, '_pending_sh', False):
+                ScoreHistory.add_entry(self)
+                self._pending_sh = True
 
     def can_access(self, user=None):
         """Check if player can access team."""
@@ -147,7 +149,7 @@ class ScoreHistory(db.Model):
         entry = cls()
         entry.team = team
         entry.score = team.score
-        db.session.add(entry)
+        db.session.merge(entry)
 
 
 class User(db.Model):

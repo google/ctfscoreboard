@@ -152,7 +152,8 @@ def submit_answer(cid, answer, token):
             return points
         else:
             raise errors.InvalidAnswerError('Really?  Haha no....')
-    except (errors.IntegrityError, errors.FlushError):
+    except (errors.IntegrityError, errors.FlushError) as exc:
+        app.logger.exception('Error saving flag: %s', exc)
         models.db.session.rollback()
         raise
     finally:
