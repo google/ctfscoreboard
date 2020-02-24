@@ -260,7 +260,7 @@ class TeamList(flask_restful.Resource):
 
     @flask_restful.marshal_with(resource_fields)
     def get(self):
-        return dict(teams=models.Team.all())
+        return dict(teams=models.Team.all(with_history=False))
 
 
 class TeamChange(flask_restful.Resource):

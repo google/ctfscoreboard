@@ -1,5 +1,8 @@
 runtime: python37
 instance_class: F4
+automatic_scaling:
+  max_instances: 50
+  max_idle_instances: 10
 
 handlers:
 - url: /css
