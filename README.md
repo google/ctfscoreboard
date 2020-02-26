@@ -8,7 +8,7 @@ This is not an official Google product.
 
 Author: Please see the AUTHORS file.
 
-This is a version 2.x branch.  We've eliminated categories, in favor of tagging
+This is a version 3.x branch.  We've eliminated categories, in favor of tagging
 challenges.  This simplifies the codebase significantly, and is a better fit
 since so many challenges border on more than one category.  However, this branch
 is not compatible with databases from 1.x.  If you need that, check out the 1.x
@@ -18,7 +18,7 @@ branch, which will only be getting security & bug fixes.
 
 1. Install Python with PIP and setuptools.  If you'd like to use a virtualenv,
    set one up and activate it now.  Please note that only Python 3.6+ is
-   officially supported at the present time, but it should still work on Python 2.7.
+   supported.
 
 2. Install the dependencies:
    pip install -r requirements.txt
@@ -36,7 +36,6 @@ branch, which will only be getting security & bug fixes.
         TITLE = 'FakeCTF'
         TEAMS = True
         ATTACHMENT_DIR = 'attachments'
-        LOGIN_METHOD = 'local'  # or appengine
 
   If you are using plaintext HTTP to run your scoreboard, you will need to add the
   following to your config.py, so that cookies will work:
