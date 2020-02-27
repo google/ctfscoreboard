@@ -69,10 +69,6 @@ class Team(db.Model):
         return hmac.new(utils.to_bytes(secret_key),
                         self.name.encode('utf-8')).hexdigest()[:12]
 
-    @property
-    def solves(self):
-        return len(self.answers)
-
     def update_score(self):
         old_score = self.score
         self.score = sum(a.current_points for a in self.answers)
@@ -675,6 +671,11 @@ class Answer(db.Model):
             return 0
 
         return self.challenge.current_points + self.first_blood
+
+
+Team.solves = db.column_property(db.select(
+    [db.func.count('*')]).where(
+        Answer.team_tid == Team.tid).correlate_except(Answer))
 
 
 class News(db.Model):
