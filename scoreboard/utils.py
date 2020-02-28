@@ -199,6 +199,10 @@ def to_bytes(val):
     return val
 
 
+def string_to_bool(val):
+    return val.lower() in ('true', '1')
+
+
 class GameTime(object):
     """Manage start/end times for the game."""
 

@@ -100,7 +100,7 @@ class Team(db.Model):
             return None
 
     @classmethod
-    def enumerate(cls, with_history=False, above_zero=False):
+    def enumerate(cls, with_history=False, above_zero=False, count=0):
         if with_history:
             base = cls.query.options(orm.joinedload(cls.score_history))
         else:
@@ -108,6 +108,8 @@ class Team(db.Model):
         if above_zero:
             base = base.filter(cls.score > 0)
         sorting = base.order_by(cls.score.desc(), cls.last_solve)
+        if count > 0:
+            sorting = sorting.limit(count)
         return enumerate(sorting.all(), 1)
 
     @classmethod

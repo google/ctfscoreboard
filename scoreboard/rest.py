@@ -729,9 +729,14 @@ class APIScoreboard(flask_restful.Resource):
     @cache.rest_cache('scoreboard')
     @flask_restful.marshal_with(resource_fields)
     def get(self):
+        with_history = flask.request.args.get(
+                'with_history', type=utils.string_to_bool)
+        count = flask.request.args.get(
+                'count', default=0, type=int)
         opts = {
-            'with_history': True,
+            'with_history': with_history,
             'above_zero': not app.config.get('SCOREBOARD_ZEROS'),
+            'count': count,
         }
         return dict(scoreboard=[
             {'position': i, 'name': v.name, 'tid': v.tid,
