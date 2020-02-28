@@ -176,7 +176,7 @@ class User(db.Model):
     def promote(self):
         """Promote a user to admin."""
         empty_team = self.team and set(self.team.players.all()) == set([self])
-        if self.team and len(self.team.answers):
+        if self.team and self.team.solves:
             raise AssertionError(
                 'Cannot promote player whose team has solved answers!')
         self.admin = True
@@ -259,6 +259,7 @@ class User(db.Model):
 
     @classmethod
     def create(cls, email, nick, password, team=None):
+        # TODO: optimize to avoid query on registration
         first_user = True if not cls.query.count() else False
         user = cls()
         db.session.add(user)
@@ -397,6 +398,7 @@ class Challenge(db.Model):
 
     @hybrid.hybrid_property
     def solves(self):
+        # TODO: column_property
         try:
             return self._solves
         except AttributeError:
