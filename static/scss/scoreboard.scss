@@ -268,12 +268,13 @@ $chall-border-radius: 6px;
         }
 
         .jeopardy-box {
-            height: 120px;
+            height: 188px;
             text-align: center;
             margin: 10px 5px;
             position: relative;
             display: inline-block;
-            min-width: 120px;
+            min-width: 188px;
+            text-size: 16pt;
 
             & p {
                 top: 50%;
