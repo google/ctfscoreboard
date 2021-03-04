@@ -67,7 +67,7 @@ class Team(db.Model):
         secret_key = (app.config.get('TEAM_SECRET_KEY') or
                       app.config.get('SECRET_KEY'))
         return hmac.new(utils.to_bytes(secret_key),
-                        self.name.encode('utf-8')).hexdigest()[:12]
+                        self.name.encode('utf-8'),hashlib.sha1).hexdigest()[:12]
 
     @property
     def solves(self):
