@@ -567,7 +567,6 @@ class Challenge(db.Model):
                 if a.team == exclude_team:
                     continue
                 a.team.update_score()
-                ScoreHistory.add_entry(a.team)
 
     @classmethod
     def get_joined_query(cls):
