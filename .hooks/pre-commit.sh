@@ -11,7 +11,7 @@ RESULT=0
 
 if git status --porcelain | awk '{print $2}' | grep -q '^scoreboard/' ; then
   # Run tests and flake8 if any files in scoreboard/... changed.
-  python main.py runtests && flake8 scoreboard main.py
+  python3 tests.py && flake8 scoreboard main.py
   RESULT=$?
 fi
 
