@@ -410,7 +410,7 @@ sbDirectives.directive('challengeBox', [
                 return e;
               })
               answers.sort(function(a, b) {
-                if (a.date < b.date) return 1
+                if (a.date > b.date) return 1
                 return -1
               })
               var num = scope.numteams
