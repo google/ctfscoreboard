@@ -22,10 +22,11 @@ import json
 import logging
 import math
 import os
-import pbkdf2
 import re
 import sqlalchemy as sqlalchemy_base
 import time
+
+from argon2 import PasswordHasher
 
 from sqlalchemy import exc
 from sqlalchemy import func
@@ -159,7 +160,7 @@ class User(db.Model):
     uid = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     nick = db.Column(db.String(80), unique=True, nullable=False, index=True)
-    pwhash = db.Column(db.String(48))  # pbkdf2.crypt == 48 bytes
+    pwhash = db.Column(db.String(48))  # argon2.PasswordHasher().hash == 4294967296 bytes
     admin = db.Column(db.Boolean, default=False, index=True)
     team_tid = db.Column(db.Integer, db.ForeignKey('team.tid'))
     create_ip = db.Column(db.String(45))     # max 45 bytes for IPv6
@@ -168,7 +169,8 @@ class User(db.Model):
     api_key_updated = db.Column(db.DateTime)
 
     def set_password(self, password):
-        self.pwhash = pbkdf2.crypt(password)
+        ph = PasswordHasher()
+        self.pwhash = ph.hash(password)
 
     def __repr__(self):
         return '<User: %s <%s>>' % (self.nick.encode('utf-8'), self.email)
@@ -253,7 +255,8 @@ class User(db.Model):
             user = cls.query.filter_by(email=email).one()
         except exc.InvalidRequestError:
             return None
-        if pbkdf2.crypt(password, user.pwhash) == user.pwhash:
+        ph = PasswordHasher()
+        if ph.verify(user.pwhash, password):
             if flask.has_request_context():
                 user.last_login_ip = flask.request.remote_addr
                 db.session.commit()
@@ -372,7 +375,7 @@ class Challenge(db.Model):
     points = db.Column(db.Integer, nullable=False)
     min_points = db.Column(db.Integer, nullable=True)
     validator = db.Column(db.String(24), nullable=False,
-                          default='static_pbkdf2')
+                          default='static_argon2')
     answer_hash = db.Column(db.String(48))  # Protect answers
     unlocked = db.Column(db.Boolean, default=False)
     weight = db.Column(db.Integer, nullable=False)  # Order for display
@@ -493,7 +496,7 @@ class Challenge(db.Model):
 
     @classmethod
     def create(cls, name, description, points, answer, unlocked=False,
-               validator='static_pbkdf2'):
+               validator='static_argon2'):
         challenge = cls()
         challenge.name = name
         challenge.description = description
@@ -661,7 +664,7 @@ class Answer(db.Model):
         answer.team = team
         answer.timestamp = datetime.datetime.utcnow()
         if answer_text:
-            answer.answer_hash = pbkdf2.crypt(team.name + answer_text)
+            answer.answer_hash = User.set_password.hash(team.name + answer_text)
         if flask.request:
             answer.submit_ip = flask.request.remote_addr
         db.session.add(answer)

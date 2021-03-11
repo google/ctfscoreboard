@@ -13,14 +13,14 @@
 # limitations under the License.
 
 
-from . import static_pbkdf2
+from . import static_argon2
 from . import per_team
 from . import nonce
 from . import regex
 
 _Validators = {
-        'static_pbkdf2': static_pbkdf2.StaticPBKDF2Validator,
-        'static_pbkdf2_ci': static_pbkdf2.CaseStaticPBKDF2Validator,
+        'static_argon2': static_argon2.StaticArgon2Validator,
+        'static_argon2_ci': static_argon2.CaseStaticArgon2Validator,
         'per_team': per_team.PerTeamValidator,
         'nonce_166432': nonce.Nonce_16_64_Base32_Validator,
         'nonce_245632': nonce.Nonce_24_56_Base32_Validator,
@@ -31,7 +31,7 @@ _Validators = {
 
 
 def GetDefaultValidator():
-    return 'static_pbkdf2'
+    return 'static_argon2'
 
 
 def GetValidatorForChallenge(challenge):

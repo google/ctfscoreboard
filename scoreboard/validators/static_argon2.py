@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pbkdf2
+import argon2
 
 from scoreboard import utils
 from scoreboard.validators import base
 
 
-class StaticPBKDF2Validator(base.BaseValidator):
+class StaticArgon2Validator(base.BaseValidator):
     """PBKDF2-based secrets, everyone gets the same flag."""
 
     name = 'Static'
@@ -27,14 +27,14 @@ class StaticPBKDF2Validator(base.BaseValidator):
         if not self.challenge.answer_hash:
             return False
         return utils.compare_digest(
-                pbkdf2.crypt(answer, self.challenge.answer_hash),
+                argon2.PasswordHasher().hash(answer, self.challenge.answer_hash),
                 self.challenge.answer_hash)
 
     def change_answer(self, answer):
-        self.challenge.answer_hash = pbkdf2.crypt(answer)
+        self.challenge.answer_hash = argon2.PasswordHasher().hash(answer)
 
 
-class CaseStaticPBKDF2Validator(StaticPBKDF2Validator):
+class CaseStaticArgon2Validator(StaticArgon2Validator):
     """PBKDF2-based secrets, case insensitive."""
 
     name = 'Static (Case Insensitive)'
@@ -42,9 +42,9 @@ class CaseStaticPBKDF2Validator(StaticPBKDF2Validator):
     def validate_answer(self, answer, team):
         if not isinstance(answer, str):
             return False
-        return super(CaseStaticPBKDF2Validator, self).validate_answer(
+        return super(CaseStaticArgon2Validator, self).validate_answer(
                 answer.lower(), team)
 
     def change_answer(self, answer):
-        return super(CaseStaticPBKDF2Validator, self).change_answer(
+        return super(CaseStaticArgon2Validator, self).change_answer(
                 answer.lower())
