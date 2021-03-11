@@ -655,6 +655,7 @@ class Answer(db.Model):
 
     @classmethod
     def create(cls, challenge, team, answer_text):
+        ph = PasswordHasher()
         answer = cls()
         answer.first_blood = 0
         if not challenge.solves:
@@ -664,7 +665,7 @@ class Answer(db.Model):
         answer.team = team
         answer.timestamp = datetime.datetime.utcnow()
         if answer_text:
-            answer.answer_hash = User.set_password.hash(team.name + answer_text)
+            answer.answer_hash = ph.hash(team.name + answer_text)
         if flask.request:
             answer.submit_ip = flask.request.remote_addr
         db.session.add(answer)
