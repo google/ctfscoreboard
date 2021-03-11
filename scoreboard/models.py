@@ -160,7 +160,7 @@ class User(db.Model):
     uid = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     nick = db.Column(db.String(80), unique=True, nullable=False, index=True)
-    pwhash = db.Column(db.String(48))  # argon2.PasswordHasher().hash == 4294967296 bytes
+    pwhash = db.Column(db.String(48))  # argon2.PasswordHasher().hash
     admin = db.Column(db.Boolean, default=False, index=True)
     team_tid = db.Column(db.Integer, db.ForeignKey('team.tid'))
     create_ip = db.Column(db.String(45))     # max 45 bytes for IPv6
