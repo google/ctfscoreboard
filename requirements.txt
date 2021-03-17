@@ -5,7 +5,7 @@ Flask-Scss
 Jinja2
 MarkupSafe
 PyMySQL
-SQLAlchemy
+SQLAlchemy<1.4.0
 Werkzeug<1.0.0
 aniso8601
 argparse
