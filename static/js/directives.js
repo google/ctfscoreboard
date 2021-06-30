@@ -382,6 +382,7 @@ sbDirectives.directive('challengeBox', [
           scope.isModal = isModal;
           scope.minteams = 4
           scope.numteams = scope.minteams;
+          scope.loggedIn = (!!sessionService.session.user);
 
           var closeModal = function(href) {
             if (isModal) {
@@ -402,6 +403,8 @@ sbDirectives.directive('challengeBox', [
           scope.$watch('chall', function() {
             // Current points
             scope.currentPoints = scoreService.getCurrentPoints(scope.chall);
+            // Update loggedIn
+            scope.loggedIn = (!!sessionService.session.user);
             // Recent solves
             scope.recent = function() {
               if (!scope.chall) return []
@@ -488,7 +491,6 @@ sbDirectives.directive('challengeBox', [
                 sessionService.session.user.admin);
           };
 
-          scope.loggedIn = (!!sessionService.session.user);
         } // Link function
       }
     }]);
