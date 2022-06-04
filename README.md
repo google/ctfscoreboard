@@ -29,7 +29,7 @@ branch, which will only be getting security & bug fixes.
 4. Write a config.py for your relevant installation.  An example is provided in
    config.example.py.
 
-        SQLALCHEMY_DATABASE_URI = 'mysql://username:password@server/db'
+        SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://username:password@server/db'
         #SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://username:password@server/db'
         SECRET_KEY = 'Some Random Value For Session Keys'
         TEAM_SECRET_KEY = 'Another Random Value For Team Invite Codes'

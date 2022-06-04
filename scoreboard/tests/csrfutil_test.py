@@ -15,7 +15,7 @@
 import struct
 import time
 
-import jinja2
+from markupsafe import Markup
 from werkzeug import exceptions
 
 from scoreboard.tests import base
@@ -116,7 +116,7 @@ class CSRFUtilTest(base.BaseTestCase):
         mock_get_csrf_token.return_value = mock_value
         rv = csrfutil.get_csrf_field(user='foo')
         mock_get_csrf_token.assert_called_once_with(user='foo')
-        self.assertTrue(isinstance(rv, jinja2.Markup))
+        self.assertTrue(isinstance(rv, Markup))
         self.assertTrue(mock_value in str(rv))
 
     @mock.patch.object(csrfutil, 'verify_csrf_token')

@@ -17,7 +17,8 @@ import functools
 import json
 import flask
 
-from werkzeug.contrib import cache
+from cachelib import MemcachedCache, SimpleCache, NullCache
+
 
 from scoreboard import main
 
@@ -30,11 +31,11 @@ class CacheWrapper(object):
         cache_type = app.config.get('CACHE_TYPE')
         if cache_type == 'memcached':
             host = app.config.get('MEMCACHE_HOST')
-            self._cache = cache.MemcachedCache([host])
+            self._cache = MemcachedCache([host])
         elif cache_type == 'local':
-            self._cache = cache.SimpleCache()
+            self._cache = SimpleCache()
         else:
-            self._cache = cache.NullCache()
+            self._cache = NullCache()
 
     def __getattr__(self, name):
         return getattr(self._cache, name)
