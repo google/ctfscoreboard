@@ -18,9 +18,10 @@ import flask
 import functools
 import hashlib
 import hmac
-import jinja2
 import struct
 import time
+
+from markupsafe import Markup
 
 from scoreboard import main
 from scoreboard import utils
@@ -74,7 +75,7 @@ def csrf_protect(f):
 def get_csrf_field(*args, **kwargs):
     """Render a CSRF field."""
     token = get_csrf_token(*args, **kwargs)
-    field = jinja2.Markup(
+    field = Markup(
         '<input type="hidden" name="csrftoken" value="%s" />')
     return field % token
 
