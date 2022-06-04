@@ -73,7 +73,7 @@ class BaseTestCase(flask_testing.TestCase):
             self.app._SAVED_CONFIG = copy.deepcopy(app.config)
         models.db.init_app(app)
         models.db.create_all()
-        cache.global_cache = cache.cache.NullCache()  # Reset cache
+        cache.global_cache = cache.NullCache()  # Reset cache
 
     def tearDown(self):
         models.db.session.remove()

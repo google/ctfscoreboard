@@ -27,7 +27,7 @@ class BaseCacheTest(base.BaseTestCase):
 
     def setUp(self):
         super(BaseCacheTest, self).setUp()
-        cache.global_cache = cache.cache.SimpleCache()
+        cache.global_cache = cache.SimpleCache()
 
     def makeMockGet(self, cache_type, cache_host=None):
         orig_config = self.app.config
